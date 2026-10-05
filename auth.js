@@ -83,12 +83,56 @@
     }
   }
 
-  // ---------- Search dropdown ----------
+  // ---------- Search dropdown (courses + people) ----------
   function initSearch() {
     const container = document.getElementById('search-container');
     const input = document.getElementById('search-input');
     const dropdown = document.getElementById('search-dropdown');
     if (!container || !input || !dropdown) return;
+
+    // Inject small style block for the search section labels and person rows (once per page)
+    if (!document.getElementById('search-dynamic-style')) {
+      const s = document.createElement('style');
+      s.id = 'search-dynamic-style';
+      s.textContent = `
+        .search-section-label {
+          padding: 0.5rem 0.9rem 0.25rem;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #8b8b8b;
+          font-weight: 600;
+        }
+        .search-person-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .search-person-avatar {
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+        .search-person-avatar-fallback {
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          background: #e4ecf2;
+          color: #1e3b5a;
+          font-weight: 600;
+          font-size: 0.75rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        html[data-theme="dark"] .search-person-avatar-fallback {
+          background: #23374b;
+          color: #8ab4d9;
+        }
+      `;
+      document.head.appendChild(s);
+    }
 
     let allCourses = null;
     async function loadCourses() {
@@ -97,21 +141,59 @@
       allCourses = error ? [] : (data || []);
       return allCourses;
     }
-    function renderResults(query) {
-      if (!query.trim()) { dropdown.classList.remove('open'); return; }
-      const q = query.toLowerCase();
-      const matches = (allCourses || []).filter(c =>
+
+    async function searchPeople(q) {
+      const { data, error } = await sb.rpc('search_users', { q });
+      return error ? [] : (data || []);
+    }
+
+    // Simple stale-request guard: if the user types again before this render
+    // finishes, the older render bails out so the newest one always wins.
+    let renderToken = 0;
+    async function renderResults(query) {
+      const token = ++renderToken;
+      const trimmed = query.trim();
+      if (!trimmed) { dropdown.classList.remove('open'); return; }
+
+      const q = trimmed.toLowerCase();
+      await loadCourses();
+      const people = await searchPeople(trimmed);
+
+      if (token !== renderToken) return; // a newer render has taken over
+
+      const courseMatches = (allCourses || []).filter(c =>
         c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
-      if (matches.length === 0) {
-        dropdown.innerHTML = '<p style="color:#8b8b8b; text-align:center; padding:1rem;">No matches</p>';
-      } else {
-        dropdown.innerHTML = matches.map(c =>
+
+      let html = '';
+      if (courseMatches.length) {
+        html += '<div class="search-section-label">Courses</div>';
+        html += courseMatches.map(c =>
           `<a href="course-${c.slug}.html" class="search-result-item"><div class="title">${window.escapeHtml(c.title)}</div><div class="meta">Course · ${window.escapeHtml(c.slug)}</div></a>`
         ).join('');
       }
+      if (people.length) {
+        html += '<div class="search-section-label">People</div>';
+        html += people.map(p => {
+          const name = p.full_name || 'Anonymous';
+          const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+          const avatar = p.avatar_url
+            ? `<img src="${p.avatar_url}" alt="" class="search-person-avatar">`
+            : `<span class="search-person-avatar-fallback">${initials}</span>`;
+          return `<a href="profile.html?id=${p.id}" class="search-result-item"><div class="search-person-row">${avatar}<div><div class="title">${window.escapeHtml(name)}</div><div class="meta">View profile</div></div></div></a>`;
+        }).join('');
+      }
+
+      if (!html) {
+        html = '<p style="color:#8b8b8b; text-align:center; padding:1rem;">No matches</p>';
+      }
+      dropdown.innerHTML = html;
       dropdown.classList.add('open');
     }
-    input.addEventListener('focus', async () => { await loadCourses(); });
+
+    input.addEventListener('focus', async () => {
+      await loadCourses();
+      if (input.value.trim()) renderResults(input.value);
+    });
     input.addEventListener('input', () => renderResults(input.value));
     document.addEventListener('click', (e) => {
       if (!container.contains(e.target)) dropdown.classList.remove('open');
@@ -237,12 +319,10 @@
       setInterval(updateBadges, 60000);
     }
 
-    // Signal to page-specific scripts that everything is ready
     window.dispatchEvent(new CustomEvent('medlab:ready', {
       detail: { user: currentUser, supabase: sb }
     }));
 
-    // Auth state changes
     sb.auth.onAuthStateChange(async (_event, session) => {
       currentUser = session?.user ?? null;
       updateAuthUI(currentUser);

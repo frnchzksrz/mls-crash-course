@@ -223,6 +223,7 @@
       let currentChatUser = null;
       let conversations = [];
       let activeConvId = null;
+      let autoOpenedFromUrl = false;
 
       async function loadConversations() {
         if (!currentUser) return;
@@ -238,7 +239,11 @@
           if (msg.to_user_id === currentUser.id && !msg.read) convMap.get(partnerId).unread++;
         });
         const partnerIds = Array.from(convMap.keys());
-        if (partnerIds.length === 0) { document.getElementById('conv-list').innerHTML = '<p style="padding:1rem; color:#8b8b8b;">No conversations yet</p>'; return; }
+        if (partnerIds.length === 0) {
+          conversations = [];
+          document.getElementById('conv-list').innerHTML = '<p style="padding:1rem; color:#8b8b8b;">No conversations yet</p>';
+          return;
+        }
         const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url').in('id', partnerIds);
         conversations = partnerIds.map(id => {
           const conv = convMap.get(id);
@@ -251,6 +256,10 @@
 
       function renderConversations() {
         const container = document.getElementById('conv-list');
+        if (conversations.length === 0) {
+          container.innerHTML = '<p style="padding:1rem; color:#8b8b8b;">No conversations yet</p>';
+          return;
+        }
         container.innerHTML = conversations.map(conv => {
           const initials = (conv.full_name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
           return `<div class="conv-item${activeConvId === conv.partnerId ? ' active' : ''}" data-partner-id="${conv.partnerId}">${conv.avatar_url ? `<img src="${conv.avatar_url}" class="conv-avatar" alt="${window.escapeHtml(conv.full_name)}">` : `<div class="conv-avatar-placeholder">${initials}</div>`}<div class="conv-info"><div class="conv-name">${window.escapeHtml(conv.full_name)}</div><div class="conv-last-msg">${window.escapeHtml(conv.lastMessage?.substring(0,40) || '')}</div></div><div class="conv-meta"><div class="conv-time">${window.timeAgo(conv.lastTime)}</div>${conv.unread > 0 ? `<div class="unread-count">${conv.unread}</div>` : ''}</div></div>`;
@@ -258,6 +267,31 @@
         container.querySelectorAll('.conv-item').forEach(item => {
           item.addEventListener('click', () => openConversation(item.dataset.partnerId));
         });
+      }
+
+      // Opens a conversation by partner id, fetching their profile and
+      // creating a synthetic entry if no prior messages exist. Used by the
+      // ?to= URL parameter auto-open flow.
+      async function openConversationByUserId(partnerId) {
+        if (partnerId === currentUser.id) return;
+        const existing = conversations.find(c => c.partnerId === partnerId);
+        if (!existing) {
+          const { data: profile } = await sb.from('profiles')
+            .select('id, full_name, avatar_url')
+            .eq('id', partnerId)
+            .single();
+          if (!profile) return;
+          conversations.unshift({
+            partnerId,
+            full_name: profile.full_name || 'User',
+            avatar_url: profile.avatar_url,
+            lastMessage: '',
+            lastTime: new Date().toISOString(),
+            unread: 0
+          });
+          renderConversations();
+        }
+        await openConversation(partnerId);
       }
 
       async function openConversation(partnerId) {
@@ -281,6 +315,10 @@
           .or(`and(from_user_id.eq.${currentUser.id},to_user_id.eq.${partnerId}),and(from_user_id.eq.${partnerId},to_user_id.eq.${currentUser.id})`)
           .order('created_at', { ascending: true });
         if (!messages) return;
+        if (messages.length === 0) {
+          container.innerHTML = '<p style="color:#8b8b8b; text-align:center; padding-top:2rem;">No messages yet. Say hi!</p>';
+          return;
+        }
         container.innerHTML = messages.map(msg => `<div class="msg ${msg.from_user_id === currentUser.id ? 'sent' : 'received'}">${window.escapeHtml(msg.body)}<div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`).join('');
         container.scrollTop = container.scrollHeight;
       }
@@ -345,7 +383,17 @@
 
       async function pageInit(user) {
         currentUser = user;
-        if (currentUser) await loadConversations();
+        if (!currentUser) return;
+        await loadConversations();
+
+        // Auto-open the conversation from ?to=USER_UUID, once per page load
+        if (!autoOpenedFromUrl) {
+          autoOpenedFromUrl = true;
+          const to = new URLSearchParams(window.location.search).get('to');
+          if (to && to !== currentUser.id) {
+            await openConversationByUserId(to);
+          }
+        }
       }
 
       wireStaticListeners();

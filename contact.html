@@ -143,11 +143,12 @@
   <main class="container">
     <h1>Contact</h1>
     <p class="subtitle">Questions, suggestions, or just want to say hello? Send us a message.</p>
-    <form action="https://formspree.io/f/yourFormID" method="POST">
-      <input type="text" name="name" placeholder="Your Name" required>
-      <input type="email" name="email" placeholder="Your Email" required>
-      <textarea name="message" rows="6" placeholder="Your message..." required></textarea>
-      <button type="submit">Send</button>
+    <form id="contact-form">
+      <input type="text" id="contact-name" placeholder="Your Name" required>
+      <input type="email" id="contact-email" placeholder="Your Email" required>
+      <textarea id="contact-message" rows="6" placeholder="Your message..." required></textarea>
+      <button type="submit" id="contact-submit">Send</button>
+      <p id="contact-status" style="text-align:center; margin-top:1rem;"></p>
     </form>
   </main>
 
@@ -155,5 +156,35 @@
     <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
     <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="about.html">About</a></p>
   </footer>
+
+  <script>
+    const sb = window.supabaseClient;
+
+    document.getElementById('contact-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+      const status = document.getElementById('contact-status');
+      const submitBtn = document.getElementById('contact-submit');
+      if (!name || !email || !message) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending…';
+
+      const { error } = await sb.from('contact_messages').insert({ name, email, message });
+
+      if (error) {
+        status.textContent = 'Failed to send: ' + error.message;
+        status.style.color = '#c0392b';
+      } else {
+        status.textContent = 'Thank you! Your message has been sent.';
+        status.style.color = '#27ae60';
+        document.getElementById('contact-form').reset();
+      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send';
+    });
+  </script>
 </body>
 </html>

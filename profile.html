@@ -75,6 +75,12 @@
     .stat-item { text-align: center; }
     .stat-number { font-size: 1.4rem; font-weight: 700; color: #1e3b5a; }
     .stat-label { font-size: 0.8rem; color: #3a4b5c; }
+    .profile-actions { display: flex; justify-content: center; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .action-btn { padding: 8px 24px; border-radius: 20px; font-weight: 600; border: none; cursor: pointer; font-family: inherit; font-size: 0.95rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; transition: opacity 0.2s, transform 0.15s; }
+    .action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .action-btn.follow { background: #1e3b5a; color: #fff; }
+    .action-btn.unfollow { background: #c0392b; color: #fff; }
+    .action-btn.message { background: transparent; color: #1e3b5a; border: 2px solid #1e3b5a; }
     .bio-section { max-width: 500px; margin: 0 auto 2rem; }
     .bio-label { font-weight: 600; margin-bottom: 0.3rem; color: #1e3b5a; }
     .bio-text { color: #2c3e50; font-style: italic; line-height: 1.5; cursor: pointer; border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: border 0.2s; }
@@ -84,9 +90,6 @@
     .bio-edit-actions { display: flex; justify-content: center; gap: 0.5rem; }
     .btn-save { background: #1e3b5a; color: #fff; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; font-weight: 500; }
     .btn-cancel { background: #e4ecf2; color: #1e3b5a; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; font-weight: 500; }
-    .follow-btn { padding: 8px 24px; border-radius: 20px; font-weight: 600; border: none; cursor: pointer; display: block; margin: 0 auto 1rem auto; }
-    .follow-btn.follow { background: #1e3b5a; color: #fff; }
-    .follow-btn.unfollow { background: #c0392b; color: #fff; }
     .section-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin: 2rem 0 1rem; text-align: left; }
     .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.2rem; text-align: left; }
     .course-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(30,59,90,0.1); text-decoration: none; color: inherit; transition: box-shadow 0.2s; text-align: left; }
@@ -131,6 +134,8 @@
     html[data-theme="dark"] .bio-text { color: #b8c5d1; }
     html[data-theme="dark"] .bio-edit-area textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
     html[data-theme="dark"] .btn-cancel { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .action-btn.message { color: #8ab4d9; border-color: #8ab4d9; }
+    html[data-theme="dark"] .action-btn.follow { background: #2d4a6b; }
     html[data-theme="dark"] .course-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .post-card h4 { color: #8ab4d9; }
@@ -189,8 +194,9 @@
 
       async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('user');
-        const profileId = userId || currentUser?.id;
+        // Support both ?id= (new, used by search) and ?user= (legacy links)
+        const requestedId = urlParams.get('id') || urlParams.get('user');
+        const profileId = requestedId || currentUser?.id;
         if (!profileId) { window.location.href = 'signup.html'; return; }
 
         const container = document.getElementById('profile-content');
@@ -221,9 +227,14 @@
         const bio = profile.bio || '';
         const isOwnProfile = currentUser && currentUser.id === profileId;
 
-        let followBtnHtml = '';
+        let actionsHtml = '';
         if (!isOwnProfile && currentUser) {
-          followBtnHtml = `<button class="follow-btn ${isFollowing ? 'unfollow' : 'follow'}" id="follow-btn">${isFollowing ? 'Unfollow' : 'Follow'}</button>`;
+          actionsHtml = `
+            <div class="profile-actions">
+              <button class="action-btn ${isFollowing ? 'unfollow' : 'follow'}" id="follow-btn">${isFollowing ? 'Unfollow' : 'Follow'}</button>
+              <a class="action-btn message" href="messages.html?to=${profileId}" id="message-btn">✉️ Message</a>
+            </div>
+          `;
         }
 
         const html = `
@@ -237,7 +248,7 @@
               <div class="stat-item"><div class="stat-number">${followers}</div><div class="stat-label">Followers</div></div>
               <div class="stat-item"><div class="stat-number">${following}</div><div class="stat-label">Following</div></div>
             </div>
-            ${followBtnHtml}
+            ${actionsHtml}
             <div class="bio-section">
               <div class="bio-label">About</div>
               ${isOwnProfile ? `
@@ -262,7 +273,7 @@
           <h2 class="section-title">📖 Recently Studied</h2>
           ${recentCourses && recentCourses.length ? `<div class="courses-grid">${recentCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No recently studied courses.</p>'}
 
-          <h2 class="section-title">📝 My Posts</h2>
+          <h2 class="section-title">📝 ${isOwnProfile ? 'My' : 'Their'} Posts</h2>
           ${posts && posts.length ? `<div class="post-list">${posts.map(post => `<div class="post-card"><h4>${window.escapeHtml(post.title)}</h4><p>${window.escapeHtml(post.body?.substring(0,200))}${post.body?.length>200?'…':''}</p><div class="post-meta">${new Date(post.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</div></div>`).join('')}</div>` : '<p>No posts yet.</p>'}
         `;
 
