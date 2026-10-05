@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications · MLS Crash Course</title>
+  <meta name="description" content="Your notifications on MLS Crash Course.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    .container { max-width: 700px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: #1e3b5a; margin-bottom: 1.5rem; text-align: center; }
+    .mark-all { text-align: right; margin-bottom: 1.5rem; }
+    .mark-all button { background: none; border: 1px solid #1e3b5a; color: #1e3b5a; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: background 0.2s, color 0.2s; }
+    .mark-all button:hover { background: #1e3b5a; color: #fff; }
+    .notif-card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.03); border-left: 4px solid #1e3b5a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .notif-card.unread { font-weight: 600; }
+    .notif-message { flex: 1; }
+    .notif-time { font-size: 0.85rem; color: #8b8b8b; margin-left: 1rem; white-space: nowrap; }
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
+    html[data-theme="dark"] p { color: #b8c5d1; }
+    html[data-theme="dark"] .notif-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .notif-card.unread { border-left-color: #8ab4d9; }
+    html[data-theme="dark"] .mark-all button { border-color: #8ab4d9; color: #8ab4d9; }
+    html[data-theme="dark"] .mark-all button:hover { background: #8ab4d9; color: #0f1a26; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) { .nav-links { gap: 1rem; } h1 { font-size: 2.2rem; } .notif-card { flex-direction: column; align-items: flex-start; } .notif-time { margin-left: 0; margin-top: 0.5rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Notifications</h1>
+    <div class="mark-all"><button id="markAllBtn">Mark all as read</button></div>
+    <div id="notifList"><p style="text-align:center; color:#8b8b8b;">Loading notifications…</p></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      let currentUser = null;
+
+      async function loadNotifications() {
+        const container = document.getElementById('notifList');
+        if (!currentUser) {
+          container.innerHTML = '<p style="color:#c0392b;">You must be logged in to see notifications.</p>';
+          return;
+        }
+        const { data: notifs } = await sb.from('notifications')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (!notifs || notifs.length === 0) {
+          container.innerHTML = '<p style="text-align:center; color:#8b8b8b;">No notifications yet.</p>';
+          return;
+        }
+        container.innerHTML = notifs.map(n => `
+          <div class="notif-card ${n.read ? '' : 'unread'}" data-id="${n.id}">
+            <div class="notif-message">${window.escapeHtml(n.message)}</div>
+            <div class="notif-time">${window.timeAgo(n.created_at)}</div>
+          </div>
+        `).join('');
+        container.querySelectorAll('.notif-card').forEach(card => {
+          card.addEventListener('click', async () => {
+            if (card.classList.contains('unread')) {
+              await sb.from('notifications').update({ read: true }).eq('id', card.dataset.id);
+              card.classList.remove('unread');
+            }
+          });
+        });
+      }
+
+      document.getElementById('markAllBtn').addEventListener('click', async () => {
+        if (!currentUser) return;
+        await sb.from('notifications').update({ read: true })
+          .eq('user_id', currentUser.id).eq('read', false);
+        loadNotifications();
+      });
+
+      async function pageInit(user) {
+        currentUser = user;
+        await loadNotifications();
+      }
+
+      window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+    })();
+  </script>
+</body>
+</html>

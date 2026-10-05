@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Hub · Analysis of Urine · MLS Crash Course</title>
+  <meta name="description" content="Quizzes, flashcards, and case studies for AUBF.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+    /* ===================== HUB PAGE ===================== */
+    .container { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 3rem; }
+    .back-to-course { display: inline-flex; align-items: center; gap: 0.4rem; color: #5c7c9e; text-decoration: none; font-size: 0.9rem; margin-bottom: 1.5rem; transition: color 0.2s; }
+    .back-to-course:hover { color: #1e3b5a; }
+    .hub-hero { text-align: center; margin-bottom: 2rem; }
+    .hub-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; color: #1e3b5a; margin-bottom: 0.3rem; }
+    .hub-hero .hub-subtitle { color: #5c7c9e; font-style: italic; font-size: 1.05rem; margin-bottom: 1rem; }
+    .enrollment-status { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+    .enrollment-status.approved { background: #d4edda; color: #155724; }
+    .hub-section-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #1e3b5a; text-align: center; margin-bottom: 1.5rem; }
+    .activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .activity-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 20px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; font-family: inherit; }
+    .activity-card:hover { transform: translateY(-6px); box-shadow: 0 15px 35px rgba(30,59,90,0.1); border-color: #1e3b5a; }
+    .activity-icon { font-size: 2.5rem; }
+    .activity-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #1e3b5a; }
+    .activity-desc { font-size: 0.9rem; color: #5c7c9e; line-height: 1.5; }
+    .activity-count { font-size: 0.8rem; color: #1e3b5a; font-weight: 600; margin-top: 0.3rem; }
+    /* Activity view */
+    #view-activity { display: none; }
+    .back-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 8px 18px; background: #fff; border: 1px solid rgba(30,59,90,0.15); border-radius: 20px; color: #1e3b5a; font-size: 0.9rem; font-family: inherit; cursor: pointer; margin-bottom: 1.5rem; transition: background 0.2s; }
+    .back-btn:hover { background: #f0f4f8; }
+    .activity-header { text-align: center; margin-bottom: 2rem; }
+    .activity-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #1e3b5a; margin-bottom: 0.3rem; }
+    .activity-header .progress-info { color: #5c7c9e; font-size: 0.95rem; }
+    /* Quiz UI */
+    .quiz-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 20px; padding: 2rem; max-width: 700px; margin: 0 auto; }
+    .quiz-question { font-size: 1.2rem; font-weight: 500; color: #1e1e1e; margin-bottom: 1.5rem; line-height: 1.5; }
+    .quiz-choice { display: block; width: 100%; text-align: left; padding: 14px 18px; margin-bottom: 0.75rem; background: #fafbfc; border: 1px solid rgba(30,59,90,0.12); border-radius: 12px; font-family: inherit; font-size: 1rem; color: #1e1e1e; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+    .quiz-choice:hover:not(:disabled) { background: #f0f4f8; border-color: #1e3b5a; }
+    .quiz-choice:disabled { cursor: default; }
+    .quiz-choice.correct { background: #d4edda; border-color: #28a745; color: #155724; font-weight: 600; }
+    .quiz-choice.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+    .quiz-choice .choice-letter { display: inline-block; width: 24px; height: 24px; line-height: 24px; text-align: center; border-radius: 50%; background: rgba(30,59,90,0.08); margin-right: 10px; font-weight: 600; font-size: 0.85rem; }
+    .quiz-explanation { margin-top: 1rem; padding: 1rem; background: #f0f4f8; border-left: 4px solid #1e3b5a; border-radius: 8px; color: #2c3e50; font-size: 0.95rem; display: none; }
+    .quiz-next-btn { display: block; margin: 1.5rem auto 0; padding: 12px 32px; background: #1e3b5a; color: #fff; border: none; border-radius: 30px; font-family: inherit; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+    .quiz-next-btn:hover { background: #162d45; }
+    .quiz-next-btn:disabled { background: #b0c4d0; cursor: not-allowed; }
+    .quiz-result { text-align: center; padding: 2rem; }
+    .quiz-result .score-big { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: #1e3b5a; font-weight: 700; line-height: 1; margin-bottom: 0.5rem; }
+    .quiz-result .score-sub { color: #5c7c9e; margin-bottom: 1.5rem; }
+    .quiz-result .btn { display: inline-block; padding: 12px 32px; border-radius: 30px; background: #1e3b5a; color: #fff; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-family: inherit; font-size: 1rem; margin: 0 0.3rem; }
+    .quiz-result .btn:hover { background: #162d45; }
+    .quiz-result .btn-secondary { background: transparent; color: #1e3b5a; border: 1px solid #1e3b5a; }
+    /* Flashcards UI */
+    .flashcard-container { max-width: 600px; margin: 0 auto; }
+    .flashcard { perspective: 1000px; height: 300px; margin-bottom: 1.5rem; cursor: pointer; }
+    .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+    .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+    .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 2rem; text-align: center; border-radius: 20px; border: 2px solid rgba(30,59,90,0.12); }
+    .flashcard-front { background: #fff; color: #1e3b5a; font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 600; line-height: 1.4; }
+    .flashcard-back { background: #1e3b5a; color: #fff; transform: rotateY(180deg); font-size: 1.1rem; line-height: 1.5; }
+    .flashcard-hint { text-align: center; color: #5c7c9e; font-size: 0.85rem; margin-bottom: 1rem; }
+    .flash-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .flash-buttons.visible { opacity: 1; pointer-events: auto; }
+    .flash-btn { padding: 12px 6px; border-radius: 12px; border: none; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #fff; transition: transform 0.15s; }
+    .flash-btn:hover { transform: scale(1.05); }
+    .flash-btn.again { background: #c0392b; }
+    .flash-btn.hard { background: #e67e22; }
+    .flash-btn.good { background: #2980b9; }
+    .flash-btn.easy { background: #27ae60; }
+    .flash-done { text-align: center; padding: 3rem 2rem; }
+    .flash-done .big { font-size: 3rem; margin-bottom: 1rem; }
+    .flash-done h3 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin-bottom: 0.5rem; }
+    .flash-done p { color: #5c7c9e; margin-bottom: 1.5rem; }
+    /* Case Studies UI */
+    .case-list { display: flex; flex-direction: column; gap: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .case-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 20px; padding: 1.8rem; }
+    .case-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #1e3b5a; margin-bottom: 0.8rem; }
+    .case-scenario { color: #2c3e50; font-size: 1rem; line-height: 1.6; margin-bottom: 1.2rem; white-space: pre-wrap; }
+    .case-reveal-btn { padding: 10px 24px; background: #1e3b5a; color: #fff; border: none; border-radius: 30px; font-family: inherit; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+    .case-reveal-btn:hover { background: #162d45; }
+    .case-discussion { margin-top: 1rem; padding: 1.2rem; background: #f0f4f8; border-left: 4px solid #1e3b5a; border-radius: 10px; display: none; }
+    .case-discussion.visible { display: block; }
+    .case-discussion-label { font-weight: 600; color: #1e3b5a; margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .case-discussion p { color: #2c3e50; white-space: pre-wrap; line-height: 1.6; }
+    .empty-msg { text-align: center; padding: 3rem 2rem; color: #5c7c9e; }
+    .empty-msg .big { font-size: 3rem; margin-bottom: 1rem; }
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+    /* Dark mode */
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
+    html[data-theme="dark"] .activity-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .activity-card:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.4); border-color: #8ab4d9; }
+    html[data-theme="dark"] .activity-title { color: #8ab4d9; }
+    html[data-theme="dark"] .activity-desc { color: #b8c5d1; }
+    html[data-theme="dark"] .activity-count { color: #8ab4d9; }
+    html[data-theme="dark"] .back-btn { background: #1a2b3d; border-color: rgba(255,255,255,0.15); color: #8ab4d9; }
+    html[data-theme="dark"] .back-btn:hover { background: #23374b; }
+    html[data-theme="dark"] .back-to-course { color: #b8c5d1; }
+    html[data-theme="dark"] .back-to-course:hover { color: #8ab4d9; }
+    html[data-theme="dark"] .hub-hero .hub-subtitle { color: #b8c5d1; }
+    html[data-theme="dark"] .quiz-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .quiz-question { color: #e8eef5; }
+    html[data-theme="dark"] .quiz-choice { background: #162536; border-color: rgba(255,255,255,0.12); color: #e8eef5; }
+    html[data-theme="dark"] .quiz-choice:hover:not(:disabled) { background: #23374b; border-color: #8ab4d9; }
+    html[data-theme="dark"] .quiz-choice .choice-letter { background: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .quiz-choice.correct { background: #1e4d2b; border-color: #28a745; color: #a8e6b8; }
+    html[data-theme="dark"] .quiz-choice.wrong { background: #4d1e22; border-color: #dc3545; color: #f5b7bd; }
+    html[data-theme="dark"] .quiz-explanation { background: #23374b; border-left-color: #8ab4d9; color: #b8c5d1; }
+    html[data-theme="dark"] .flashcard-front { background: #1a2b3d; color: #8ab4d9; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .flashcard-back { background: #2d4a6b; }
+    html[data-theme="dark"] .case-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .case-title { color: #8ab4d9; }
+    html[data-theme="dark"] .case-scenario { color: #b8c5d1; }
+    html[data-theme="dark"] .case-discussion { background: #23374b; border-left-color: #8ab4d9; }
+    html[data-theme="dark"] .case-discussion p { color: #b8c5d1; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) {
+      .nav-links { gap: 1rem; }
+      .hub-hero h1 { font-size: 2rem; }
+      .activity-grid { grid-template-columns: 1fr; }
+      .flash-buttons { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="view-hub">
+      <a href="course-analysis-of-urine.html" class="back-to-course">← Back to course page</a>
+      <div class="hub-hero">
+        <h1>Analysis of Urine &amp; Other Body Fluids</h1>
+        <p class="hub-subtitle">AUBF · 3rd Year Course</p>
+        <div id="enrollment-status" class="enrollment-status approved">✅ Approved</div>
+      </div>
+      <h2 class="hub-section-title">Choose a study activity</h2>
+      <div class="activity-grid">
+        <button class="activity-card" data-activity="quiz">
+          <div class="activity-icon">🧠</div>
+          <div class="activity-title">Practice Quiz</div>
+          <div class="activity-desc">Test your recall with multiple-choice questions.</div>
+          <div class="activity-count" id="quiz-count"></div>
+        </button>
+        <button class="activity-card" data-activity="flashcards">
+          <div class="activity-icon">🗂️</div>
+          <div class="activity-title">Flashcards</div>
+          <div class="activity-desc">Review key facts with spaced repetition.</div>
+          <div class="activity-count" id="flash-count"></div>
+        </button>
+        <button class="activity-card" data-activity="case-studies">
+          <div class="activity-icon">📋</div>
+          <div class="activity-title">Case Studies</div>
+          <div class="activity-desc">Apply your knowledge to real clinical scenarios.</div>
+          <div class="activity-count" id="case-count"></div>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-activity">
+      <button class="back-btn" id="back-btn">← Back to activities</button>
+      <div id="activity-content"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <!-- HUB LOGIC (with approval gate) -->
+  <script>
+    const sb = window.supabaseClient;
+    const COURSE_SLUG = 'analysis-of-urine';
+    const PENDING_PAGE = 'pending.html?course=' + COURSE_SLUG;
+
+    let currentUser = null;
+    let courseId = null;
+    let wired = false;
+
+    function esc(t) { return (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    function showHub() {
+      document.getElementById('view-hub').style.display = '';
+      document.getElementById('view-activity').style.display = 'none';
+    }
+    function showActivity() {
+      document.getElementById('view-hub').style.display = 'none';
+      document.getElementById('view-activity').style.display = '';
+      document.getElementById('activity-content').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function wireOnce() {
+      if (wired) return;
+      wired = true;
+
+      document.getElementById('back-btn').addEventListener('click', () => {
+        document.getElementById('activity-content').innerHTML = '';
+        showHub();
+      });
+
+      document.querySelectorAll('.activity-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const activity = card.dataset.activity;
+          if (activity === 'quiz') startQuiz();
+          else if (activity === 'flashcards') startFlashcards();
+          else if (activity === 'case-studies') startCaseStudies();
+        });
+      });
+    }
+
+    // ============== APPROVAL GATE ==============
+    async function loadHub(user) {
+      currentUser = user;
+      if (!user) { window.location.href = 'signup.html'; return; }
+
+      const { data: course } = await sb.from('courses').select('id, title').eq('slug', COURSE_SLUG).single();
+      if (!course) { document.getElementById('enrollment-status').textContent = 'Course not found.'; return; }
+      courseId = course.id;
+
+      const { data: enrollment } = await sb.from('enrollments').select('status').eq('user_id', user.id).eq('course_id', courseId).maybeSingle();
+
+      // HARD GATE: only approved users can see the hub
+      if (!enrollment || enrollment.status !== 'approved') {
+        window.location.href = PENDING_PAGE;
+        return;
+      }
+
+      const statusEl = document.getElementById('enrollment-status');
+      statusEl.className = 'enrollment-status approved';
+      statusEl.textContent = '✅ Approved — full access';
+
+      const [{ count: quizCount }, { count: flashCount }, { count: caseCount }] = await Promise.all([
+        sb.from('quizzes').select('*', { count: 'exact', head: true }).eq('course_id', courseId),
+        sb.from('flashcards').select('*', { count: 'exact', head: true }).eq('course_id', courseId),
+        sb.from('case_studies').select('*', { count: 'exact', head: true }).eq('course_id', courseId)
+      ]);
+      document.getElementById('quiz-count').textContent = (quizCount || 0) + ' questions';
+      document.getElementById('flash-count').textContent = (flashCount || 0) + ' cards';
+      document.getElementById('case-count').textContent = (caseCount || 0) + ' case studies';
+    }
+
+    // ============== QUIZ ==============
+    async function startQuiz() {
+      showActivity();
+      document.getElementById('activity-content').innerHTML = '<p style="text-align:center; color:#5c7c9e;">Loading quiz…</p>';
+      const { data: questions } = await sb.from('quizzes').select('*').eq('course_id', courseId);
+      if (!questions || questions.length === 0) {
+        document.getElementById('activity-content').innerHTML = `<div class="empty-msg"><div class="big">📭</div><h3>No quiz questions yet</h3><p>Check back later — questions will be added soon.</p></div>`;
+        return;
+      }
+      const state = { questions: shuffle(questions), index: 0, correct: 0 };
+      renderQuizQuestion(state);
+    }
+    function renderQuizQuestion(state) {
+      const q = state.questions[state.index];
+      const total = state.questions.length;
+      const choicesHtml = q.choices.map((c, i) => {
+        const letter = String.fromCharCode(65 + i);
+        return `<button class="quiz-choice" data-index="${i}"><span class="choice-letter">${letter}</span>${esc(c)}</button>`;
+      }).join('');
+      document.getElementById('activity-content').innerHTML = `
+        <div class="activity-header">
+          <h2>Practice Quiz</h2>
+          <div class="progress-info">Question ${state.index + 1} of ${total}</div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-question">${esc(q.question)}</div>
+          <div id="quiz-choices">${choicesHtml}</div>
+          <div class="quiz-explanation" id="quiz-explanation"></div>
+          <button class="quiz-next-btn" id="quiz-next" disabled>Next Question →</button>
+        </div>
+      `;
+      document.querySelectorAll('#quiz-choices .quiz-choice').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const chosen = parseInt(btn.dataset.index, 10);
+          const correct = q.correct_index;
+          document.querySelectorAll('#quiz-choices .quiz-choice').forEach((b, i) => {
+            b.disabled = true;
+            if (i === correct) b.classList.add('correct');
+            else if (i === chosen && chosen !== correct) b.classList.add('wrong');
+          });
+          const expl = document.getElementById('quiz-explanation');
+          if (q.explanation) { expl.textContent = q.explanation; expl.style.display = 'block'; }
+          if (chosen === correct) state.correct++;
+          const nextBtn = document.getElementById('quiz-next');
+          nextBtn.disabled = false;
+          nextBtn.textContent = state.index + 1 >= total ? 'See Results →' : 'Next Question →';
+        });
+      });
+      document.getElementById('quiz-next').addEventListener('click', () => {
+        state.index++;
+        if (state.index >= state.questions.length) renderQuizResult(state);
+        else renderQuizQuestion(state);
+      });
+    }
+    async function renderQuizResult(state) {
+      const total = state.questions.length;
+      const pct = Math.round((state.correct / total) * 100);
+      const emoji = pct >= 80 ? '🎉' : pct >= 60 ? '👍' : '💪';
+      if (currentUser) {
+        await sb.from('quiz_attempts').insert({ user_id: currentUser.id, course_id: courseId, score: state.correct, total });
+      }
+      document.getElementById('activity-content').innerHTML = `
+        <div class="quiz-card quiz-result">
+          <div class="score-big">${emoji}</div>
+          <div class="score-big">${state.correct} / ${total}</div>
+          <div class="score-sub">You scored ${pct}%</div>
+          <button class="btn" id="quiz-retake">Retake Quiz</button>
+          <button class="btn btn-secondary" id="quiz-home">Back to Activities</button>
+        </div>
+      `;
+      document.getElementById('quiz-retake').addEventListener('click', () => startQuiz());
+      document.getElementById('quiz-home').addEventListener('click', () => {
+        document.getElementById('activity-content').innerHTML = '';
+        showHub();
+      });
+    }
+
+    // ============== FLASHCARDS ==============
+    async function startFlashcards() {
+      showActivity();
+      document.getElementById('activity-content').innerHTML = '<p style="text-align:center; color:#5c7c9e;">Loading flashcards…</p>';
+      const { data: cards } = await sb.from('flashcards').select('*').eq('course_id', courseId);
+      if (!cards || cards.length === 0) {
+        document.getElementById('activity-content').innerHTML = `<div class="empty-msg"><div class="big">📭</div><h3>No flashcards yet</h3><p>Check back later — cards will be added soon.</p></div>`;
+        return;
+      }
+      const state = { cards: shuffle(cards), index: 0, flipped: false };
+      renderFlashcard(state);
+    }
+    function renderFlashcard(state) {
+      if (state.index >= state.cards.length) {
+        document.getElementById('activity-content').innerHTML = `
+          <div class="flash-done">
+            <div class="big">🎉</div>
+            <h3>All done!</h3>
+            <p>You reviewed all ${state.cards.length} cards in this session.</p>
+            <button class="btn" style="background:#1e3b5a;color:#fff;padding:12px 32px;border-radius:30px;border:none;font-family:inherit;font-weight:600;cursor:pointer;" id="flash-restart">Review Again</button>
+            <button class="btn" style="background:transparent;color:#1e3b5a;border:1px solid #1e3b5a;padding:12px 32px;border-radius:30px;font-family:inherit;font-weight:600;cursor:pointer;margin-left:0.5rem;" id="flash-home">Back to Activities</button>
+          </div>`;
+        document.getElementById('flash-restart').addEventListener('click', () => startFlashcards());
+        document.getElementById('flash-home').addEventListener('click', () => {
+          document.getElementById('activity-content').innerHTML = '';
+          showHub();
+        });
+        return;
+      }
+      const c = state.cards[state.index];
+      const total = state.cards.length;
+      document.getElementById('activity-content').innerHTML = `
+        <div class="activity-header">
+          <h2>Flashcards</h2>
+          <div class="progress-info">Card ${state.index + 1} of ${total}</div>
+        </div>
+        <div class="flashcard-container">
+          <div class="flashcard" id="flashcard">
+            <div class="flashcard-inner">
+              <div class="flashcard-face flashcard-front">${esc(c.front)}</div>
+              <div class="flashcard-face flashcard-back">${esc(c.back)}</div>
+            </div>
+          </div>
+          <div class="flashcard-hint" id="flash-hint">Click the card to flip</div>
+          <div class="flash-buttons" id="flash-buttons">
+            <button class="flash-btn again" data-ease="again">Again</button>
+            <button class="flash-btn hard" data-ease="hard">Hard</button>
+            <button class="flash-btn good" data-ease="good">Good</button>
+            <button class="flash-btn easy" data-ease="easy">Easy</button>
+          </div>
+        </div>
+      `;
+      const card = document.getElementById('flashcard');
+      card.addEventListener('click', () => {
+        if (!state.flipped) {
+          card.classList.add('flipped');
+          state.flipped = true;
+          document.getElementById('flash-hint').textContent = 'Rate how well you knew it:';
+          document.getElementById('flash-buttons').classList.add('visible');
+        }
+      });
+      document.querySelectorAll('.flash-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const ease = btn.dataset.ease;
+          if (currentUser) {
+            const hours = { again: 1, hard: 24, good: 72, easy: 168 }[ease];
+            const nextDue = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+            await sb.from('card_reviews').upsert({ user_id: currentUser.id, card_id: c.id, ease, next_due: nextDue }, { onConflict: 'user_id,card_id' });
+          }
+          state.index++;
+          state.flipped = false;
+          renderFlashcard(state);
+        });
+      });
+    }
+
+    // ============== CASE STUDIES ==============
+    async function startCaseStudies() {
+      showActivity();
+      document.getElementById('activity-content').innerHTML = '<p style="text-align:center; color:#5c7c9e;">Loading case studies…</p>';
+      const { data: cases } = await sb.from('case_studies').select('*').eq('course_id', courseId).order('created_at', { ascending: true });
+      if (!cases || cases.length === 0) {
+        document.getElementById('activity-content').innerHTML = `<div class="empty-msg"><div class="big">📭</div><h3>No case studies yet</h3><p>Check back later — clinical scenarios will be added soon.</p></div>`;
+        return;
+      }
+      const html = cases.map(c => `
+        <div class="case-card">
+          <div class="case-title">${esc(c.title)}</div>
+          <div class="case-scenario">${esc(c.scenario)}</div>
+          <button class="case-reveal-btn" data-case-id="${c.id}">Reveal Discussion</button>
+          <div class="case-discussion" id="case-discussion-${c.id}">
+            <div class="case-discussion-label">Discussion</div>
+            <p>${esc(c.discussion || 'No discussion provided yet.')}</p>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('activity-content').innerHTML = `
+        <div class="activity-header">
+          <h2>Case Studies</h2>
+          <div class="progress-info">${cases.length} case${cases.length === 1 ? '' : 's'} to review</div>
+        </div>
+        <div class="case-list">${html}</div>
+      `;
+      document.querySelectorAll('.case-reveal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.caseId;
+          const disc = document.getElementById('case-discussion-' + id);
+          if (disc.classList.contains('visible')) { disc.classList.remove('visible'); btn.textContent = 'Reveal Discussion'; }
+          else { disc.classList.add('visible'); btn.textContent = 'Hide Discussion'; }
+        });
+      });
+    }
+
+    function pageInit(user) {
+      wireOnce();
+      loadHub(user);
+    }
+
+    window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+    window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+  </script>
+</body>
+</html>

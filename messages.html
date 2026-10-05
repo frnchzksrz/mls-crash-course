@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages · MLS Crash Course</title>
+  <meta name="description" content="Your direct messages on MLS Crash Course.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow: hidden; height: 100vh; display: flex; flex-direction: column; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    .main-container { display: flex; flex: 1; overflow: hidden; position: relative; z-index: 2; }
+    .conv-list { width: 320px; border-right: 1px solid rgba(30,59,90,0.1); display: flex; flex-direction: column; background: #f9fbfd; }
+    .conv-list-header { padding: 1rem; font-weight: 600; color: #1e3b5a; border-bottom: 1px solid rgba(30,59,90,0.08); display: flex; justify-content: space-between; align-items: center; }
+    .conv-list-header button { background: #1e3b5a; color: #fff; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
+    .conv-items { flex: 1; overflow-y: auto; }
+    .conv-item { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid rgba(30,59,90,0.05); transition: background 0.2s; display: flex; align-items: center; gap: 0.8rem; }
+    .conv-item:hover, .conv-item.active { background: #fff; }
+    .conv-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+    .conv-avatar-placeholder { width: 44px; height: 44px; border-radius: 50%; background: #e4ecf2; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #1e3b5a; }
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-name { font-weight: 600; color: #1e3b5a; margin-bottom: 0.2rem; }
+    .conv-last-msg { font-size: 0.85rem; color: #3a4b5c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-meta { text-align: right; min-width: 50px; }
+    .conv-time { font-size: 0.75rem; color: #8b8b8b; }
+    .unread-count { background: #1e3b5a; color: #fff; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; display: inline-block; margin-top: 0.3rem; }
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: rgba(255,255,255,0.7); }
+    .chat-header { padding: 15px 20px; border-bottom: 1px solid rgba(30,59,90,0.1); font-weight: 600; background: #fff; color: #1e3b5a; }
+    .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .msg { max-width: 70%; padding: 10px 16px; border-radius: 18px; line-height: 1.4; }
+    .msg.sent { align-self: flex-end; background: #1e3b5a; color: #fff; }
+    .msg.received { align-self: flex-start; background: #e4ecf2; color: #1e3b5a; }
+    .msg-time { font-size: 0.7rem; opacity: 0.8; margin-top: 0.3rem; }
+    .chat-input-area { display: flex; padding: 15px; border-top: 1px solid rgba(30,59,90,0.1); background: #fff; }
+    .chat-input-area input { flex: 1; padding: 10px 16px; border: 1px solid #ccd5de; border-radius: 24px; font-family: 'Inter', sans-serif; outline: none; font-size: 0.95rem; }
+    .chat-input-area button { margin-left: 8px; padding: 10px 20px; background: #1e3b5a; color: #fff; border: none; border-radius: 24px; cursor: pointer; font-weight: 500; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: background 0.2s; }
+    .chat-input-area button:hover { background: #162d45; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 20px; padding: 2rem; width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .modal h3 { font-family: 'Playfair Display', serif; margin-bottom: 1rem; color: #1e3b5a; }
+    .modal input { width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid #ccd5de; border-radius: 12px; font-family: 'Inter', sans-serif; }
+    .modal .user-search-results { max-height: 200px; overflow-y: auto; margin-bottom: 1rem; }
+    .user-result-item { padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 0.8rem; border-radius: 8px; }
+    .user-result-item:hover { background: #f0f4f8; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .modal-actions button { padding: 8px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: 500; }
+    .btn-cancel { background: #e4ecf2; color: #1e3b5a; }
+    footer { text-align: center; padding: 0.8rem; color: #5c7c9e; font-size: 0.85rem; border-top: 1px solid rgba(30,59,90,0.08); position: relative; z-index: 2; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] .conv-list { background: #0f1a26; border-right-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .conv-list-header { color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .conv-item { border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .conv-item:hover, html[data-theme="dark"] .conv-item.active { background: #1a2b3d; }
+    html[data-theme="dark"] .conv-name { color: #8ab4d9; }
+    html[data-theme="dark"] .conv-last-msg { color: #b8c5d1; }
+    html[data-theme="dark"] .chat-area { background: #0f1a26; }
+    html[data-theme="dark"] .chat-header { background: #1a2b3d; color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .msg.received { background: #1a2b3d; color: #b8c5d1; }
+    html[data-theme="dark"] .msg.sent { background: #2d4a6b; }
+    html[data-theme="dark"] .chat-input-area { background: #1a2b3d; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .chat-input-area input { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .modal { background: #1a2b3d; }
+    html[data-theme="dark"] .modal h3 { color: #8ab4d9; }
+    html[data-theme="dark"] .modal input { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .user-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .btn-cancel { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) { .main-container { flex-direction: column; } .conv-list { width: 100%; max-height: 200px; border-right: none; border-bottom: 1px solid rgba(30,59,90,0.1); } .nav-links { gap: 1rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <div class="main-container">
+    <div class="conv-list">
+      <div class="conv-list-header">
+        Messages
+        <button id="new-msg-btn">+ New</button>
+      </div>
+      <div class="conv-items" id="conv-list">
+        <p style="padding:1rem; color:#8b8b8b;">Loading conversations…</p>
+      </div>
+    </div>
+    <div class="chat-area" id="chat-area">
+      <div class="chat-header" id="chat-header">Select a conversation</div>
+      <div class="chat-messages" id="chat-messages">
+        <p style="color:#8b8b8b; text-align:center; padding-top:3rem;">Choose a person to start chatting</p>
+      </div>
+      <div class="chat-input-area" id="chat-input-area" style="display:none;">
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <button id="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="new-msg-modal">
+    <div class="modal">
+      <h3>New Message</h3>
+      <input type="text" id="user-search-input" placeholder="Search by name or email...">
+      <div class="user-search-results" id="user-search-results"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="cancel-new-msg">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      let currentUser = null;
+      let currentChatUser = null;
+      let conversations = [];
+      let activeConvId = null;
+
+      async function loadConversations() {
+        if (!currentUser) return;
+        const { data: messages } = await sb.from('direct_messages')
+          .select('from_user_id, to_user_id, body, read, created_at')
+          .or(`from_user_id.eq.${currentUser.id},to_user_id.eq.${currentUser.id}`)
+          .order('created_at', { ascending: false });
+        if (!messages) return;
+        const convMap = new Map();
+        messages.forEach(msg => {
+          const partnerId = msg.from_user_id === currentUser.id ? msg.to_user_id : msg.from_user_id;
+          if (!convMap.has(partnerId)) convMap.set(partnerId, { partnerId, lastMessage: msg.body, lastTime: msg.created_at, unread: 0 });
+          if (msg.to_user_id === currentUser.id && !msg.read) convMap.get(partnerId).unread++;
+        });
+        const partnerIds = Array.from(convMap.keys());
+        if (partnerIds.length === 0) { document.getElementById('conv-list').innerHTML = '<p style="padding:1rem; color:#8b8b8b;">No conversations yet</p>'; return; }
+        const { data: profiles } = await sb.from('profiles').select('id, full_name, avatar_url').in('id', partnerIds);
+        conversations = partnerIds.map(id => {
+          const conv = convMap.get(id);
+          const profile = profiles?.find(p => p.id === id) || {};
+          return { ...conv, full_name: profile.full_name || 'Unknown User', avatar_url: profile.avatar_url };
+        });
+        conversations.sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime));
+        renderConversations();
+      }
+
+      function renderConversations() {
+        const container = document.getElementById('conv-list');
+        container.innerHTML = conversations.map(conv => {
+          const initials = (conv.full_name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
+          return `<div class="conv-item${activeConvId === conv.partnerId ? ' active' : ''}" data-partner-id="${conv.partnerId}">${conv.avatar_url ? `<img src="${conv.avatar_url}" class="conv-avatar" alt="${window.escapeHtml(conv.full_name)}">` : `<div class="conv-avatar-placeholder">${initials}</div>`}<div class="conv-info"><div class="conv-name">${window.escapeHtml(conv.full_name)}</div><div class="conv-last-msg">${window.escapeHtml(conv.lastMessage?.substring(0,40) || '')}</div></div><div class="conv-meta"><div class="conv-time">${window.timeAgo(conv.lastTime)}</div>${conv.unread > 0 ? `<div class="unread-count">${conv.unread}</div>` : ''}</div></div>`;
+        }).join('');
+        container.querySelectorAll('.conv-item').forEach(item => {
+          item.addEventListener('click', () => openConversation(item.dataset.partnerId));
+        });
+      }
+
+      async function openConversation(partnerId) {
+        activeConvId = partnerId;
+        const conv = conversations.find(c => c.partnerId === partnerId);
+        if (!conv) return;
+        document.getElementById('chat-header').textContent = conv.full_name;
+        document.getElementById('chat-input-area').style.display = 'flex';
+        currentChatUser = { id: partnerId, full_name: conv.full_name, avatar_url: conv.avatar_url };
+        await sb.from('direct_messages').update({ read: true })
+          .eq('to_user_id', currentUser.id).eq('from_user_id', partnerId).eq('read', false);
+        await loadChatHistory(partnerId);
+        renderConversations();
+      }
+
+      async function loadChatHistory(partnerId) {
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '<p style="color:#8b8b8b; text-align:center;">Loading messages…</p>';
+        const { data: messages } = await sb.from('direct_messages')
+          .select('*')
+          .or(`and(from_user_id.eq.${currentUser.id},to_user_id.eq.${partnerId}),and(from_user_id.eq.${partnerId},to_user_id.eq.${currentUser.id})`)
+          .order('created_at', { ascending: true });
+        if (!messages) return;
+        container.innerHTML = messages.map(msg => `<div class="msg ${msg.from_user_id === currentUser.id ? 'sent' : 'received'}">${window.escapeHtml(msg.body)}<div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`).join('');
+        container.scrollTop = container.scrollHeight;
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById('message-input');
+        const body = input.value.trim();
+        if (!body || !currentChatUser || !currentUser) return;
+        const { error } = await sb.from('direct_messages').insert({
+          from_user_id: currentUser.id,
+          to_user_id: currentChatUser.id,
+          body,
+          read: false
+        });
+        if (error) { alert('Failed to send: ' + error.message); return; }
+        input.value = '';
+        await loadChatHistory(currentChatUser.id);
+        await loadConversations();
+      }
+
+      function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
+
+      function wireStaticListeners() {
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('message-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+        document.getElementById('new-msg-btn').addEventListener('click', () => {
+          document.getElementById('new-msg-modal').classList.add('open');
+          document.getElementById('user-search-input').value = '';
+          document.getElementById('user-search-results').innerHTML = '';
+        });
+
+        document.getElementById('cancel-new-msg').addEventListener('click', () => {
+          document.getElementById('new-msg-modal').classList.remove('open');
+        });
+
+        document.getElementById('user-search-input').addEventListener('input', debounce(async function() {
+          const query = this.value.trim();
+          if (!currentUser) return;
+          if (query.length < 2) { document.getElementById('user-search-results').innerHTML = ''; return; }
+          const { data: users } = await sb.from('profiles').select('id, full_name, avatar_url')
+            .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+            .neq('id', currentUser.id).limit(10);
+          const resultsDiv = document.getElementById('user-search-results');
+          if (!users || users.length === 0) { resultsDiv.innerHTML = '<p style="color:#8b8b8b;">No users found</p>'; return; }
+          resultsDiv.innerHTML = users.map(u => {
+            const initials = (u.full_name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
+            return `<div class="user-result-item" data-user-id="${u.id}" data-name="${window.escapeHtml(u.full_name)}" data-avatar="${u.avatar_url || ''}">${u.avatar_url ? `<img src="${u.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">` : `<div style="width:32px;height:32px;border-radius:50%;background:#e4ecf2;display:flex;align-items:center;justify-content:center;font-weight:600;color:#1e3b5a;">${initials}</div>`}<span>${window.escapeHtml(u.full_name)}</span></div>`;
+          }).join('');
+          document.querySelectorAll('.user-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const partnerId = item.dataset.userId;
+              const name = item.dataset.name;
+              const avatar = item.dataset.avatar;
+              if (!conversations.find(c => c.partnerId === partnerId)) conversations.unshift({ partnerId, full_name: name, avatar_url: avatar, lastMessage: '', lastTime: new Date().toISOString(), unread: 0 });
+              document.getElementById('new-msg-modal').classList.remove('open');
+              openConversation(partnerId);
+            });
+          });
+        }, 300));
+      }
+
+      async function pageInit(user) {
+        currentUser = user;
+        if (currentUser) await loadConversations();
+      }
+
+      wireStaticListeners();
+      window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+    })();
+  </script>
+</body>
+</html>

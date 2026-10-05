@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courses · MLS Crash Course</title>
+  <meta name="description" content="Browse all Medical Laboratory Science courses.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 2rem 0; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: #1e3b5a; margin-bottom: 0.5rem; }
+    .subtitle { color: #3a4b5c; max-width: 600px; margin-bottom: 2.5rem; font-size: 1.1rem; }
+    .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; margin: 2rem 0 3rem; }
+    .course-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.03); border: 1px solid rgba(30,59,90,0.08); transition: transform 0.3s, box-shadow 0.3s; text-decoration: none; color: inherit; }
+    .course-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.06); }
+    .course-card img { width: 100%; height: 220px; object-fit: cover; display: block; }
+    .course-card .info { padding: 20px; }
+    .course-card h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 5px; color: #1e3b5a; }
+    .course-card p { font-size: 0.95rem; color: #3a4b5c; }
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
+    html[data-theme="dark"] p { color: #b8c5d1; }
+    html[data-theme="dark"] .subtitle { color: #b8c5d1; }
+    html[data-theme="dark"] .course-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .course-card h3 { color: #8ab4d9; }
+    html[data-theme="dark"] .course-card p { color: #b8c5d1; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) { .nav-links { gap: 1rem; } h1 { font-size: 2.2rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1>Courses</h1>
+    <p class="subtitle">Browse our full catalog of Medical Laboratory Science courses.</p>
+    <div class="course-grid">
+      <a href="course-analysis-of-urine.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Urinalysis" alt="Urinalysis"><div class="info"><h3>Analysis of Urine & Other Body Fluids</h3><p>AUBF · 3rd Year</p></div></a>
+      <a href="course-clinical-hematology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Hematology" alt="Hematology"><div class="info"><h3>Clinical Hematology 1 & 2</h3><p>HEMA · 2nd & 3rd Year</p></div></a>
+      <a href="course-clinical-chemistry.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Clinical+Chemistry" alt="Clinical Chemistry"><div class="info"><h3>Clinical Chemistry 1 & 2</h3><p>CC · 2nd & 3rd Year</p></div></a>
+      <a href="course-histopathology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Histology+Histopath" alt="Histology"><div class="info"><h3>Histology & Histopathology</h3><p>HISTO · 3rd Year</p></div></a>
+      <a href="course-immunoserology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Immunoserology" alt="Immunoserology"><div class="info"><h3>Immunoserology & Blood Banking</h3><p>ISBB · 3rd Year</p></div></a>
+      <a href="course-microbiology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Microbiology" alt="Microbiology"><div class="info"><h3>Microbiology</h3><p>MICRO · 2nd & 3rd Year</p></div></a>
+      <a href="course-medtech-laws.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=MedTech+Laws" alt="MedTech Laws"><div class="info"><h3>Medical Technology Laws & Laboratory Management</h3><p>MT Laws & Lab Management · 3rd & 4th Year</p></div></a>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    (function createDiamonds() {
+      for (let i = 0; i < 20; i++) {
+        const d = document.createElement('div');
+        d.className = 'diamond';
+        d.style.left = Math.random() * 100 + '%';
+        d.style.top = Math.random() * 100 + '%';
+        d.style.animationDelay = Math.random() * 4 + 's';
+        d.style.width = (10 + Math.random() * 15) + 'px';
+        d.style.height = d.style.width;
+        document.body.appendChild(d);
+      }
+    })();
+
+    (function() {
+      let supabaseClient;
+      try {
+        if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') { return; }
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        window.supabaseClient = supabaseClient;
+      } catch (e) { return; }
+
+      let currentUser = null;
+
+      function updateAuthUI(user) {
+        document.querySelectorAll('.auth-only').forEach(el => { el.style.display = user ? 'inline-flex' : 'none'; });
+        document.querySelectorAll('.auth-only .icon-btn').forEach(el => { el.style.display = user ? 'inline-flex' : 'none'; });
+        const authBtn = document.getElementById('auth-button');
+        if (authBtn) {
+          if (user) { authBtn.textContent = 'My Profile'; authBtn.href = 'profile.html'; }
+          else { authBtn.textContent = 'Get Access'; authBtn.href = 'signup.html'; }
+        }
+      }
+
+      async function updateBadges() {
+        if (!currentUser) { document.getElementById('notif-badge').textContent = ''; document.getElementById('msg-badge').textContent = ''; return; }
+        try {
+          const [{ count: n }, { count: m }] = await Promise.all([
+            supabaseClient.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',currentUser.id).eq('read',false),
+            supabaseClient.from('direct_messages').select('*',{count:'exact',head:true}).eq('to_user_id',currentUser.id).eq('read',false)
+          ]);
+          document.getElementById('notif-badge').textContent = n > 0 ? n : '';
+          document.getElementById('msg-badge').textContent = m > 0 ? m : '';
+        } catch(e) {}
+      }
+
+      async function loadNotifDropdown() {
+        const list = document.getElementById('notif-list');
+        if (!currentUser) { list.innerHTML = '<div class="notif-item" style="color:#8b8b8b;text-align:center;">Login to see notifications</div>'; return; }
+        const { data } = await supabaseClient.from('notifications').select('id,message,read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(8);
+        if (!data?.length) { list.innerHTML = '<div class="notif-item" style="color:#8b8b8b;text-align:center;">No notifications yet</div>'; return; }
+        list.innerHTML = data.map(n => `<div class="notif-item${n.read?'':' unread'}" data-id="${n.id}" data-read="${n.read}">${escapeHtml(n.message)}<span class="notif-time">${timeAgo(n.created_at)}</span></div>`).join('');
+        list.querySelectorAll('.notif-item').forEach(item => {
+          item.addEventListener('click', async function() {
+            if (this.dataset.read === 'false') {
+              await supabaseClient.from('notifications').update({ read: true }).eq('id', this.dataset.id);
+              this.classList.remove('unread'); this.dataset.read = 'true'; updateBadges();
+            }
+          });
+        });
+      }
+
+      document.getElementById('notif-bell').addEventListener('click', async e => {
+        e.stopPropagation();
+        const dd = document.getElementById('notif-dropdown');
+        if (dd.classList.contains('open')) dd.classList.remove('open');
+        else { dd.classList.add('open'); await loadNotifDropdown(); }
+      });
+
+      document.getElementById('mark-all-read-btn').addEventListener('click', async e => {
+        e.stopPropagation();
+        if (!currentUser) return;
+        await supabaseClient.from('notifications').update({ read: true }).eq('user_id', currentUser.id).eq('read', false);
+        updateBadges(); loadNotifDropdown();
+      });
+
+      document.addEventListener('click', e => {
+        const dd = document.getElementById('notif-dropdown');
+        const bell = document.getElementById('notif-bell');
+        if (dd && bell && !dd.contains(e.target) && e.target !== bell) dd.classList.remove('open');
+      });
+
+      function escapeHtml(text) { if(!text) return ''; return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+      function timeAgo(dateStr) { const now = new Date(), then = new Date(dateStr), diff = Math.floor((now-then)/1000); if(diff<60) return 'Just now'; if(diff<3600) return Math.floor(diff/60)+'m ago'; if(diff<86400) return Math.floor(diff/3600)+'h ago'; return Math.floor(diff/86400)+'d ago'; }
+
+      (async function init() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        currentUser = session?.user ?? null;
+        updateAuthUI(currentUser);
+        if (currentUser) { await updateBadges(); setInterval(updateBadges, 60000); }
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'INITIAL_SESSION') return;
+          currentUser = session?.user ?? null;
+          updateAuthUI(currentUser);
+          await updateBadges();
+        });
+      })();
+    })();
+
+    (function() {
+      const saved = localStorage.getItem('mls-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      const toggle = document.getElementById('theme-toggle');
+      if (toggle) {
+        updateIcon();
+        toggle.addEventListener('click', () => {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('mls-theme', 'light'); }
+          else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('mls-theme', 'dark'); }
+          updateIcon();
+        });
+        function updateIcon() { toggle.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; }
+      }
+    })();
+
+    (function() {
+      const container = document.getElementById('search-container');
+      const input = document.getElementById('search-input');
+      const dropdown = document.getElementById('search-dropdown');
+      if (!container || !input) return;
+      let allCourses = null;
+      async function loadCourses() {
+        if (allCourses) return allCourses;
+        const { data, error } = await window.supabaseClient.from('courses').select('slug, title');
+        allCourses = error ? [] : (data || []);
+        return allCourses;
+      }
+      function renderResults(query) {
+        if (!query.trim()) { dropdown.classList.remove('open'); return; }
+        const q = query.toLowerCase();
+        const matches = (allCourses || []).filter(c => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
+        if (matches.length === 0) dropdown.innerHTML = '<p style="color:#8b8b8b; text-align:center; padding:1rem;">No matches</p>';
+        else dropdown.innerHTML = matches.map(c => `<a href="course-${c.slug}.html" class="search-result-item"><div class="title">${escapeHtml(c.title)}</div><div class="meta">Course · ${escapeHtml(c.slug)}</div></a>`).join('');
+        dropdown.classList.add('open');
+      }
+      function escapeHtml(t) { return (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+      input.addEventListener('focus', async () => { await loadCourses(); });
+      input.addEventListener('input', () => renderResults(input.value));
+      document.addEventListener('click', (e) => { if (!container.contains(e.target)) dropdown.classList.remove('open'); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { dropdown.classList.remove('open'); input.blur(); } });
+    })();
+  </script>
+</body>
+</html>

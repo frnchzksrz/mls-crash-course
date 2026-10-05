@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Hematology 1 &amp; 2 · MLS Crash Course</title>
+  <meta name="description" content="Master hematology – from normal blood cells to leukemias and coagulation disorders.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.7; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+    .course-detail { display: flex; gap: 3rem; margin-top: 2rem; flex-wrap: wrap; }
+    .cover { flex: 0 0 260px; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+    .cover img { width: 100%; height: auto; object-fit: cover; display: block; }
+    .info { flex: 1; }
+    .info h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: #1e3b5a; margin-bottom: 0.3rem; }
+    .info .subtitle { font-size: 1.2rem; color: #3a4b5c; font-style: italic; margin-bottom: 1.5rem; }
+    .access-area { margin-bottom: 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .btn { display: inline-block; padding: 14px 32px; border-radius: 40px; font-weight: 600; text-decoration: none; font-size: 1rem; font-family: 'Inter', sans-serif; border: none; cursor: pointer; transition: background 0.2s; }
+    .btn-primary { background: #1e3b5a; color: #fff; }
+    .btn-primary:hover { background: #152b42; }
+    .btn-disabled { background: #b0c4d0; color: #fff; cursor: not-allowed; }
+    .status-msg { font-size: 0.95rem; color: #3a4b5c; font-style: italic; }
+    .reaction-wrapper { display: inline-flex; position: relative; }
+    .react-circle { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #5c7c9e; background: transparent; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #1e3b5a; }
+    .react-circle:hover { border-color: #1e3b5a; }
+    .react-popup { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); padding: 0.5rem 1rem; z-index: 10; gap: 1rem; }
+    .react-popup.open { display: flex; }
+    .react-option { font-size: 1.8rem; cursor: pointer; background: none; border: none; padding: 0.3rem; border-radius: 50%; transition: background 0.2s; }
+    .react-option:hover { background: #f0f4f8; }
+    .description, .topics, .curriculum { margin-bottom: 2.5rem; }
+    .description h2, .topics h2, .curriculum h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin-bottom: 0.8rem; }
+    .description p, .topics ul, .curriculum ul { color: #2c3e50; font-size: 1.05rem; }
+    .topics ul, .curriculum ul { padding-left: 1.5rem; margin-top: 0.5rem; }
+    .topics li, .curriculum li { margin-bottom: 0.4rem; }
+    .thoughts-section { margin-top: 3rem; border-top: 1px solid rgba(30,59,90,0.1); padding-top: 2rem; }
+    .thoughts-section h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin-bottom: 1rem; }
+    .thought-form { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 2rem; border: 1px solid rgba(30,59,90,0.08); }
+    .thought-form textarea { width: 100%; padding: 12px; border: 1px solid #ccd5de; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; resize: vertical; margin-bottom: 0.8rem; }
+    .thought-form textarea:focus { border-color: #1e3b5a; }
+    .thought-form .btn-submit { background: #1e3b5a; color: #fff; padding: 10px 24px; border-radius: 40px; font-weight: 500; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 1rem; }
+    .thought-item { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 1rem; border: 1px solid rgba(30,59,90,0.08); box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+    .thought-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+    .thought-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+    .thought-avatar-placeholder { width: 48px; height: 48px; border-radius: 50%; background: #e4ecf2; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #1e3b5a; font-size: 1.2rem; }
+    .thought-author { flex: 1; }
+    .thought-author-name { font-weight: 600; color: #1e3b5a; }
+    .thought-time { font-size: 0.8rem; color: #8b8b8b; }
+    .thought-body { color: #2c3e50; font-size: 1rem; white-space: pre-wrap; }
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
+    html[data-theme="dark"] .info .subtitle { color: #b8c5d1; }
+    html[data-theme="dark"] .description p, html[data-theme="dark"] .topics ul, html[data-theme="dark"] .curriculum ul { color: #b8c5d1; }
+    html[data-theme="dark"] .thought-form, html[data-theme="dark"] .thought-item { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .thought-form textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .thought-body { color: #b8c5d1; }
+    html[data-theme="dark"] .status-msg { color: #b8c5d1; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) { .course-detail { flex-direction: column; } .cover { max-width: 250px; } .info h1 { font-size: 2.2rem; } .nav-links { gap: 1rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="course-detail">
+      <div class="cover"><img src="https://placehold.co/300x450/e8f0f8/1e3b5a?text=Hematology" alt="Clinical Hematology"></div>
+      <div class="info">
+        <h1>Clinical Hematology 1 &amp; 2</h1>
+        <p class="subtitle">HEMA · 2nd &amp; 3rd Year</p>
+        <div class="access-area">
+          <a href="signup.html" class="btn btn-primary" id="access-btn">Get Access</a>
+          <div class="reaction-wrapper">
+            <button class="react-circle" id="react-btn">♡</button>
+            <div class="react-popup" id="react-popup">
+              <button class="react-option" data-rating="love">❤️</button>
+              <button class="react-option" data-rating="dislike">👎</button>
+            </div>
+          </div>
+          <span class="status-msg" id="status-msg"></span>
+        </div>
+        <div class="description">
+          <h2>Course Description</h2>
+          <p>A comprehensive study of blood cells, bone marrow, and the coagulation system. The course progresses from normal hematopoiesis to the pathophysiology of anemia, leukemia, and hemostatic disorders. Laboratory sessions emphasize manual and automated techniques.</p>
+        </div>
+        <div class="topics">
+          <h2>Key Topics</h2>
+          <ul>
+            <li>Erythropoiesis, leukopoiesis, thrombopoiesis</li>
+            <li>Anemia classification and evaluation</li>
+            <li>Acute and chronic leukemias</li>
+            <li>Platelet disorders and thrombocytopenia</li>
+            <li>Coagulation cascade and mixing studies</li>
+            <li>Automated hematology analyzers</li>
+          </ul>
+        </div>
+        <div class="curriculum">
+          <h2>What You'll Learn</h2>
+          <ul>
+            <li>Perform complete blood counts (CBC) and interpret results</li>
+            <li>Examine peripheral blood smears for morphology</li>
+            <li>Differentiate types of leukemia using cytochemical stains</li>
+            <li>Evaluate coagulation profiles and detect deficiencies</li>
+            <li>Troubleshoot common analyzer errors</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="thoughts-section">
+      <h2>Course Thoughts</h2>
+      <div class="thought-form" id="thought-form-container">
+        <textarea id="thought-input" rows="3" placeholder="Share your thoughts about this course..."></textarea>
+        <button id="submit-thought-btn" class="btn-submit">Post</button>
+        <p id="thought-error" style="color:#c0392b; margin-top:0.5rem;"></p>
+      </div>
+      <div id="thoughts-list"><p style="color:#8b8b8b; text-align:center;">Loading thoughts…</p></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    const sb = window.supabaseClient;
+    const COURSE_SLUG = 'clinical-hematology';
+    const PENDING_PAGE = 'pending.html?course=clinical-hematology';
+    const HUB_PAGE = 'hub-clinical-hematology.html';
+
+    let currentUser = null;
+    let cachedCourseId = null;
+    let userRating = null;
+    let wired = false;
+
+    const reactBtn = document.getElementById('react-btn');
+    const reactPopup = document.getElementById('react-popup');
+
+    async function ensureCourseId() {
+      if (cachedCourseId) return cachedCourseId;
+      const { data } = await sb.from('courses').select('id').eq('slug', COURSE_SLUG).single();
+      cachedCourseId = data?.id || null;
+      return cachedCourseId;
+    }
+
+    async function updateEnrollmentUI() {
+      const btn = document.getElementById('access-btn');
+      const msg = document.getElementById('status-msg');
+      if (!btn || !msg) return;
+      btn.textContent = 'Get Access'; btn.href = 'signup.html'; btn.className = 'btn btn-primary'; msg.textContent = '';
+      btn.dataset.state = 'logged-out';
+      if (!currentUser) return;
+      if (!await ensureCourseId()) { msg.textContent = 'Course not found.'; return; }
+      const { data: enrollment } = await sb.from('enrollments').select('status').eq('user_id', currentUser.id).eq('course_id', cachedCourseId).maybeSingle();
+      if (!enrollment) {
+        btn.textContent = 'Enroll Now'; btn.href = '#'; btn.className = 'btn btn-primary'; btn.dataset.state = 'not-enrolled';
+        msg.textContent = 'Click to enroll and get access.';
+      } else if (enrollment.status === 'pending') {
+        btn.textContent = 'Pending Approval'; btn.href = PENDING_PAGE; btn.className = 'btn btn-primary'; btn.dataset.state = 'pending';
+        msg.textContent = 'Your enrollment is awaiting admin approval.';
+      } else if (enrollment.status === 'approved') {
+        btn.textContent = 'Study Now'; btn.href = HUB_PAGE; btn.className = 'btn btn-primary'; btn.dataset.state = 'approved';
+        msg.textContent = 'You have full access to this course.';
+      }
+    }
+
+    async function loadRating() {
+      if (!currentUser) { userRating = null; updateReactButton(); return; }
+      if (!await ensureCourseId()) return;
+      const { data: row } = await sb.from('course_ratings').select('rating').eq('user_id', currentUser.id).eq('course_id', cachedCourseId).maybeSingle();
+      userRating = row ? row.rating : null;
+      updateReactButton();
+    }
+
+    function updateReactButton() {
+      if (userRating === 'love') reactBtn.textContent = '❤️';
+      else if (userRating === 'dislike') reactBtn.textContent = '👎';
+      else reactBtn.textContent = '♡';
+    }
+
+    async function setRating(rating) {
+      if (!currentUser || !cachedCourseId) return;
+      await sb.from('course_ratings').upsert({ user_id: currentUser.id, course_id: cachedCourseId, rating }, { onConflict: 'user_id,course_id' });
+      userRating = rating; updateReactButton();
+    }
+
+    async function removeRating() {
+      if (!currentUser || !cachedCourseId) return;
+      await sb.from('course_ratings').delete().eq('user_id', currentUser.id).eq('course_id', cachedCourseId);
+      userRating = null; updateReactButton();
+    }
+
+    async function recordRecentView() {
+      if (!currentUser) return;
+      if (!await ensureCourseId()) return;
+      await sb.from('saved_courses').upsert({ user_id: currentUser.id, course_id: cachedCourseId, saved_at: new Date() }, { onConflict: 'user_id,course_id' });
+    }
+
+    async function loadThoughts() {
+      const list = document.getElementById('thoughts-list');
+      list.innerHTML = '<p style="color:#8b8b8b; text-align:center;">Loading thoughts…</p>';
+      if (!await ensureCourseId()) { list.innerHTML = '<p style="color:#c0392b;">Course not found.</p>'; return; }
+      const { data: reviews, error } = await sb.from('course_reviews').select('id, body, created_at, user_id, profiles(full_name, avatar_url)').eq('course_id', cachedCourseId).order('created_at', { ascending: false });
+      if (error) { list.innerHTML = '<p style="color:#c0392b;">Failed to load thoughts.</p>'; return; }
+      if (!reviews || reviews.length === 0) { list.innerHTML = '<p style="color:#8b8b8b; text-align:center;">No thoughts yet. Share yours!</p>'; return; }
+      list.innerHTML = reviews.map(r => {
+        const profile = r.profiles || {};
+        const name = profile.full_name || 'Anonymous';
+        const avatarUrl = profile.avatar_url;
+        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        return `<div class="thought-item"><div class="thought-header">${avatarUrl ? `<img src="${avatarUrl}" class="thought-avatar" alt="${window.escapeHtml(name)}">` : `<div class="thought-avatar-placeholder">${initials}</div>`}<div class="thought-author"><div class="thought-author-name">${window.escapeHtml(name)}</div><div class="thought-time">${new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div></div></div><div class="thought-body">${window.escapeHtml(r.body)}</div></div>`;
+      }).join('');
+    }
+
+    function wireOnce() {
+      if (wired) return;
+      wired = true;
+
+      document.getElementById('access-btn').addEventListener('click', async function (e) {
+        const state = this.dataset.state;
+        if (state === 'logged-out' || state === 'pending' || state === 'approved') return;
+        if (state === 'not-enrolled') {
+          e.preventDefault();
+          const originalText = this.textContent;
+          this.textContent = 'Enrolling…';
+          this.classList.add('btn-disabled');
+          if (!await ensureCourseId()) { this.textContent = originalText; this.classList.remove('btn-disabled'); return; }
+          const { error } = await sb.from('enrollments').insert({ user_id: currentUser.id, course_id: cachedCourseId, status: 'pending' });
+          if (error) { alert('Enrollment failed: ' + error.message); this.textContent = originalText; this.classList.remove('btn-disabled'); return; }
+          window.location.href = PENDING_PAGE;
+        }
+      });
+
+      reactBtn.addEventListener('click', (e) => { e.stopPropagation(); if (userRating) { removeRating(); return; } reactPopup.classList.toggle('open'); });
+      document.addEventListener('click', (e) => { if (!reactPopup.contains(e.target) && e.target !== reactBtn) reactPopup.classList.remove('open'); });
+      reactPopup.querySelectorAll('.react-option').forEach(opt => {
+        opt.addEventListener('click', async (e) => { e.stopPropagation(); await setRating(opt.dataset.rating); reactPopup.classList.remove('open'); });
+      });
+
+      document.getElementById('submit-thought-btn').addEventListener('click', async () => {
+        if (!currentUser) { document.getElementById('thought-error').textContent = 'You must be logged in to share your thoughts.'; return; }
+        const input = document.getElementById('thought-input');
+        const body = input.value.trim();
+        if (!body) { document.getElementById('thought-error').textContent = 'Please write something.'; return; }
+        document.getElementById('thought-error').textContent = '';
+        if (!await ensureCourseId()) { document.getElementById('thought-error').textContent = 'Course not found.'; return; }
+        const { error } = await sb.from('course_reviews').insert({ user_id: currentUser.id, course_id: cachedCourseId, body });
+        if (error) { document.getElementById('thought-error').textContent = 'Failed to post thought: ' + error.message; return; }
+        input.value = ''; loadThoughts();
+      });
+    }
+
+    async function pageInit(user) {
+      currentUser = user;
+      wireOnce();
+      await updateEnrollmentUI();
+      await loadRating();
+      await loadThoughts();
+      if (user) recordRecentView();
+    }
+
+    window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+    window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+  </script>
+</body>
+</html>

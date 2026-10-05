@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile · MLS Crash Course</title>
+  <meta name="description" content="Your MLS Crash Course profile.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited, .nav-links .auth-btn:link { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; border: none; outline: none; }
+    .nav-links .auth-btn:hover { background: #162d45; color: #ffffff; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    .container { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+    .profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem; }
+    .avatar-container { position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; margin-bottom: 1rem; }
+    .avatar-img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-placeholder { width: 100%; height: 100%; background: #e4ecf2; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #1e3b5a; font-weight: 600; }
+    .avatar-upload-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.75rem; text-align: center; padding: 4px; cursor: pointer; display: none; }
+    .avatar-container:hover .avatar-upload-label { display: block; }
+    #avatar-upload { display: none; }
+    .profile-name { font-family: 'Playfair Display', serif; font-size: 2rem; color: #1e3b5a; margin-bottom: 0.3rem; cursor: pointer; border: 1px solid transparent; padding: 2px 6px; border-radius: 6px; transition: border 0.2s; }
+    .profile-name:hover { border-color: #1e3b5a; }
+    .profile-stats { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1rem; }
+    .stat-item { text-align: center; }
+    .stat-number { font-size: 1.4rem; font-weight: 700; color: #1e3b5a; }
+    .stat-label { font-size: 0.8rem; color: #3a4b5c; }
+    .bio-section { max-width: 500px; margin: 0 auto 2rem; }
+    .bio-label { font-weight: 600; margin-bottom: 0.3rem; color: #1e3b5a; }
+    .bio-text { color: #2c3e50; font-style: italic; line-height: 1.5; cursor: pointer; border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: border 0.2s; }
+    .bio-text:hover { border-color: #1e3b5a; }
+    .bio-edit-area { display: flex; flex-direction: column; gap: 0.5rem; }
+    .bio-edit-area textarea { width: 100%; padding: 0.5rem; border: 1px solid #ccd5de; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 1rem; resize: vertical; outline: none; }
+    .bio-edit-actions { display: flex; justify-content: center; gap: 0.5rem; }
+    .btn-save { background: #1e3b5a; color: #fff; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; font-weight: 500; }
+    .btn-cancel { background: #e4ecf2; color: #1e3b5a; padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; font-weight: 500; }
+    .follow-btn { padding: 8px 24px; border-radius: 20px; font-weight: 600; border: none; cursor: pointer; display: block; margin: 0 auto 1rem auto; }
+    .follow-btn.follow { background: #1e3b5a; color: #fff; }
+    .follow-btn.unfollow { background: #c0392b; color: #fff; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin: 2rem 0 1rem; text-align: left; }
+    .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.2rem; text-align: left; }
+    .course-card { background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(30,59,90,0.1); text-decoration: none; color: inherit; transition: box-shadow 0.2s; text-align: left; }
+    .course-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+    .course-card img { width: 100%; height: 120px; object-fit: cover; }
+    .course-card .card-title { padding: 0.8rem; font-weight: 600; font-size: 0.9rem; }
+    .post-list { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
+    .post-card { background: #fff; border: 1px solid rgba(30,59,90,0.08); border-radius: 12px; padding: 1rem; text-align: left; }
+    .post-card h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #1e3b5a; margin-bottom: 0.3rem; }
+    .post-card p { color: #3a4b5c; font-size: 0.95rem; }
+    .post-meta { font-size: 0.8rem; color: #8b8b8b; margin-top: 0.5rem; }
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
+    html[data-theme="dark"] p { color: #b8c5d1; }
+    html[data-theme="dark"] .profile-name { color: #8ab4d9; }
+    html[data-theme="dark"] .stat-number { color: #8ab4d9; }
+    html[data-theme="dark"] .stat-label { color: #b8c5d1; }
+    html[data-theme="dark"] .bio-text { color: #b8c5d1; }
+    html[data-theme="dark"] .bio-edit-area textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .btn-cancel { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .course-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .post-card h4 { color: #8ab4d9; }
+    html[data-theme="dark"] .post-card p { color: #b8c5d1; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) { .profile-header { padding: 0 1rem; } .nav-links { gap: 1rem; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="container" id="profile-content">
+    <p style="text-align:center; padding:3rem;">Loading profile…</p>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      let currentUser = null;
+
+      async function loadProfile() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user');
+        const profileId = userId || currentUser?.id;
+        if (!profileId) { window.location.href = 'signup.html'; return; }
+
+        const container = document.getElementById('profile-content');
+        container.innerHTML = '<p style="text-align:center;">Loading profile…</p>';
+
+        const { data: profile, error } = await sb.from('profiles').select('*').eq('id', profileId).single();
+        if (error || !profile) { container.innerHTML = '<p style="color:#c0392b;">Profile not found.</p>'; return; }
+
+        const [{ count: followers }, { count: following }] = await Promise.all([
+          sb.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', profileId),
+          sb.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', profileId)
+        ]);
+
+        let isFollowing = false;
+        if (currentUser && currentUser.id !== profileId) {
+          const { data: followRow } = await sb.from('follows').select('id')
+            .eq('follower_id', currentUser.id).eq('following_id', profileId).maybeSingle();
+          isFollowing = !!followRow;
+        }
+
+        const { data: lovedCourses } = await sb.from('course_ratings').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).eq('rating', 'love').limit(20);
+        const { data: dislikedCourses } = await sb.from('course_ratings').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).eq('rating', 'dislike').limit(20);
+        const { data: recentCourses } = await sb.from('saved_courses').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).order('saved_at', { ascending: false }).limit(10);
+        const { data: posts } = await sb.from('posts').select('id, title, body, created_at').eq('user_id', profileId).order('created_at', { ascending: false }).limit(10);
+
+        const initials = (profile.full_name || 'User').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
+        const avatarUrl = profile.avatar_url;
+        const bio = profile.bio || '';
+        const isOwnProfile = currentUser && currentUser.id === profileId;
+
+        let followBtnHtml = '';
+        if (!isOwnProfile && currentUser) {
+          followBtnHtml = `<button class="follow-btn ${isFollowing ? 'unfollow' : 'follow'}" id="follow-btn">${isFollowing ? 'Unfollow' : 'Follow'}</button>`;
+        }
+
+        const html = `
+          <div class="profile-header">
+            <div class="avatar-container" id="avatar-container">
+              ${avatarUrl ? `<img src="${avatarUrl}" class="avatar-img" id="avatar-img">` : `<div class="avatar-placeholder" id="avatar-placeholder">${initials}</div>`}
+              ${isOwnProfile ? `<label for="avatar-upload" class="avatar-upload-label">Change</label><input type="file" id="avatar-upload" accept="image/*">` : ''}
+            </div>
+            <h1 class="profile-name" id="profile-name-display">${window.escapeHtml(profile.full_name || 'User')}</h1>
+            <div class="profile-stats">
+              <div class="stat-item"><div class="stat-number">${followers}</div><div class="stat-label">Followers</div></div>
+              <div class="stat-item"><div class="stat-number">${following}</div><div class="stat-label">Following</div></div>
+            </div>
+            ${followBtnHtml}
+            <div class="bio-section">
+              <div class="bio-label">About</div>
+              ${isOwnProfile ? `
+                <div id="bio-display" class="bio-text">${window.escapeHtml(bio) || 'Click to add a bio…'}</div>
+                <div id="bio-editor" class="bio-edit-area" style="display:none;">
+                  <textarea id="bio-input" rows="3">${window.escapeHtml(bio)}</textarea>
+                  <div class="bio-edit-actions">
+                    <button class="btn-save" id="bio-save">Save</button>
+                    <button class="btn-cancel" id="bio-cancel">Cancel</button>
+                  </div>
+                </div>
+              ` : `<div class="bio-text">${window.escapeHtml(bio) || 'No bio yet.'}</div>`}
+            </div>
+          </div>
+
+          <h2 class="section-title">❤️ Favourite Courses</h2>
+          ${lovedCourses && lovedCourses.length ? `<div class="courses-grid">${lovedCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No favourite courses yet.</p>'}
+
+          <h2 class="section-title">💔 Disliked Courses</h2>
+          ${dislikedCourses && dislikedCourses.length ? `<div class="courses-grid">${dislikedCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No disliked courses yet.</p>'}
+
+          <h2 class="section-title">📖 Recently Studied</h2>
+          ${recentCourses && recentCourses.length ? `<div class="courses-grid">${recentCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No recently studied courses.</p>'}
+
+          <h2 class="section-title">📝 My Posts</h2>
+          ${posts && posts.length ? `<div class="post-list">${posts.map(post => `<div class="post-card"><h4>${window.escapeHtml(post.title)}</h4><p>${window.escapeHtml(post.body?.substring(0,200))}${post.body?.length>200?'…':''}</p><div class="post-meta">${new Date(post.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</div></div>`).join('')}</div>` : '<p>No posts yet.</p>'}
+        `;
+
+        container.innerHTML = html;
+
+        if (isOwnProfile) {
+          const nameDisplay = document.getElementById('profile-name-display');
+          nameDisplay.addEventListener('click', () => {
+            const currentName = nameDisplay.textContent;
+            const input = document.createElement('input');
+            input.type = 'text'; input.value = currentName;
+            input.style.cssText = 'font-family:"Playfair Display",serif;font-size:2rem;text-align:center;border:1px solid #1e3b5a;border-radius:6px;padding:2px 6px;width:80%;background:transparent;color:inherit;';
+            nameDisplay.replaceWith(input); input.focus();
+            input.addEventListener('blur', async () => {
+              const newName = input.value.trim();
+              if (newName && newName !== currentName) { await sb.from('profiles').update({ full_name: newName }).eq('id', currentUser.id); }
+              input.replaceWith(nameDisplay); nameDisplay.textContent = newName || currentName;
+            });
+            input.addEventListener('keypress', e => { if (e.key === 'Enter') input.blur(); });
+          });
+        }
+
+        if (!isOwnProfile && currentUser) {
+          document.getElementById('follow-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('follow-btn');
+            const isNowFollowing = btn.classList.contains('follow');
+            if (isNowFollowing) {
+              await sb.from('follows').insert({ follower_id: currentUser.id, following_id: profileId });
+              btn.classList.remove('follow'); btn.classList.add('unfollow'); btn.textContent = 'Unfollow';
+              const statNum = document.querySelector('.stat-item .stat-number');
+              if (statNum) statNum.textContent = followers + 1;
+              const followerName = currentUser.user_metadata?.full_name || currentUser.email || 'Someone';
+              await sb.from('notifications').insert({
+                user_id: profileId,
+                message: `${followerName} started following you.`,
+                read: false
+              });
+            } else {
+              await sb.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', profileId);
+              btn.classList.remove('unfollow'); btn.classList.add('follow'); btn.textContent = 'Follow';
+              const statNum = document.querySelector('.stat-item .stat-number');
+              if (statNum) statNum.textContent = followers;
+            }
+          });
+        }
+
+        if (isOwnProfile) {
+          const bioDisplay = document.getElementById('bio-display');
+          const bioEditor = document.getElementById('bio-editor');
+          const bioInput = document.getElementById('bio-input');
+          document.getElementById('bio-save').addEventListener('click', async () => {
+            const newBio = bioInput.value.trim();
+            await sb.from('profiles').update({ bio: newBio }).eq('id', currentUser.id);
+            bioDisplay.textContent = newBio || 'Click to add a bio…';
+            bioEditor.style.display = 'none'; bioDisplay.style.display = 'block';
+          });
+          document.getElementById('bio-cancel').addEventListener('click', () => { bioEditor.style.display = 'none'; bioDisplay.style.display = 'block'; });
+          bioDisplay.addEventListener('click', () => { bioDisplay.style.display = 'none'; bioEditor.style.display = 'flex'; });
+
+          const avatarUpload = document.getElementById('avatar-upload');
+          if (avatarUpload) {
+            avatarUpload.addEventListener('change', async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+              const filePath = `public/${currentUser.id}/${Date.now()}_${file.name}`;
+              const { error: uploadError } = await sb.storage.from('avatars').upload(filePath, file);
+              if (uploadError) { alert('Upload failed: ' + uploadError.message); return; }
+              const { data: { publicUrl } } = sb.storage.from('avatars').getPublicUrl(filePath);
+              await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', currentUser.id);
+              const avatarImg = document.getElementById('avatar-img');
+              if (avatarImg) avatarImg.src = publicUrl;
+              else { const placeholder = document.getElementById('avatar-placeholder'); if (placeholder) placeholder.outerHTML = `<img src="${publicUrl}" class="avatar-img" id="avatar-img">`; }
+            });
+          }
+        }
+      }
+
+      async function pageInit(user) {
+        currentUser = user;
+        await loadProfile();
+      }
+
+      window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+    })();
+  </script>
+</body>
+</html>
