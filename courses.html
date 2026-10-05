@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
@@ -143,13 +144,13 @@
     <h1>Courses</h1>
     <p class="subtitle">Browse our full catalog of Medical Laboratory Science courses.</p>
     <div class="course-grid">
-      <a href="course-analysis-of-urine.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Urinalysis" alt="Urinalysis"><div class="info"><h3>Analysis of Urine & Other Body Fluids</h3><p>AUBF · 3rd Year</p></div></a>
-      <a href="course-clinical-hematology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Hematology" alt="Hematology"><div class="info"><h3>Clinical Hematology 1 & 2</h3><p>HEMA · 2nd & 3rd Year</p></div></a>
-      <a href="course-clinical-chemistry.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Clinical+Chemistry" alt="Clinical Chemistry"><div class="info"><h3>Clinical Chemistry 1 & 2</h3><p>CC · 2nd & 3rd Year</p></div></a>
-      <a href="course-histopathology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Histology+Histopath" alt="Histology"><div class="info"><h3>Histology & Histopathology</h3><p>HISTO · 3rd Year</p></div></a>
-      <a href="course-immunoserology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Immunoserology" alt="Immunoserology"><div class="info"><h3>Immunoserology & Blood Banking</h3><p>ISBB · 3rd Year</p></div></a>
-      <a href="course-microbiology.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=Microbiology" alt="Microbiology"><div class="info"><h3>Microbiology</h3><p>MICRO · 2nd & 3rd Year</p></div></a>
-      <a href="course-medtech-laws.html" class="course-card"><img src="https://placehold.co/400x250/e8f0f8/1e3b5a?text=MedTech+Laws" alt="MedTech Laws"><div class="info"><h3>Medical Technology Laws & Laboratory Management</h3><p>MT Laws & Lab Management · 3rd & 4th Year</p></div></a>
+      <a href="course-analysis-of-urine.html" class="course-card"><img src="assets/courses/urinalysis.jpg" alt="Analysis of Urine & Other Body Fluids"><div class="info"><h3>Analysis of Urine & Other Body Fluids</h3><p>AUBF · 3rd Year</p></div></a>
+      <a href="course-clinical-hematology.html" class="course-card"><img src="assets/courses/clinical-hematology.jpg" alt="Clinical Hematology 1 & 2"><div class="info"><h3>Clinical Hematology 1 & 2</h3><p>HEMA · 2nd & 3rd Year</p></div></a>
+      <a href="course-clinical-chemistry.html" class="course-card"><img src="assets/courses/clinical-chemistry.jpg" alt="Clinical Chemistry 1 & 2"><div class="info"><h3>Clinical Chemistry 1 & 2</h3><p>CC · 2nd & 3rd Year</p></div></a>
+      <a href="course-histopathology.html" class="course-card"><img src="assets/courses/histopathology.jpg" alt="Histology & Histopathology"><div class="info"><h3>Histology & Histopathology</h3><p>HISTO · 3rd Year</p></div></a>
+      <a href="course-immunoserology.html" class="course-card"><img src="assets/courses/immunoserology.jpg" alt="Immunoserology & Blood Banking"><div class="info"><h3>Immunoserology & Blood Banking</h3><p>ISBB · 3rd Year</p></div></a>
+      <a href="course-microbiology.html" class="course-card"><img src="assets/courses/microbiology.jpg" alt="Microbiology"><div class="info"><h3>Microbiology</h3><p>MICRO · 2nd & 3rd Year</p></div></a>
+      <a href="course-medtech-laws.html" class="course-card"><img src="assets/courses/medtech-laws.jpg" alt="Medical Technology Laws & Laboratory Management"><div class="info"><h3>Medical Technology Laws & Laboratory Management</h3><p>MT Laws & Lab Management · 3rd & 4th Year</p></div></a>
     </div>
   </main>
 
@@ -158,149 +159,7 @@
     <p><a href="index.html">Home</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
   </footer>
 
-  <script>
-    (function createDiamonds() {
-      for (let i = 0; i < 20; i++) {
-        const d = document.createElement('div');
-        d.className = 'diamond';
-        d.style.left = Math.random() * 100 + '%';
-        d.style.top = Math.random() * 100 + '%';
-        d.style.animationDelay = Math.random() * 4 + 's';
-        d.style.width = (10 + Math.random() * 15) + 'px';
-        d.style.height = d.style.width;
-        document.body.appendChild(d);
-      }
-    })();
-
-    (function() {
-      let supabaseClient;
-      try {
-        if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') { return; }
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        window.supabaseClient = supabaseClient;
-      } catch (e) { return; }
-
-      let currentUser = null;
-
-      function updateAuthUI(user) {
-        document.querySelectorAll('.auth-only').forEach(el => { el.style.display = user ? 'inline-flex' : 'none'; });
-        document.querySelectorAll('.auth-only .icon-btn').forEach(el => { el.style.display = user ? 'inline-flex' : 'none'; });
-        const authBtn = document.getElementById('auth-button');
-        if (authBtn) {
-          if (user) { authBtn.textContent = 'My Profile'; authBtn.href = 'profile.html'; }
-          else { authBtn.textContent = 'Get Access'; authBtn.href = 'signup.html'; }
-        }
-      }
-
-      async function updateBadges() {
-        if (!currentUser) { document.getElementById('notif-badge').textContent = ''; document.getElementById('msg-badge').textContent = ''; return; }
-        try {
-          const [{ count: n }, { count: m }] = await Promise.all([
-            supabaseClient.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',currentUser.id).eq('read',false),
-            supabaseClient.from('direct_messages').select('*',{count:'exact',head:true}).eq('to_user_id',currentUser.id).eq('read',false)
-          ]);
-          document.getElementById('notif-badge').textContent = n > 0 ? n : '';
-          document.getElementById('msg-badge').textContent = m > 0 ? m : '';
-        } catch(e) {}
-      }
-
-      async function loadNotifDropdown() {
-        const list = document.getElementById('notif-list');
-        if (!currentUser) { list.innerHTML = '<div class="notif-item" style="color:#8b8b8b;text-align:center;">Login to see notifications</div>'; return; }
-        const { data } = await supabaseClient.from('notifications').select('id,message,read,created_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(8);
-        if (!data?.length) { list.innerHTML = '<div class="notif-item" style="color:#8b8b8b;text-align:center;">No notifications yet</div>'; return; }
-        list.innerHTML = data.map(n => `<div class="notif-item${n.read?'':' unread'}" data-id="${n.id}" data-read="${n.read}">${escapeHtml(n.message)}<span class="notif-time">${timeAgo(n.created_at)}</span></div>`).join('');
-        list.querySelectorAll('.notif-item').forEach(item => {
-          item.addEventListener('click', async function() {
-            if (this.dataset.read === 'false') {
-              await supabaseClient.from('notifications').update({ read: true }).eq('id', this.dataset.id);
-              this.classList.remove('unread'); this.dataset.read = 'true'; updateBadges();
-            }
-          });
-        });
-      }
-
-      document.getElementById('notif-bell').addEventListener('click', async e => {
-        e.stopPropagation();
-        const dd = document.getElementById('notif-dropdown');
-        if (dd.classList.contains('open')) dd.classList.remove('open');
-        else { dd.classList.add('open'); await loadNotifDropdown(); }
-      });
-
-      document.getElementById('mark-all-read-btn').addEventListener('click', async e => {
-        e.stopPropagation();
-        if (!currentUser) return;
-        await supabaseClient.from('notifications').update({ read: true }).eq('user_id', currentUser.id).eq('read', false);
-        updateBadges(); loadNotifDropdown();
-      });
-
-      document.addEventListener('click', e => {
-        const dd = document.getElementById('notif-dropdown');
-        const bell = document.getElementById('notif-bell');
-        if (dd && bell && !dd.contains(e.target) && e.target !== bell) dd.classList.remove('open');
-      });
-
-      function escapeHtml(text) { if(!text) return ''; return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
-      function timeAgo(dateStr) { const now = new Date(), then = new Date(dateStr), diff = Math.floor((now-then)/1000); if(diff<60) return 'Just now'; if(diff<3600) return Math.floor(diff/60)+'m ago'; if(diff<86400) return Math.floor(diff/3600)+'h ago'; return Math.floor(diff/86400)+'d ago'; }
-
-      (async function init() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        currentUser = session?.user ?? null;
-        updateAuthUI(currentUser);
-        if (currentUser) { await updateBadges(); setInterval(updateBadges, 60000); }
-        supabaseClient.auth.onAuthStateChange(async (event, session) => {
-          if (event === 'INITIAL_SESSION') return;
-          currentUser = session?.user ?? null;
-          updateAuthUI(currentUser);
-          await updateBadges();
-        });
-      })();
-    })();
-
-    (function() {
-      const saved = localStorage.getItem('mls-theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
-      if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      const toggle = document.getElementById('theme-toggle');
-      if (toggle) {
-        updateIcon();
-        toggle.addEventListener('click', () => {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('mls-theme', 'light'); }
-          else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('mls-theme', 'dark'); }
-          updateIcon();
-        });
-        function updateIcon() { toggle.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙'; }
-      }
-    })();
-
-    (function() {
-      const container = document.getElementById('search-container');
-      const input = document.getElementById('search-input');
-      const dropdown = document.getElementById('search-dropdown');
-      if (!container || !input) return;
-      let allCourses = null;
-      async function loadCourses() {
-        if (allCourses) return allCourses;
-        const { data, error } = await window.supabaseClient.from('courses').select('slug, title');
-        allCourses = error ? [] : (data || []);
-        return allCourses;
-      }
-      function renderResults(query) {
-        if (!query.trim()) { dropdown.classList.remove('open'); return; }
-        const q = query.toLowerCase();
-        const matches = (allCourses || []).filter(c => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
-        if (matches.length === 0) dropdown.innerHTML = '<p style="color:#8b8b8b; text-align:center; padding:1rem;">No matches</p>';
-        else dropdown.innerHTML = matches.map(c => `<a href="course-${c.slug}.html" class="search-result-item"><div class="title">${escapeHtml(c.title)}</div><div class="meta">Course · ${escapeHtml(c.slug)}</div></a>`).join('');
-        dropdown.classList.add('open');
-      }
-      function escapeHtml(t) { return (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
-      input.addEventListener('focus', async () => { await loadCourses(); });
-      input.addEventListener('input', () => renderResults(input.value));
-      document.addEventListener('click', (e) => { if (!container.contains(e.target)) dropdown.classList.remove('open'); });
-      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { dropdown.classList.remove('open'); input.blur(); } });
-    })();
-  </script>
+  <!-- No page-specific script: auth.js handles theme, search, diamonds,
+       header auth UI, notification bell, and message envelope badge. -->
 </body>
 </html>
