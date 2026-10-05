@@ -285,12 +285,12 @@
     function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
     function showHub() {
-      document.getElementById('view-hub').style.display = '';
+      document.getElementById('view-hub').style.display = 'block';
       document.getElementById('view-activity').style.display = 'none';
     }
     function showActivity() {
       document.getElementById('view-hub').style.display = 'none';
-      document.getElementById('view-activity').style.display = '';
+      document.getElementById('view-activity').style.display = 'block';
       document.getElementById('activity-content').scrollIntoView({ behavior: 'smooth' });
     }
 
