@@ -279,6 +279,7 @@
     let currentUser = null;
     let courseId = null;
     let wired = false;
+    let hubInitialized = false;
 
     function esc(t) { return (t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
     function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -316,6 +317,8 @@
     async function loadHub(user) {
       currentUser = user;
       if (!user) { window.location.href = 'signup.html'; return; }
+      if (hubInitialized) return;
+      hubInitialized = true;
 
       const { data: course } = await sb.from('courses').select('id, title').eq('slug', COURSE_SLUG).single();
       if (!course) { document.getElementById('enrollment-status').textContent = 'Course not found.'; return; }
