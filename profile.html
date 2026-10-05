@@ -308,7 +308,9 @@
               const followerName = currentUser.user_metadata?.full_name || currentUser.email || 'Someone';
               await sb.from('notifications').insert({
                 user_id: profileId,
+                type: 'follow',
                 message: `${followerName} started following you.`,
+                link: `profile.html?id=${currentUser.id}`,
                 read: false
               });
             } else {

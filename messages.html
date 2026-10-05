@@ -225,17 +225,26 @@
       let activeConvId = null;
       let autoOpenedFromUrl = false;
 
+      async function refreshMessageBadge() {
+        if (!currentUser) return;
+        const { count } = await sb.from('direct_messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('to_user_id', currentUser.id).eq('read', false);
+        const badge = document.getElementById('msg-badge');
+        if (badge) badge.textContent = count > 0 ? count : '';
+      }
+
       async function loadConversations() {
         if (!currentUser) return;
         const { data: messages } = await sb.from('direct_messages')
-          .select('from_user_id, to_user_id, body, read, created_at')
+          .select('from_user_id, to_user_id, message, read, created_at')
           .or(`from_user_id.eq.${currentUser.id},to_user_id.eq.${currentUser.id}`)
           .order('created_at', { ascending: false });
         if (!messages) return;
         const convMap = new Map();
         messages.forEach(msg => {
           const partnerId = msg.from_user_id === currentUser.id ? msg.to_user_id : msg.from_user_id;
-          if (!convMap.has(partnerId)) convMap.set(partnerId, { partnerId, lastMessage: msg.body, lastTime: msg.created_at, unread: 0 });
+          if (!convMap.has(partnerId)) convMap.set(partnerId, { partnerId, lastMessage: msg.message, lastTime: msg.created_at, unread: 0 });
           if (msg.to_user_id === currentUser.id && !msg.read) convMap.get(partnerId).unread++;
         });
         const partnerIds = Array.from(convMap.keys());
@@ -262,16 +271,13 @@
         }
         container.innerHTML = conversations.map(conv => {
           const initials = (conv.full_name || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
-          return `<div class="conv-item${activeConvId === conv.partnerId ? ' active' : ''}" data-partner-id="${conv.partnerId}">${conv.avatar_url ? `<img src="${conv.avatar_url}" class="conv-avatar" alt="${window.escapeHtml(conv.full_name)}">` : `<div class="conv-avatar-placeholder">${initials}</div>`}<div class="conv-info"><div class="conv-name">${window.escapeHtml(conv.full_name)}</div><div class="conv-last-msg">${window.escapeHtml(conv.lastMessage?.substring(0,40) || '')}</div></div><div class="conv-meta"><div class="conv-time">${window.timeAgo(conv.lastTime)}</div>${conv.unread > 0 ? `<div class="unread-count">${conv.unread}</div>` : ''}</div></div>`;
+          return `<div class="conv-item${activeConvId === conv.partnerId ? ' active' : ''}" data-partner-id="${conv.partnerId}">${conv.avatar_url ? `<img src="${conv.avatar_url}" class="conv-avatar" alt="${window.escapeHtml(conv.full_name)}">` : `<div class="conv-avatar-placeholder">${initials}</div>`}<div class="conv-info"><div class="conv-name">${window.escapeHtml(conv.full_name)}</div><div class="conv-last-msg">${window.escapeHtml((conv.lastMessage || '').substring(0,40))}</div></div><div class="conv-meta"><div class="conv-time">${window.timeAgo(conv.lastTime)}</div>${conv.unread > 0 ? `<div class="unread-count">${conv.unread}</div>` : ''}</div></div>`;
         }).join('');
         container.querySelectorAll('.conv-item').forEach(item => {
           item.addEventListener('click', () => openConversation(item.dataset.partnerId));
         });
       }
 
-      // Opens a conversation by partner id, fetching their profile and
-      // creating a synthetic entry if no prior messages exist. Used by the
-      // ?to= URL parameter auto-open flow.
       async function openConversationByUserId(partnerId) {
         if (partnerId === currentUser.id) return;
         const existing = conversations.find(c => c.partnerId === partnerId);
@@ -305,6 +311,7 @@
           .eq('to_user_id', currentUser.id).eq('from_user_id', partnerId).eq('read', false);
         await loadChatHistory(partnerId);
         renderConversations();
+        await refreshMessageBadge();
       }
 
       async function loadChatHistory(partnerId) {
@@ -319,21 +326,35 @@
           container.innerHTML = '<p style="color:#8b8b8b; text-align:center; padding-top:2rem;">No messages yet. Say hi!</p>';
           return;
         }
-        container.innerHTML = messages.map(msg => `<div class="msg ${msg.from_user_id === currentUser.id ? 'sent' : 'received'}">${window.escapeHtml(msg.body)}<div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`).join('');
+        container.innerHTML = messages.map(msg => `<div class="msg ${msg.from_user_id === currentUser.id ? 'sent' : 'received'}">${window.escapeHtml(msg.message)}<div class="msg-time">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`).join('');
         container.scrollTop = container.scrollHeight;
       }
 
       async function sendMessage() {
         const input = document.getElementById('message-input');
-        const body = input.value.trim();
-        if (!body || !currentChatUser || !currentUser) return;
+        const text = input.value.trim();
+        if (!text || !currentChatUser || !currentUser) return;
+
         const { error } = await sb.from('direct_messages').insert({
           from_user_id: currentUser.id,
           to_user_id: currentChatUser.id,
-          body,
+          message: text,
           read: false
         });
         if (error) { alert('Failed to send: ' + error.message); return; }
+
+        // Send a notification to the recipient so their bell shows it
+        const senderName = currentUser.user_metadata?.full_name || currentUser.email || 'Someone';
+        try {
+          await sb.from('notifications').insert({
+            user_id: currentChatUser.id,
+            type: 'message',
+            message: `New message from ${senderName}`,
+            link: `messages.html?to=${currentUser.id}`,
+            read: false
+          });
+        } catch (e) { /* notifications are best-effort */ }
+
         input.value = '';
         await loadChatHistory(currentChatUser.id);
         await loadConversations();
@@ -385,8 +406,8 @@
         currentUser = user;
         if (!currentUser) return;
         await loadConversations();
+        await refreshMessageBadge();
 
-        // Auto-open the conversation from ?to=USER_UUID, once per page load
         if (!autoOpenedFromUrl) {
           autoOpenedFromUrl = true;
           const to = new URLSearchParams(window.location.search).get('to');
