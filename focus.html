@@ -167,33 +167,39 @@
     }
     .bpm-step:hover { background: #1f2a36; color: #e8eef5; }
     .bpm-step:active { transform: scale(0.94); }
-    .bpm-wheel {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      min-width: 76px;
-      cursor: grab;
-      touch-action: none;
-      padding: 0.5rem 0;
+        .bpm-wheel {
+      height: 180px;
+      width: 90px;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      padding: 68px 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      overscroll-behavior: contain;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
+      scroll-behavior: smooth;
     }
-    .bpm-wheel:active { cursor: grabbing; }
-    .bpm-num {
+    .bpm-wheel::-webkit-scrollbar { display: none; }
+    .bpm-item {
+      height: 44px;
+      line-height: 44px;
+      text-align: center;
+      scroll-snap-align: center;
       font-family: 'Inter', sans-serif;
+      font-size: 1.3rem;
       font-weight: 300;
-      transition: all 0.15s ease;
+      color: #5c7c9e;
+      opacity: 0.35;
+      transition: opacity 0.2s, font-size 0.2s, color 0.2s;
       font-variant-numeric: tabular-nums;
-      line-height: 1.1;
+      user-select: none;
+      pointer-events: none;
     }
-    .bpm-num.small {
-      font-size: 1.05rem;
-      color: #3d4a58;
-    }
-    .bpm-num.big {
-      font-size: 2.6rem;
+    .bpm-item.active {
+      font-size: 2.2rem;
       color: #e8eef5;
-      font-weight: 300;
+      opacity: 1;
     }
     .bpm-label {
       font-size: 0.7rem;
@@ -424,11 +430,7 @@
         <div class="bpm-panel">
           <div class="bpm-picker">
             <button class="bpm-step" id="bpm-minus" title="Slower">−</button>
-            <div class="bpm-wheel" id="bpm-wheel">
-              <div class="bpm-num small" id="bpm-prev">79</div>
-              <div class="bpm-num big" id="bpm-cur">80</div>
-              <div class="bpm-num small" id="bpm-next">81</div>
-            </div>
+            <div class="bpm-wheel" id="bpm-wheel"></div>
             <button class="bpm-step" id="bpm-plus" title="Faster">+</button>
           </div>
           <div class="bpm-label">BPM</div>
@@ -536,27 +538,43 @@
         }
       }
 
-      function playClick(when) {
+            function playHeartbeat(when) {
         if (!audioCtx) return;
+
+        // Main thump — pitch sweeps down from 140Hz to 45Hz for a "lub" feel
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.value = 1200;
-        // Sharp attack, quick decay — classic metronome click
+        osc.frequency.setValueAtTime(140, when);
+        osc.frequency.exponentialRampToValueAtTime(45, when + 0.08);
         gain.gain.setValueAtTime(0.0001, when);
-        gain.gain.exponentialRampToValueAtTime(0.6, when + 0.002);
-        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.9, when + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.3);
         osc.connect(gain);
         gain.connect(masterGain);
         osc.start(when);
-        osc.stop(when + 0.08);
+        osc.stop(when + 0.35);
+
+        // Sub oscillator for the deep body
+        const sub = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(70, when);
+        sub.frequency.exponentialRampToValueAtTime(35, when + 0.1);
+        subGain.gain.setValueAtTime(0.0001, when);
+        subGain.gain.exponentialRampToValueAtTime(0.45, when + 0.01);
+        subGain.gain.exponentialRampToValueAtTime(0.0001, when + 0.4);
+        sub.connect(subGain);
+        subGain.connect(masterGain);
+        sub.start(when);
+        sub.stop(when + 0.45);
       }
 
       function scheduler() {
         if (!audioCtx) return;
         const lookahead = 0.1; // seconds ahead to schedule
         while (nextBeatTime < audioCtx.currentTime + lookahead) {
-          if (!isMuted) playClick(nextBeatTime);
+          if (!isMuted) playHeartbeat(nextBeatTime);
           nextBeatTime += 60 / currentBpm;
         }
       }
@@ -576,47 +594,71 @@
       }
 
       // ---------- BPM wheel ----------
-      function updateBpmDisplay() {
-        document.getElementById('bpm-cur').textContent = currentBpm;
-        document.getElementById('bpm-prev').textContent = currentBpm > BPM_MIN ? currentBpm - 1 : '';
-        document.getElementById('bpm-next').textContent = currentBpm < BPM_MAX ? currentBpm + 1 : '';
+            // ---------- BPM wheel ----------
+      const wheel = document.getElementById('bpm-wheel');
+      let programmaticScroll = false;
+      let scrollDebounce = null;
+
+      function buildWheelItems() {
+        const items = [];
+        for (let b = BPM_MIN; b <= BPM_MAX; b++) {
+          items.push(`<div class="bpm-item" data-bpm="${b}">${b}</div>`);
+        }
+        wheel.innerHTML = items.join('');
       }
 
-      function setBpm(newBpm) {
+      function highlightActiveBpm() {
+        wheel.querySelectorAll('.bpm-item').forEach(item => {
+          const b = parseInt(item.dataset.bpm, 10);
+          item.classList.toggle('active', b === currentBpm);
+        });
+      }
+
+      function scrollWheelToBpm(bpm, smooth) {
+        const item = wheel.querySelector(`[data-bpm="${bpm}"]`);
+        if (!item) return;
+        programmaticScroll = true;
+        const offset = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
+        wheel.scrollTo({ top: offset, behavior: smooth ? 'smooth' : 'auto' });
+        clearTimeout(scrollDebounce);
+        scrollDebounce = setTimeout(() => { programmaticScroll = false; }, 500);
+      }
+
+      function getCenteredBpm() {
+        const wheelCenter = wheel.getBoundingClientRect().top + wheel.clientHeight / 2;
+        let closest = null, closestDist = Infinity;
+        wheel.querySelectorAll('.bpm-item').forEach(item => {
+          const rect = item.getBoundingClientRect();
+          const itemCenter = rect.top + rect.height / 2;
+          const dist = Math.abs(itemCenter - wheelCenter);
+          if (dist < closestDist) { closestDist = dist; closest = item; }
+        });
+        return closest ? parseInt(closest.dataset.bpm, 10) : currentBpm;
+      }
+
+      function setBpm(newBpm, fromScroll) {
         newBpm = Math.max(BPM_MIN, Math.min(BPM_MAX, newBpm));
         if (newBpm === currentBpm) return;
         currentBpm = newBpm;
-        updateBpmDisplay();
+        highlightActiveBpm();
+        if (!fromScroll) scrollWheelToBpm(newBpm, true);
       }
+
+      wheel.addEventListener('scroll', () => {
+        if (programmaticScroll) return;
+        clearTimeout(scrollDebounce);
+        scrollDebounce = setTimeout(() => {
+          const centered = getCenteredBpm();
+          if (centered !== currentBpm) {
+            currentBpm = centered;
+            highlightActiveBpm();
+          }
+        }, 80);
+      });
 
       document.getElementById('bpm-minus').addEventListener('click', () => setBpm(currentBpm - 1));
       document.getElementById('bpm-plus').addEventListener('click', () => setBpm(currentBpm + 1));
 
-      // Drag-to-scroll on the wheel
-      const wheel = document.getElementById('bpm-wheel');
-      let dragStartY = 0;
-      let dragStartBpm = 0;
-      let isDragging = false;
-
-      wheel.addEventListener('pointerdown', (e) => {
-        isDragging = true;
-        dragStartY = e.clientY;
-        dragStartBpm = currentBpm;
-        wheel.setPointerCapture(e.pointerId);
-      });
-      wheel.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
-        const dy = e.clientY - dragStartY;
-        const delta = Math.round(-dy / 12); // 12px per 1 BPM
-        setBpm(dragStartBpm + delta);
-      });
-      wheel.addEventListener('pointerup', (e) => {
-        isDragging = false;
-        try { wheel.releasePointerCapture(e.pointerId); } catch (e) {}
-      });
-      wheel.addEventListener('pointercancel', () => { isDragging = false; });
-
-      // Keyboard arrows for accessibility
       wheel.setAttribute('tabindex', '0');
       wheel.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowUp')   { e.preventDefault(); setBpm(currentBpm + 1); }
@@ -633,13 +675,19 @@
         this.textContent = isMuted ? '🔇' : '🔊';
       });
 
-      updateBpmDisplay();
+      // Build and initialize the wheel
+      buildWheelItems();
+      highlightActiveBpm();
+      // Defer the initial scroll until layout settles
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollWheelToBpm(currentBpm, false));
+      });
 
       // ---------- Realtime channel ----------
       const channel = sb.channel('focus-mode', { config: { broadcast: { self: false } } });
       channel.on('broadcast', { event: 'join' }, ({ payload }) => {
         if (payload.user_id === currentUser?.id) return;
-        addLiveItem(`${payload.name} entered focus mode`, 'joined');
+        addLiveItem(`${payload.name} began focusing on ${payload.topic} for ${payload.goal} minutes`, 'joined');
       });
       channel.on('broadcast', { event: 'leave' }, ({ payload }) => {
         if (payload.user_id === currentUser?.id) return;
@@ -715,10 +763,13 @@
         // Start the metronome
         startMetronome();
 
+        // Show your own join message (broadcast is self:false, so we do it manually)
+        addLiveItem(`${userFullName} began focusing on ${studyTopic} for ${goalMinutes} minutes`, 'joined');
+
         channel.send({
           type: 'broadcast',
           event: 'join',
-          payload: { user_id: currentUser?.id, name: userFullName, bpm: currentBpm, topic: studyTopic }
+          payload: { user_id: currentUser?.id, name: userFullName, topic: studyTopic, goal: goalMinutes }
         });
 
         timerInterval = setInterval(() => {
@@ -778,6 +829,9 @@
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = null;
         stopMetronome();
+
+        // Show your own leave message before the broadcasts go out
+        addLiveItem(`${userFullName} left focus mode`, 'left');
 
         if (!hitGoal) {
           channel.send({
