@@ -13,7 +13,7 @@
   <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; padding-bottom: 220px; }
     .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
     html[data-theme="dark"] .diamond { background: #8ab4d9; }
@@ -62,15 +62,119 @@
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
 
     .container { max-width: 800px; margin: 0 auto; padding: 2.5rem 2rem 0; }
-    h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.5rem; text-align: center; }
-    .subtitle { text-align: center; color: #3a4b5c; margin-bottom: 2.5rem; font-size: 1.1rem; }
-    .new-post-form { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 2rem; border: 1px solid rgba(30,59,90,0.08); }
-    .new-post-form input, .new-post-form textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border: 1px solid #ccd5de; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; }
-    .new-post-form input:focus, .new-post-form textarea:focus { border-color: #1e3b5a; }
-    .btn { display: inline-block; padding: 10px 24px; border-radius: 40px; font-weight: 500; background: #1e3b5a; color: #fff; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 1rem; transition: background 0.2s; }
-    .btn:hover { background: #152b42; }
-    .btn:disabled { background: #b0c4d0; cursor: not-allowed; }
-    .login-hint { font-size: 0.9rem; color: #c0392b; margin-bottom: 0.8rem; }
+
+    /* ---------- PODIUM ---------- */
+    .podium-section {
+      background: linear-gradient(135deg, #1e3b5a 0%, #2d4a6b 60%, #3a5a7d 100%);
+      border-radius: 24px;
+      padding: 1.75rem 1.25rem 0;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 15px 35px rgba(30,59,90,0.15);
+      overflow: hidden;
+      position: relative;
+    }
+    .podium-section::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(246,196,69,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .podium-header {
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    .podium-subject {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #f6c445;
+      margin-top: 0.3rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: opacity 0.3s;
+    }
+    .podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.6rem;
+      min-height: 250px;
+      position: relative;
+      z-index: 1;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+      max-width: 160px;
+      padding-bottom: 0;
+    }
+    .podium-score {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #f6c445;
+      line-height: 1;
+      animation: fadeUp 0.5s ease;
+    }
+    .podium-username {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: center;
+      max-width: 100%;
+      word-break: break-word;
+      line-height: 1.2;
+      animation: fadeUp 0.5s ease 0.05s backwards;
+    }
+    .podium-character {
+      font-size: 2.6rem;
+      line-height: 1;
+      margin-top: 0.3rem;
+      animation: fadeUp 0.5s ease 0.1s backwards;
+    }
+    .podium-slot.first .podium-character { font-size: 3.2rem; }
+    .podium-crown {
+      font-size: 1.3rem;
+      line-height: 1;
+      animation: fadeUp 0.5s ease 0.15s backwards;
+    }
+    .podium-block {
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 0.4rem;
+      box-shadow: 0 -3px 10px rgba(0,0,0,0.1) inset;
+    }
+    .podium-slot.first .podium-block { height: 100px; background: linear-gradient(180deg, #f6c445 0%, #d4a017 100%); color: #4a3403; }
+    .podium-slot.second .podium-block { height: 72px; background: linear-gradient(180deg, #d8d8d8 0%, #9a9a9a 100%); color: #333; }
+    .podium-slot.third .podium-block { height: 52px; background: linear-gradient(180deg, #d4915c 0%, #a05e1f 100%); color: #fff; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- POSTS ---------- */
     .post-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.03); border: 1px solid rgba(30,59,90,0.08); }
     .post-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
     .post-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
@@ -94,11 +198,66 @@
     .comment-text { font-size: 0.95rem; color: #2c3e50; margin: 0.2rem 0; }
     .comment-time { font-size: 0.75rem; color: #8b8b8b; }
     .comment-form { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .comment-form input { flex: 1; margin-bottom: 0; padding: 8px 12px; border-radius: 20px; }
+    .comment-form input { flex: 1; margin-bottom: 0; padding: 8px 12px; border-radius: 20px; border: 1px solid #ccd5de; font-family: inherit; }
     .comment-form button { padding: 8px 16px; border-radius: 20px; background: #1e3b5a; color: #fff; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
-    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
-    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
 
+    /* ---------- TITLE BELOW POSTS ---------- */
+    .title-section {
+      text-align: center;
+      padding: 2.5rem 0 3rem;
+      border-top: 1px solid rgba(30,59,90,0.08);
+      margin-top: 1rem;
+    }
+    .title-section h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.5rem; }
+    .title-section .subtitle { color: #3a4b5c; font-size: 1.1rem; }
+
+    /* ---------- FIXED POSTING BOX ---------- */
+    .posting-box-wrapper {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(30,59,90,0.1);
+      padding: 0.75rem 1rem;
+      z-index: 90;
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.04);
+    }
+    .new-post-form {
+      max-width: 800px;
+      margin: 0 auto;
+      background: none;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      border-radius: 0;
+    }
+    .new-post-form input,
+    .new-post-form textarea {
+      width: 100%;
+      padding: 8px 14px;
+      margin-bottom: 0.5rem;
+      border: 1px solid #ccd5de;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .new-post-form input:focus,
+    .new-post-form textarea:focus { border-color: #1e3b5a; }
+    .new-post-form textarea { resize: vertical; min-height: 38px; max-height: 100px; }
+    .posting-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
+    .posting-actions #post-error { flex: 1; color: #c0392b; font-size: 0.85rem; margin: 0; }
+    .btn { display: inline-block; padding: 8px 22px; border-radius: 40px; font-weight: 500; background: #1e3b5a; color: #fff; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: background 0.2s; }
+    .btn:hover { background: #152b42; }
+    .btn:disabled { background: #b0c4d0; cursor: not-allowed; }
+    .login-hint { font-size: 0.85rem; color: #c0392b; margin-bottom: 0.5rem; text-align: center; }
+
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; }
+
+    /* ---------- DARK MODE ---------- */
     html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .logo { color: #8ab4d9; }
@@ -121,20 +280,35 @@
     html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
     html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
     html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
-    html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3 { color: #8ab4d9; }
-    html[data-theme="dark"] p { color: #b8c5d1; }
-    html[data-theme="dark"] .subtitle { color: #b8c5d1; }
-    html[data-theme="dark"] .new-post-form, html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
-    html[data-theme="dark"] input, html[data-theme="dark"] textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
-    html[data-theme="dark"] input:focus, html[data-theme="dark"] textarea:focus { border-color: #6b9dc9; }
+    html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .post-title { color: #8ab4d9; }
     html[data-theme="dark"] .post-body { color: #b8c5d1; }
     html[data-theme="dark"] .comment-text { color: #b8c5d1; }
-    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
-    html[data-theme="dark"] footer a { color: #7a8fa3; }
+    html[data-theme="dark"] .title-section h1 { color: #8ab4d9; }
+    html[data-theme="dark"] .title-section .subtitle { color: #b8c5d1; }
+    html[data-theme="dark"] .title-section { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .posting-box-wrapper { background: rgba(15,26,38,0.96); border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .new-post-form input, html[data-theme="dark"] .new-post-form textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .new-post-form input:focus, html[data-theme="dark"] .new-post-form textarea:focus { border-color: #6b9dc9; }
+    html[data-theme="dark"] .comment-form input { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] footer { color: #7a8fa3; }
 
     @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
-    @media (max-width: 768px) { .nav-links { gap: 1rem; } h1 { font-size: 2.2rem; } }
+    @media (max-width: 768px) {
+      .nav-links { gap: 1rem; }
+      .title-section h1 { font-size: 2.2rem; }
+      .podium-header { font-size: 1.15rem; }
+      .podium { min-height: 220px; gap: 0.4rem; }
+      .podium-score { font-size: 1.1rem; }
+      .podium-username { font-size: 0.72rem; }
+      .podium-character { font-size: 2rem; }
+      .podium-slot.first .podium-character { font-size: 2.5rem; }
+      .podium-slot.first .podium-block { height: 80px; }
+      .podium-slot.second .podium-block { height: 58px; }
+      .podium-slot.third .podium-block { height: 42px; }
+      .container { padding: 1.5rem 1rem 0; }
+      body { padding-bottom: 240px; }
+    }
   </style>
 </head>
 <body>
@@ -169,16 +343,24 @@
   </header>
 
   <main class="container">
-    <h1>Community</h1>
-    <p class="subtitle">Share insights, ask questions, and connect with fellow MLS students.</p>
-    <div class="new-post-form" id="new-post-form-container">
-      <div id="login-hint" class="login-hint" style="display:none;">Please <a href="signup.html">log in</a> to post.</div>
-      <input type="text" id="postTitle" placeholder="Title">
-      <textarea id="postBody" rows="4" placeholder="Share something..."></textarea>
-      <button id="submitPostBtn" class="btn">Post</button>
-      <p id="post-error" style="color: #c0392b; margin-top: 0.5rem;"></p>
-    </div>
+    <section class="podium-section">
+      <div class="podium-header">
+        🏆 Daily Quiz Champions
+        <span class="podium-subject" id="podium-subject">Loading…</span>
+      </div>
+      <div class="podium" id="podium">
+        <div class="podium-slot second" data-rank="2"></div>
+        <div class="podium-slot first" data-rank="1"></div>
+        <div class="podium-slot third" data-rank="3"></div>
+      </div>
+    </section>
+
     <div id="postList"><p style="text-align:center; color:#8b8b8b;">Loading posts…</p></div>
+
+    <div class="title-section">
+      <h1>Community</h1>
+      <p class="subtitle">Share insights, ask questions, and connect with fellow MLS students.</p>
+    </div>
   </main>
 
   <footer>
@@ -186,12 +368,120 @@
     <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
   </footer>
 
+  <div class="posting-box-wrapper">
+    <div class="new-post-form" id="new-post-form-container">
+      <div id="login-hint" class="login-hint" style="display:none;">Please <a href="signup.html">log in</a> to post.</div>
+      <input type="text" id="postTitle" placeholder="Title">
+      <textarea id="postBody" rows="2" placeholder="Share something..."></textarea>
+      <div class="posting-actions">
+        <p id="post-error"></p>
+        <button id="submitPostBtn" class="btn">Post</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       const sb = window.supabaseClient;
       let currentUser = null;
       let userProfile = null;
 
+      // ---------------- PODIUM ----------------
+      const SUBJECTS = [
+        { slug: 'analysis-of-urine',       title: 'Analysis of Urine & Body Fluids' },
+        { slug: 'clinical-chemistry',      title: 'Clinical Chemistry' },
+        { slug: 'clinical-hematology',     title: 'Clinical Hematology' },
+        { slug: 'histology-histopathology',title: 'Histology & Histopathology' },
+        { slug: 'immunoserology-blood-bank', title: 'Immunoserology & Blood Banking' },
+        { slug: 'microbiology',            title: 'Microbiology' },
+        { slug: 'medtech-laws',            title: 'MedTech Laws & Lab Management' }
+      ];
+      const CHARACTERS = { first: '🧑‍🔬', second: '🧑‍⚕️', third: '🧑‍🎓' };
+      const RANKS = { first: '1', second: '2', third: '3' };
+      const RANK_KEYS = ['first', 'second', 'third'];
+      let subjectIndex = 0;
+      let rotationTimer = null;
+
+      function todayStartIso() {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d.toISOString();
+      }
+
+      async function loadPodium() {
+        const subject = SUBJECTS[subjectIndex];
+        document.getElementById('podium-subject').textContent = subject.title;
+
+        const { data: course } = await sb.from('courses').select('id').eq('slug', subject.slug).single();
+        if (!course) { renderPodium([]); return; }
+
+        const { data: attempts } = await sb.from('quiz_attempts')
+          .select('user_id, score, total, created_at')
+          .eq('course_id', course.id)
+          .gte('created_at', todayStartIso());
+
+        if (!attempts || attempts.length === 0) { renderPodium([]); return; }
+
+        const byUser = new Map();
+        attempts.forEach(a => {
+          const cur = byUser.get(a.user_id);
+          if (!cur) {
+            byUser.set(a.user_id, { user_id: a.user_id, best: a.score, total: a.total, firstAt: a.created_at });
+          } else {
+            if (a.score > cur.best) cur.best = a.score;
+            if (a.created_at < cur.firstAt) cur.firstAt = a.created_at;
+          }
+        });
+
+        const ranked = Array.from(byUser.values())
+          .sort((a, b) => b.best - a.best || new Date(a.firstAt) - new Date(b.firstAt))
+          .slice(0, 3);
+
+        const ids = ranked.map(r => r.user_id);
+        const { data: profiles } = await sb.from('profiles').select('id, full_name').in('id', ids);
+        ranked.forEach(r => {
+          const p = profiles?.find(p => p.id === r.user_id) || {};
+          r.full_name = p.full_name || 'Anonymous';
+        });
+
+        renderPodium(ranked);
+      }
+
+      function renderPodium(ranked) {
+        RANK_KEYS.forEach((key, i) => {
+          const slot = document.querySelector(`.podium-slot.${key}`);
+          const entry = ranked[i];
+          const char = CHARACTERS[key];
+          const rank = RANKS[key];
+          const crown = key === 'first' ? '<div class="podium-crown">👑</div>' : '';
+
+          if (!entry) {
+            slot.innerHTML = `
+              <div class="podium-score">—</div>
+              <div class="podium-username">No entry yet</div>
+              ${crown}
+              <div class="podium-character" style="opacity:0.35;">${char}</div>
+              <div class="podium-block">${rank}</div>`;
+          } else {
+            slot.innerHTML = `
+              <div class="podium-score">${entry.best}/${entry.total}</div>
+              <div class="podium-username">${window.escapeHtml(entry.full_name)}</div>
+              ${crown}
+              <div class="podium-character">${char}</div>
+              <div class="podium-block">${rank}</div>`;
+          }
+        });
+      }
+
+      function startRotation() {
+        if (rotationTimer) clearInterval(rotationTimer);
+        rotationTimer = setInterval(() => {
+          subjectIndex = (subjectIndex + 1) % SUBJECTS.length;
+          loadPodium();
+        }, 10000);
+      }
+
+      // ---------------- POSTS / COMMENTS ----------------
       function refreshComposerState() {
         const loginHint = document.getElementById('login-hint');
         const submitBtn = document.getElementById('submitPostBtn');
@@ -219,9 +509,8 @@
           const authorName = profile.full_name || 'Anonymous';
           const avatarUrl = profile.avatar_url;
           const initials = authorName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
-          const isAdmin = userProfile?.role === 'admin';
           const isOwner = currentUser && post.user_id === currentUser.id;
-          const canDelete = isAdmin || isOwner;
+          const canDelete = isOwner || userProfile?.is_admin;
           return `
             <div class="post-card" data-post-id="${post.id}">
               <div class="post-header">
@@ -240,8 +529,7 @@
                 ${canDelete ? `<button class="btn-outline btn-delete delete-post-btn" data-post-id="${post.id}">🗑 Delete</button>` : ''}
               </div>
               <div class="comments-section" id="comments-${post.id}" style="display:none;"></div>
-            </div>
-          `;
+            </div>`;
         }).join('');
         document.querySelectorAll('.toggle-comments-btn').forEach(btn => btn.addEventListener('click', () => toggleComments(btn.dataset.postId)));
         document.querySelectorAll('.delete-post-btn').forEach(btn => btn.addEventListener('click', () => deletePost(btn.dataset.postId)));
@@ -262,13 +550,12 @@
           .eq('post_id', postId)
           .order('created_at', { ascending: true });
         if (error) { section.innerHTML = '<p style="color:#c0392b;">Failed to load comments.</p>'; return; }
-        const isAdmin = userProfile?.role === 'admin';
         const html = (comments || []).map(c => {
           const profile = c.profiles || {};
           const name = profile.full_name || 'Anonymous';
           const avatarUrl = profile.avatar_url;
           const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
-          const canDeleteComment = isAdmin || (currentUser && c.user_id === currentUser.id);
+          const canDeleteComment = (currentUser && c.user_id === currentUser.id) || userProfile?.is_admin;
           return `
             <div class="comment" data-comment-id="${c.id}">
               <a href="profile.html?id=${c.user_id}" style="text-decoration:none;color:inherit;">${avatarUrl ? `<img src="${avatarUrl}" class="comment-avatar" alt="${window.escapeHtml(name)}">` : `<div class="comment-avatar-placeholder">${initials}</div>`}</a>
@@ -277,15 +564,13 @@
                 <div class="comment-text">${window.escapeHtml(c.body)}</div>
                 ${canDeleteComment ? `<button class="btn-outline btn-delete delete-comment-btn" data-comment-id="${c.id}" style="margin-top:0.3rem; font-size:0.7rem;">Delete</button>` : ''}
               </div>
-            </div>
-          `;
+            </div>`;
         }).join('');
         const formHtml = currentUser ? `
           <div class="comment-form">
             <input type="text" class="comment-input" placeholder="Write a comment…">
             <button class="submit-comment-btn">Post</button>
-          </div>
-        ` : '';
+          </div>` : '';
         section.innerHTML = html + formHtml;
         section.querySelectorAll('.delete-comment-btn').forEach(btn => btn.addEventListener('click', () => deleteComment(btn.dataset.commentId, postId)));
         const form = section.querySelector('.comment-form');
@@ -325,7 +610,7 @@
         const errorEl = document.getElementById('post-error');
         if (!title || !body) { errorEl.textContent = 'Please fill in both title and body.'; return; }
         const { error } = await sb.from('posts').insert({ user_id: currentUser.id, title, body });
-        if (error) { errorEl.textContent = 'Failed to create post: ' + error.message; }
+        if (error) { errorEl.textContent = 'Failed: ' + error.message; }
         else { document.getElementById('postTitle').value = ''; document.getElementById('postBody').value = ''; errorEl.textContent = ''; loadPosts(); }
       });
 
@@ -334,6 +619,8 @@
         refreshComposerState();
         await fetchUserProfile();
         await loadPosts();
+        await loadPodium();
+        startRotation();
       }
 
       window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));

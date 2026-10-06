@@ -17,7 +17,6 @@
     .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
     html[data-theme="dark"] .diamond { background: #8ab4d9; }
-
     header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
     .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
@@ -60,7 +59,6 @@
     .search-result-item:hover { background: #f0f4f8; }
     .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
-
     .container { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
     .profile-header { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem; }
     .avatar-container { position: relative; width: 120px; height: 120px; border-radius: 50%; overflow: hidden; margin-bottom: 1rem; }
@@ -101,6 +99,38 @@
     .post-card h4 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #1e3b5a; margin-bottom: 0.3rem; }
     .post-card p { color: #3a4b5c; font-size: 0.95rem; }
     .post-meta { font-size: 0.8rem; color: #8b8b8b; margin-top: 0.5rem; }
+
+    /* Quiz progress table */
+    .progress-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(30,59,90,0.08);
+    }
+    .progress-table th,
+    .progress-table td {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.95rem;
+      border-bottom: 1px solid rgba(30,59,90,0.06);
+    }
+    .progress-table th {
+      background: #f9fbfd;
+      font-weight: 600;
+      color: #1e3b5a;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .progress-table tr:last-child td { border-bottom: none; }
+    .progress-table td.subject { font-weight: 600; color: #1e3b5a; }
+    .progress-table td.first-try { color: #5c7c9e; }
+    .progress-table td.latest-try { color: #27ae60; font-weight: 700; }
+    .progress-table td.latest-try.improved::before { content: "▲ "; font-size: 0.75rem; }
+    .progress-table td.latest-try.declined::before { content: "▼ "; font-size: 0.75rem; color: #c0392b; }
+
     footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
     footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
 
@@ -140,11 +170,17 @@
     html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .post-card h4 { color: #8ab4d9; }
     html[data-theme="dark"] .post-card p { color: #b8c5d1; }
+    html[data-theme="dark"] .progress-table { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .progress-table th { background: #23374b; color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .progress-table td { border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .progress-table td.subject { color: #8ab4d9; }
+    html[data-theme="dark"] .progress-table td.first-try { color: #b8c5d1; }
+    html[data-theme="dark"] .progress-table td.latest-try { color: #6fdc92; }
     html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] footer a { color: #7a8fa3; }
 
     @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
-    @media (max-width: 768px) { .profile-header { padding: 0 1rem; } .nav-links { gap: 1rem; } }
+    @media (max-width: 768px) { .profile-header { padding: 0 1rem; } .nav-links { gap: 1rem; } .progress-table th, .progress-table td { padding: 10px 8px; font-size: 0.85rem; } }
   </style>
 </head>
 <body>
@@ -192,9 +228,27 @@
       const sb = window.supabaseClient;
       let currentUser = null;
 
+      const COURSE_IMAGE_MAP = {
+        'analysis-of-urine':        'urinalysis.jpg',
+        'clinical-chemistry':       'clinical-chemistry.jpg',
+        'clinical-hematology':      'clinical-hematology.jpg',
+        'histology-histopathology': 'histopathology.jpg',
+        'immunoserology-blood-bank':'immunoserology.jpg',
+        'microbiology':             'microbiology.jpg',
+        'medtech-laws':             'medtech-laws.jpg'
+      };
+      function courseImage(slug) {
+        return 'assets/courses/' + (COURSE_IMAGE_MAP[slug] || 'default.jpg');
+      }
+
+      function courseCardHtml(course) {
+        if (!course) return '';
+        const img = courseImage(course.slug);
+        return `<a href="course-${course.slug}.html" class="course-card"><img src="${img}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`;
+      }
+
       async function loadProfile() {
         const urlParams = new URLSearchParams(window.location.search);
-        // Support both ?id= (new, used by search) and ?user= (legacy links)
         const requestedId = urlParams.get('id') || urlParams.get('user');
         const profileId = requestedId || currentUser?.id;
         if (!profileId) { window.location.href = 'signup.html'; return; }
@@ -217,9 +271,63 @@
           isFollowing = !!followRow;
         }
 
-        const { data: lovedCourses } = await sb.from('course_ratings').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).eq('rating', 'love').limit(20);
-        const { data: dislikedCourses } = await sb.from('course_ratings').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).eq('rating', 'dislike').limit(20);
-        const { data: recentCourses } = await sb.from('saved_courses').select('courses(slug, title, cover_image_url)').eq('user_id', profileId).order('saved_at', { ascending: false }).limit(10);
+        // ---- Favourite courses (two-step, avoids FK/join issue) ----
+        const { data: userRatings } = await sb.from('course_ratings')
+          .select('course_id, rating')
+          .eq('user_id', profileId);
+
+        const lovedIds = (userRatings || []).filter(r => r.rating === 'love').map(r => r.course_id);
+
+        let lovedCourses = [];
+        if (lovedIds.length) {
+          const { data: lovedInfo } = await sb.from('courses').select('id, slug, title').in('id', lovedIds);
+          lovedCourses = lovedIds.map(id => lovedInfo?.find(c => c.id === id)).filter(Boolean);
+        }
+
+        // ---- Recently studied (two-step) ----
+        const { data: savedRows } = await sb.from('saved_courses')
+          .select('course_id, saved_at')
+          .eq('user_id', profileId)
+          .order('saved_at', { ascending: false })
+          .limit(10);
+
+        const recentIds = (savedRows || []).map(s => s.course_id);
+        let recentCourses = [];
+        if (recentIds.length) {
+          const { data: recentInfo } = await sb.from('courses').select('id, slug, title').in('id', recentIds);
+          recentCourses = recentIds.map(id => recentInfo?.find(c => c.id === id)).filter(Boolean);
+        }
+
+        // ---- Quiz progress ----
+        const { data: attempts } = await sb.from('quiz_attempts')
+          .select('course_id, score, total, created_at')
+          .eq('user_id', profileId)
+          .order('created_at', { ascending: true });
+
+        const byCourse = new Map();
+        (attempts || []).forEach(a => {
+          if (!byCourse.has(a.course_id)) byCourse.set(a.course_id, []);
+          byCourse.get(a.course_id).push(a);
+        });
+
+        const progressList = [];
+        if (byCourse.size) {
+          const courseIds = Array.from(byCourse.keys());
+          const { data: courseInfo } = await sb.from('courses').select('id, slug, title').in('id', courseIds);
+          byCourse.forEach((list, courseId) => {
+            const c = courseInfo?.find(x => x.id === courseId);
+            progressList.push({
+              title: c ? c.title : 'Unknown Course',
+              slug: c ? c.slug : '',
+              first: list[0],
+              latest: list[list.length - 1],
+              count: list.length
+            });
+          });
+          progressList.sort((a, b) => new Date(b.latest.created_at) - new Date(a.latest.created_at));
+        }
+
+        // ---- Posts ----
         const { data: posts } = await sb.from('posts').select('id, title, body, created_at').eq('user_id', profileId).order('created_at', { ascending: false }).limit(10);
 
         const initials = (profile.full_name || 'User').split(' ').map(n => n[0]).join('').toUpperCase().substring(0,2);
@@ -233,9 +341,28 @@
             <div class="profile-actions">
               <button class="action-btn ${isFollowing ? 'unfollow' : 'follow'}" id="follow-btn">${isFollowing ? 'Unfollow' : 'Follow'}</button>
               <a class="action-btn message" href="messages.html?to=${profileId}" id="message-btn">✉️ Message</a>
-            </div>
-          `;
+            </div>`;
         }
+
+        const progressHtml = progressList.length
+          ? `<table class="progress-table">
+              <thead><tr><th>Subject</th><th>First Try</th><th>Latest Try</th></tr></thead>
+              <tbody>
+                ${progressList.map(p => {
+                  const firstPct = p.first.total ? (p.first.score / p.first.total) : 0;
+                  const latestPct = p.latest.total ? (p.latest.score / p.latest.total) : 0;
+                  const trendClass = p.count > 1
+                    ? (latestPct > firstPct ? 'improved' : latestPct < firstPct ? 'declined' : '')
+                    : '';
+                  return `<tr>
+                    <td class="subject">${window.escapeHtml(p.title)}</td>
+                    <td class="first-try">${p.first.score}/${p.first.total}</td>
+                    <td class="latest-try ${trendClass}">${p.latest.score}/${p.latest.total}</td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>`
+          : '<p>No quiz attempts yet. Take a quiz to start tracking your progress!</p>';
 
         const html = `
           <div class="profile-header">
@@ -264,14 +391,14 @@
             </div>
           </div>
 
-          <h2 class="section-title">❤️ Favourite Courses</h2>
-          ${lovedCourses && lovedCourses.length ? `<div class="courses-grid">${lovedCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No favourite courses yet.</p>'}
+          <h2 class="section-title">📊 Quiz Progress</h2>
+          ${progressHtml}
 
-          <h2 class="section-title">💔 Disliked Courses</h2>
-          ${dislikedCourses && dislikedCourses.length ? `<div class="courses-grid">${dislikedCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No disliked courses yet.</p>'}
+          <h2 class="section-title">❤️ Favourite Courses</h2>
+          ${lovedCourses.length ? `<div class="courses-grid">${lovedCourses.map(courseCardHtml).join('')}</div>` : '<p>No favourite courses yet.</p>'}
 
           <h2 class="section-title">📖 Recently Studied</h2>
-          ${recentCourses && recentCourses.length ? `<div class="courses-grid">${recentCourses.map(item => { const course = item.courses; const cover = course.cover_image_url || 'https://placehold.co/300x200/e8f0f8/1e3b5a?text='+encodeURIComponent(course.title); return `<a href="course-${course.slug}.html" class="course-card"><img src="${cover}" alt="${window.escapeHtml(course.title)}"><div class="card-title">${window.escapeHtml(course.title)}</div></a>`; }).join('')}</div>` : '<p>No recently studied courses.</p>'}
+          ${recentCourses.length ? `<div class="courses-grid">${recentCourses.map(courseCardHtml).join('')}</div>` : '<p>No recently studied courses.</p>'}
 
           <h2 class="section-title">📝 ${isOwnProfile ? 'My' : 'Their'} Posts</h2>
           ${posts && posts.length ? `<div class="post-list">${posts.map(post => `<div class="post-card"><h4>${window.escapeHtml(post.title)}</h4><p>${window.escapeHtml(post.body?.substring(0,200))}${post.body?.length>200?'…':''}</p><div class="post-meta">${new Date(post.created_at).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</div></div>`).join('')}</div>` : '<p>No posts yet.</p>'}
@@ -306,13 +433,15 @@
               const statNum = document.querySelector('.stat-item .stat-number');
               if (statNum) statNum.textContent = followers + 1;
               const followerName = currentUser.user_metadata?.full_name || currentUser.email || 'Someone';
-              await sb.from('notifications').insert({
-                user_id: profileId,
-                type: 'follow',
-                message: `${followerName} started following you.`,
-                link: `profile.html?id=${currentUser.id}`,
-                read: false
-              });
+              try {
+                await sb.from('notifications').insert({
+                  user_id: profileId,
+                  type: 'follow',
+                  message: `${followerName} started following you.`,
+                  link: `profile.html?id=${currentUser.id}`,
+                  read: false
+                });
+              } catch (e) { /* best-effort */ }
             } else {
               await sb.from('follows').delete().eq('follower_id', currentUser.id).eq('following_id', profileId);
               btn.classList.remove('unfollow'); btn.classList.add('follow'); btn.textContent = 'Follow';
