@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Focus · MLS Crash Course</title>
-  <meta name="description" content="Three-minute minimum study session with music.">
+  <meta name="description" content="Three-minute minimum study session with metronome.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -52,7 +52,7 @@
     .auth-only { display: none; }
 
     /* ------------ FOCUS PAGE ------------ */
-        .focus-main {
+    .focus-main {
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -123,43 +123,106 @@
       animation-delay: 1s;
     }
 
-    /* Jam buttons curved along left arc of timer */
-    .jam-btn {
+    /* --------- BPM PICKER (left of timer) --------- */
+    .bpm-panel {
       position: absolute;
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      background: #1a2b3d;
-      border: 2px solid #2d4a6b;
-      color: #b8c5d1;
+      top: 50%;
+      left: -240px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      z-index: 3;
+      width: 200px;
+      animation: floatTiny 6s ease-in-out infinite;
+    }
+    .bpm-picker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      user-select: none;
+      padding: 0.5rem;
+      border-radius: 24px;
+      transition: background 0.2s;
+    }
+    .bpm-step {
+      width: 52px;
+      height: 34px;
+      border-radius: 17px;
+      background: #141c26;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #8a99a8;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      line-height: 1;
       cursor: pointer;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 2px;
+    }
+    .bpm-step:hover { background: #1f2a36; color: #e8eef5; }
+    .bpm-step:active { transform: scale(0.94); }
+    .bpm-wheel {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: inherit;
-      font-size: 0.6rem;
-      font-weight: 600;
-      text-align: center;
+      gap: 2px;
+      min-width: 76px;
+      cursor: grab;
+      touch-action: none;
+      padding: 0.5rem 0;
+    }
+    .bpm-wheel:active { cursor: grabbing; }
+    .bpm-num {
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      transition: all 0.15s ease;
+      font-variant-numeric: tabular-nums;
       line-height: 1.1;
-      padding: 4px;
-      transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.3s;
-      animation: floatTiny 6s ease-in-out infinite;
-      z-index: 3;
     }
-    .jam-btn .jam-icon { font-size: 1.6rem; margin-bottom: 2px; }
-    .jam-btn:hover { transform: scale(1.08); border-color: #8ab4d9; }
-    .jam-btn.selected {
-      border-color: #f6c445;
-      background: linear-gradient(135deg, #1a2b3d, #3a2a0d);
-      box-shadow: 0 0 25px rgba(246,196,69,0.4);
-      color: #f6c445;
+    .bpm-num.small {
+      font-size: 1.05rem;
+      color: #3d4a58;
     }
-    .jam-btn[data-jam="classical"]    { top: 4%;  left: -22%; animation-delay: 0s; }
-    .jam-btn[data-jam="generational"] { top: 28%; left: -30%; animation-delay: 0.8s; }
-    .jam-btn[data-jam="light"]        { top: 58%; left: -30%; animation-delay: 1.6s; }
-    .jam-btn[data-jam="party"]        { top: 82%; left: -22%; animation-delay: 2.4s; }
-    .jam-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+    .bpm-num.big {
+      font-size: 2.6rem;
+      color: #e8eef5;
+      font-weight: 300;
+    }
+    .bpm-label {
+      font-size: 0.7rem;
+      color: #5c7c9e;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+
+    /* Volume toggle */
+    .vol-toggle {
+      margin-top: 0.25rem;
+      background: #141c26;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #8a99a8;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      transition: background 0.2s, color 0.2s, transform 0.15s, border-color 0.2s;
+    }
+    .vol-toggle:hover { background: #1f2a36; color: #e8eef5; transform: scale(1.05); }
+    .vol-toggle.on  { border-color: #8ab4d9; color: #8ab4d9; }
+    .vol-toggle.off { border-color: rgba(192,57,43,0.4); color: #c0392b; }
 
     /* Start button column */
     .start-column {
@@ -186,7 +249,7 @@
     }
     .start-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(246,196,69,0.4); }
     .start-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
-    .start-btn.end-btn { background: #c0392b; color: #fff; }
+    .start-btn.end-btn { background: #c0392b; color: #fff; animation: none; }
     .start-btn.end-btn:hover:not(:disabled) { box-shadow: 0 15px 40px rgba(192,57,43,0.4); }
     .hint-text { color: #8ab4d9; font-size: 0.9rem; text-align: center; max-width: 180px; line-height: 1.4; }
 
@@ -302,24 +365,22 @@
       .focus-stage { gap: 2rem; }
       .timer-wrap { width: 360px; height: 360px; }
       .timer-display { font-size: 5rem; }
-      .jam-btn { width: 74px; height: 74px; font-size: 0.55rem; }
-      .jam-btn .jam-icon { font-size: 1.3rem; }
-      .jam-btn[data-jam="classical"]    { top: 4%;  left: -24%; }
-      .jam-btn[data-jam="generational"] { top: 28%; left: -34%; }
-      .jam-btn[data-jam="light"]        { top: 58%; left: -34%; }
-      .jam-btn[data-jam="party"]        { top: 82%; left: -24%; }
+      .bpm-panel { left: -200px; width: 170px; }
+      .bpm-num.big { font-size: 2.2rem; }
     }
     @media (max-width: 900px) {
       .nav-links { gap: 1rem; }
-            .focus-stage { flex-direction: column; gap: 3rem; padding-left: 0; }
+      .focus-stage { flex-direction: column; gap: 3rem; padding-left: 0; }
       .timer-wrap { width: 320px; height: 320px; }
       .timer-display { font-size: 4rem; }
-      .jam-btn { width: 66px; height: 66px; }
-      .jam-btn .jam-icon { font-size: 1.1rem; }
-      .jam-btn[data-jam="classical"]    { top: -8%; left: -12%; }
-      .jam-btn[data-jam="generational"] { top: 18%; left: -22%; }
-      .jam-btn[data-jam="light"]        { top: 70%; left: -22%; }
-      .jam-btn[data-jam="party"]        { top: 92%; left: -12%; }
+      .bpm-panel {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        order: -1;
+        width: auto;
+      }
       .start-btn { font-size: 1.3rem; padding: 1.2rem 3rem; }
       .focus-main { padding: 2rem 1rem 1.5rem; }
     }
@@ -359,22 +420,25 @@
           <div class="timer-sub" id="timer-sub">Minimum 3:00</div>
           <div class="timer-goal" id="timer-goal"></div>
         </div>
-        <button class="jam-btn" data-jam="classical" title="Classical Lock In">
-          <span class="jam-icon">🎼</span>Classical<br>Lock In
-        </button>
-        <button class="jam-btn" data-jam="generational" title="Generational Lock In">
-          <span class="jam-icon">🎧</span>Generational<br>Lock In
-        </button>
-        <button class="jam-btn" data-jam="light" title="Light Yearning">
-          <span class="jam-icon">🎹</span>Light<br>Yearning
-        </button>
-        <button class="jam-btn" data-jam="party" title="Party and Study">
-          <span class="jam-icon">🎉</span>Party &amp;<br>Study
-        </button>
+
+        <div class="bpm-panel">
+          <div class="bpm-picker">
+            <button class="bpm-step" id="bpm-minus" title="Slower">−</button>
+            <div class="bpm-wheel" id="bpm-wheel">
+              <div class="bpm-num small" id="bpm-prev">79</div>
+              <div class="bpm-num big" id="bpm-cur">80</div>
+              <div class="bpm-num small" id="bpm-next">81</div>
+            </div>
+            <button class="bpm-step" id="bpm-plus" title="Faster">+</button>
+          </div>
+          <div class="bpm-label">BPM</div>
+          <button class="vol-toggle on" id="vol-toggle" title="Metronome sound on/off">🔊</button>
+        </div>
       </div>
+
       <div class="start-column">
-        <button class="start-btn" id="start-btn" disabled>▶ Start</button>
-        <div class="hint-text" id="hint-text">Pick a jam to begin</div>
+        <button class="start-btn" id="start-btn">▶ Start</button>
+        <div class="hint-text" id="hint-text">Ready when you are</div>
       </div>
     </div>
 
@@ -385,12 +449,6 @@
     <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
     <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
   </footer>
-
-  <!-- Audio: place your mp3 files in assets/audio/ -->
-  <audio id="audio-classical"    src="assets/audio/classical-lock-in.mp3"    loop preload="auto"></audio>
-  <audio id="audio-generational" src="assets/audio/generational-lock-in.mp3" loop preload="auto"></audio>
-  <audio id="audio-light"        src="assets/audio/light-yearning.mp3"        loop preload="auto"></audio>
-  <audio id="audio-party"        src="assets/audio/party-and-study.mp3"      loop preload="auto"></audio>
 
   <!-- Start modal -->
   <div class="modal-overlay" id="start-modal">
@@ -409,7 +467,8 @@
         <ul>
           <li>You <strong>cannot pause</strong> this session until the timer reaches <strong>3:00</strong>.</li>
           <li>You <strong>cannot switch to other pages</strong> while the session is active. Doing so will be discouraged.</li>
-          <li>Your chosen jam will <strong>play continuously</strong> for as long as the timer is running.</li>
+          <li>A <strong>metronome will automatically start ticking</strong> the moment the session begins, at the BPM you set.</li>
+          <li>You can <strong>freely change the BPM</strong> and <strong>mute/unmute</strong> the metronome at any time during the session.</li>
           <li>If you end the session <strong>before reaching your goal minute</strong>, a notice will appear at the top of the screen letting everyone know you didn't hit your goal.</li>
           <li>Once you've passed 3:00, an <strong>End Session</strong> button appears so you can finish any time.</li>
         </ul>
@@ -446,23 +505,135 @@
       const sb = window.supabaseClient;
       let currentUser = null;
       let userFullName = 'Someone';
-      let selectedJam = null;
       let timerInterval = null;
-      let tickInterval = null;
       let elapsedSeconds = 0;
       let goalMinutes = 0;
       let studyTopic = '';
       let sessionActive = false;
       let failGuard = false;
 
-      const MINIMUM_SECONDS = 180; // 3:00
-      const JAMS = ['classical', 'generational', 'light', 'party'];
-      const JAM_LABELS = {
-        classical: 'Classical Lock In',
-        generational: 'Generational Lock In',
-        light: 'Light Yearning',
-        party: 'Party & Study'
-      };
+      const MINIMUM_SECONDS = 180;
+      const BPM_MIN = 30;
+      const BPM_MAX = 240;
+
+      // ---------- Metronome state ----------
+      let currentBpm = 80;
+      let isMuted = false;
+      let audioCtx = null;
+      let masterGain = null;
+      let schedulerTimer = null;
+      let nextBeatTime = 0;
+
+      function initAudio() {
+        if (audioCtx) return;
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          masterGain = audioCtx.createGain();
+          masterGain.gain.value = 1;
+          masterGain.connect(audioCtx.destination);
+        } catch (e) {
+          console.warn('Web Audio API not available', e);
+        }
+      }
+
+      function playClick(when) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 1200;
+        // Sharp attack, quick decay — classic metronome click
+        gain.gain.setValueAtTime(0.0001, when);
+        gain.gain.exponentialRampToValueAtTime(0.6, when + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.06);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(when);
+        osc.stop(when + 0.08);
+      }
+
+      function scheduler() {
+        if (!audioCtx) return;
+        const lookahead = 0.1; // seconds ahead to schedule
+        while (nextBeatTime < audioCtx.currentTime + lookahead) {
+          if (!isMuted) playClick(nextBeatTime);
+          nextBeatTime += 60 / currentBpm;
+        }
+      }
+
+      function startMetronome() {
+        initAudio();
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        nextBeatTime = audioCtx.currentTime + 0.05;
+        if (schedulerTimer) clearInterval(schedulerTimer);
+        schedulerTimer = setInterval(scheduler, 25);
+      }
+
+      function stopMetronome() {
+        if (schedulerTimer) clearInterval(schedulerTimer);
+        schedulerTimer = null;
+      }
+
+      // ---------- BPM wheel ----------
+      function updateBpmDisplay() {
+        document.getElementById('bpm-cur').textContent = currentBpm;
+        document.getElementById('bpm-prev').textContent = currentBpm > BPM_MIN ? currentBpm - 1 : '';
+        document.getElementById('bpm-next').textContent = currentBpm < BPM_MAX ? currentBpm + 1 : '';
+      }
+
+      function setBpm(newBpm) {
+        newBpm = Math.max(BPM_MIN, Math.min(BPM_MAX, newBpm));
+        if (newBpm === currentBpm) return;
+        currentBpm = newBpm;
+        updateBpmDisplay();
+      }
+
+      document.getElementById('bpm-minus').addEventListener('click', () => setBpm(currentBpm - 1));
+      document.getElementById('bpm-plus').addEventListener('click', () => setBpm(currentBpm + 1));
+
+      // Drag-to-scroll on the wheel
+      const wheel = document.getElementById('bpm-wheel');
+      let dragStartY = 0;
+      let dragStartBpm = 0;
+      let isDragging = false;
+
+      wheel.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        dragStartY = e.clientY;
+        dragStartBpm = currentBpm;
+        wheel.setPointerCapture(e.pointerId);
+      });
+      wheel.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dy = e.clientY - dragStartY;
+        const delta = Math.round(-dy / 12); // 12px per 1 BPM
+        setBpm(dragStartBpm + delta);
+      });
+      wheel.addEventListener('pointerup', (e) => {
+        isDragging = false;
+        try { wheel.releasePointerCapture(e.pointerId); } catch (e) {}
+      });
+      wheel.addEventListener('pointercancel', () => { isDragging = false; });
+
+      // Keyboard arrows for accessibility
+      wheel.setAttribute('tabindex', '0');
+      wheel.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp')   { e.preventDefault(); setBpm(currentBpm + 1); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setBpm(currentBpm - 1); }
+        if (e.key === 'PageUp')    { e.preventDefault(); setBpm(currentBpm + 5); }
+        if (e.key === 'PageDown')  { e.preventDefault(); setBpm(currentBpm - 5); }
+      });
+
+      // Volume toggle
+      document.getElementById('vol-toggle').addEventListener('click', function () {
+        isMuted = !isMuted;
+        this.classList.toggle('on', !isMuted);
+        this.classList.toggle('off', isMuted);
+        this.textContent = isMuted ? '🔇' : '🔊';
+      });
+
+      updateBpmDisplay();
 
       // ---------- Realtime channel ----------
       const channel = sb.channel('focus-mode', { config: { broadcast: { self: false } } });
@@ -506,34 +677,9 @@
         return pad(m) + ':' + pad(sec);
       }
 
-      // ---------- UI wiring ----------
-      document.querySelectorAll('.jam-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (sessionActive) return;
-          document.querySelectorAll('.jam-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedJam = btn.dataset.jam;
-          updateStartButtonState();
-        });
-      });
-
-      function updateStartButtonState() {
-        const btn = document.getElementById('start-btn');
-        const hint = document.getElementById('hint-text');
-        if (sessionActive) return;
-        if (!selectedJam) {
-          btn.disabled = true;
-          hint.textContent = 'Pick a jam to begin';
-        } else {
-          btn.disabled = false;
-          hint.textContent = 'Ready when you are';
-        }
-      }
-
       // ---------- Start flow ----------
       document.getElementById('start-btn').addEventListener('click', () => {
         if (sessionActive) return;
-        if (!selectedJam) return;
         document.getElementById('study-topic').value = '';
         document.getElementById('goal-minute').value = '';
         document.getElementById('start-modal').classList.add('open');
@@ -560,36 +706,26 @@
         elapsedSeconds = 0;
         failGuard = false;
 
-        // UI lock-in
-        document.querySelectorAll('.jam-btn').forEach(b => b.disabled = true);
-        const startBtn = document.getElementById('start-btn');
-        startBtn.disabled = true;
-        startBtn.textContent = '▶ Running';
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('start-btn').textContent = '▶ Running';
         document.getElementById('timer-circle').classList.add('running');
         document.getElementById('timer-goal').textContent = 'Goal: ' + goalMinutes + ' min — ' + studyTopic;
         document.getElementById('hint-text').textContent = 'Session active';
 
-        // Play audio
-        const audio = document.getElementById('audio-' + selectedJam);
-        if (audio) {
-          audio.volume = 0.45;
-          try { await audio.play(); } catch (e) { /* autoplay may fail silently */ }
-        }
+        // Start the metronome
+        startMetronome();
 
-        // Broadcast join
         channel.send({
           type: 'broadcast',
           event: 'join',
-          payload: { user_id: currentUser?.id, name: userFullName, jam: selectedJam, topic: studyTopic }
+          payload: { user_id: currentUser?.id, name: userFullName, bpm: currentBpm, topic: studyTopic }
         });
 
-        // Tick loop
         timerInterval = setInterval(() => {
           elapsedSeconds++;
           document.getElementById('timer-display').textContent = formatTime(elapsedSeconds);
 
           if (elapsedSeconds === MINIMUM_SECONDS) {
-            // Unlock End button
             const btn = document.getElementById('start-btn');
             btn.disabled = false;
             btn.classList.add('end-btn');
@@ -598,11 +734,10 @@
           }
 
           if (elapsedSeconds >= goalMinutes * 60 && !failGuard) {
-            failGuard = true; // goal reached — don't fire failure later
+            failGuard = true;
           }
         }, 1000);
 
-        // Guard against navigation
         window.addEventListener('beforeunload', beforeUnloadGuard);
         document.querySelectorAll('header a, footer a').forEach(a => {
           a.addEventListener('click', navGuard, true);
@@ -633,22 +768,17 @@
       // End button handler
       document.getElementById('start-btn').addEventListener('click', () => {
         if (!sessionActive) return;
-        if (elapsedSeconds < MINIMUM_SECONDS) return; // locked until 3 min
+        if (elapsedSeconds < MINIMUM_SECONDS) return;
         endSession();
       });
 
       function endSession() {
         const hitGoal = elapsedSeconds >= goalMinutes * 60;
 
-        // Stop things
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = null;
-        JAMS.forEach(j => {
-          const a = document.getElementById('audio-' + j);
-          if (a) { a.pause(); a.currentTime = 0; }
-        });
+        stopMetronome();
 
-        // Broadcast outcome
         if (!hitGoal) {
           channel.send({
             type: 'broadcast',
@@ -669,18 +799,15 @@
           payload: { user_id: currentUser?.id, name: userFullName }
         });
 
-        // Reset UI
         sessionActive = false;
-        selectedJam = null;
-        document.querySelectorAll('.jam-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
         const btn = document.getElementById('start-btn');
-        btn.disabled = true;
+        btn.disabled = false;
         btn.classList.remove('end-btn');
         btn.textContent = '▶ Start';
         document.getElementById('timer-circle').classList.remove('running');
         document.getElementById('timer-display').textContent = '00:00';
         document.getElementById('timer-goal').textContent = '';
-        document.getElementById('hint-text').textContent = 'Pick a jam to begin';
+        document.getElementById('hint-text').textContent = 'Ready when you are';
         elapsedSeconds = 0;
 
         window.removeEventListener('beforeunload', beforeUnloadGuard);
