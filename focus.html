@@ -141,63 +141,43 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
       user-select: none;
-      padding: 0.5rem;
-      border-radius: 24px;
-      transition: background 0.2s;
     }
-    .bpm-step {
-      width: 52px;
-      height: 34px;
-      border-radius: 17px;
-      background: #141c26;
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #8a99a8;
-      font-family: 'Inter', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 500;
-      line-height: 1;
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s, transform 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-bottom: 2px;
-    }
-    .bpm-step:hover { background: #1f2a36; color: #e8eef5; }
-    .bpm-step:active { transform: scale(0.94); }
-        .bpm-wheel {
-      height: 180px;
-      width: 90px;
+    .bpm-wheel {
+      height: 220px;
+      width: 110px;
       overflow-y: scroll;
+      overflow-x: hidden;
       scroll-snap-type: y mandatory;
-      padding: 68px 0;
       scrollbar-width: none;
       -ms-overflow-style: none;
       overscroll-behavior: contain;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
       mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%);
-      scroll-behavior: smooth;
+      cursor: grab;
     }
+    .bpm-wheel:active { cursor: grabbing; }
     .bpm-wheel::-webkit-scrollbar { display: none; }
+    .bpm-spacer { height: 88px; }
     .bpm-item {
       height: 44px;
       line-height: 44px;
       text-align: center;
       scroll-snap-align: center;
       font-family: 'Inter', sans-serif;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       font-weight: 300;
       color: #5c7c9e;
       opacity: 0.35;
       transition: opacity 0.2s, font-size 0.2s, color 0.2s;
       font-variant-numeric: tabular-nums;
       user-select: none;
-      pointer-events: none;
+      -webkit-user-select: none;
     }
     .bpm-item.active {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       color: #e8eef5;
       opacity: 1;
     }
@@ -276,7 +256,7 @@
       padding: 0.45rem 1.2rem;
       border-radius: 30px;
       font-size: 0.85rem;
-      animation: slideIn 0.4s ease, fadeOut 0.6s ease 6s forwards;
+      animation: slideIn 0.4s ease;
       backdrop-filter: blur(6px);
     }
     .live-item.joined { border-color: rgba(39,174,96,0.5); color: #a8e6b8; }
@@ -429,9 +409,7 @@
 
         <div class="bpm-panel">
           <div class="bpm-picker">
-            <button class="bpm-step" id="bpm-minus" title="Slower">−</button>
             <div class="bpm-wheel" id="bpm-wheel"></div>
-            <button class="bpm-step" id="bpm-plus" title="Faster">+</button>
           </div>
           <div class="bpm-label">BPM</div>
           <button class="vol-toggle on" id="vol-toggle" title="Metronome sound on/off">🔊</button>
@@ -594,17 +572,16 @@
       }
 
       // ---------- BPM wheel ----------
-            // ---------- BPM wheel ----------
       const wheel = document.getElementById('bpm-wheel');
-      let programmaticScroll = false;
       let scrollDebounce = null;
 
       function buildWheelItems() {
-        const items = [];
+        let html = '<div class="bpm-spacer"></div>';
         for (let b = BPM_MIN; b <= BPM_MAX; b++) {
-          items.push(`<div class="bpm-item" data-bpm="${b}">${b}</div>`);
+          html += `<div class="bpm-item" data-bpm="${b}">${b}</div>`;
         }
-        wheel.innerHTML = items.join('');
+        html += '<div class="bpm-spacer"></div>';
+        wheel.innerHTML = html;
       }
 
       function highlightActiveBpm() {
@@ -617,15 +594,13 @@
       function scrollWheelToBpm(bpm, smooth) {
         const item = wheel.querySelector(`[data-bpm="${bpm}"]`);
         if (!item) return;
-        programmaticScroll = true;
         const offset = item.offsetTop - wheel.clientHeight / 2 + item.offsetHeight / 2;
         wheel.scrollTo({ top: offset, behavior: smooth ? 'smooth' : 'auto' });
-        clearTimeout(scrollDebounce);
-        scrollDebounce = setTimeout(() => { programmaticScroll = false; }, 500);
       }
 
       function getCenteredBpm() {
-        const wheelCenter = wheel.getBoundingClientRect().top + wheel.clientHeight / 2;
+        const wheelRect = wheel.getBoundingClientRect();
+        const wheelCenter = wheelRect.top + wheelRect.height / 2;
         let closest = null, closestDist = Infinity;
         wheel.querySelectorAll('.bpm-item').forEach(item => {
           const rect = item.getBoundingClientRect();
@@ -636,16 +611,9 @@
         return closest ? parseInt(closest.dataset.bpm, 10) : currentBpm;
       }
 
-      function setBpm(newBpm, fromScroll) {
-        newBpm = Math.max(BPM_MIN, Math.min(BPM_MAX, newBpm));
-        if (newBpm === currentBpm) return;
-        currentBpm = newBpm;
-        highlightActiveBpm();
-        if (!fromScroll) scrollWheelToBpm(newBpm, true);
-      }
-
+      // Listen for scroll (wheel, trackpad, touch). Debounce so we only
+      // update BPM once the user has stopped moving.
       wheel.addEventListener('scroll', () => {
-        if (programmaticScroll) return;
         clearTimeout(scrollDebounce);
         scrollDebounce = setTimeout(() => {
           const centered = getCenteredBpm();
@@ -653,18 +621,16 @@
             currentBpm = centered;
             highlightActiveBpm();
           }
-        }, 80);
-      });
+        }, 90);
+      }, { passive: true });
 
-      document.getElementById('bpm-minus').addEventListener('click', () => setBpm(currentBpm - 1));
-      document.getElementById('bpm-plus').addEventListener('click', () => setBpm(currentBpm + 1));
-
+      // Arrow keys for accessibility
       wheel.setAttribute('tabindex', '0');
       wheel.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowUp')   { e.preventDefault(); setBpm(currentBpm + 1); }
-        if (e.key === 'ArrowDown') { e.preventDefault(); setBpm(currentBpm - 1); }
-        if (e.key === 'PageUp')    { e.preventDefault(); setBpm(currentBpm + 5); }
-        if (e.key === 'PageDown')  { e.preventDefault(); setBpm(currentBpm - 5); }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); currentBpm = Math.min(BPM_MAX, currentBpm + 1); scrollWheelToBpm(currentBpm, true); highlightActiveBpm(); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); currentBpm = Math.max(BPM_MIN, currentBpm - 1); scrollWheelToBpm(currentBpm, true); highlightActiveBpm(); }
+        if (e.key === 'PageUp')    { e.preventDefault(); currentBpm = Math.min(BPM_MAX, currentBpm + 5); scrollWheelToBpm(currentBpm, true); highlightActiveBpm(); }
+        if (e.key === 'PageDown')  { e.preventDefault(); currentBpm = Math.max(BPM_MIN, currentBpm - 5); scrollWheelToBpm(currentBpm, true); highlightActiveBpm(); }
       });
 
       // Volume toggle
@@ -675,10 +641,9 @@
         this.textContent = isMuted ? '🔇' : '🔊';
       });
 
-      // Build and initialize the wheel
+      // Build the wheel and jump to the default BPM without animation
       buildWheelItems();
       highlightActiveBpm();
-      // Defer the initial scroll until layout settles
       requestAnimationFrame(() => {
         requestAnimationFrame(() => scrollWheelToBpm(currentBpm, false));
       });
@@ -705,8 +670,10 @@
         const div = document.createElement('div');
         div.className = 'live-item ' + (variant || '');
         div.textContent = text;
-        feed.appendChild(div);
-        setTimeout(() => { div.remove(); }, 7000);
+        feed.insertBefore(div, feed.firstChild);
+        while (feed.children.length > 5) {
+          feed.removeChild(feed.lastChild);
+        }
       }
 
       function showFailToast(text) {
