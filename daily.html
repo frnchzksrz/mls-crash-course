@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Challenge · MLS Crash Course</title>
+  <meta name="description" content="One board-style question a day. Keep your streak alive.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; min-height: 100vh; display: flex; flex-direction: column; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited { background: #1e3b5a; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; }
+    .nav-links .auth-btn:hover { background: #162d45; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    /* ---------------- Main ---------------- */
+    .daily-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+      position: relative;
+      z-index: 2;
+    }
+    .daily-hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      max-width: 640px;
+    }
+    .daily-hero .eyebrow {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #5c7c9e;
+      margin-bottom: 0.5rem;
+    }
+    .daily-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem;
+      color: #1e3b5a;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+    .daily-hero .sub {
+      color: #3a4b5c;
+      font-size: 1.05rem;
+    }
+
+    /* Streak strip */
+    .streak-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, #fff5e0, #ffe9b8);
+      border: 1px solid rgba(216, 143, 28, 0.35);
+      padding: 0.55rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      color: #7a4d0b;
+      margin-top: 1rem;
+      box-shadow: 0 6px 20px rgba(246, 196, 69, 0.18);
+    }
+    .streak-strip .fire { font-size: 1.1rem; }
+    .streak-strip .label { font-size: 0.9rem; }
+    .streak-strip .num { font-size: 1.05rem; }
+
+    /* Challenge card */
+    .challenge-card {
+      background: #fff;
+      border: 1px solid rgba(30,59,90,0.1);
+      border-radius: 24px;
+      padding: 2rem 2.25rem;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(30,59,90,0.06);
+    }
+    .challenge-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .challenge-date {
+      font-size: 0.85rem;
+      color: #8b8b8b;
+      font-weight: 500;
+    }
+    .challenge-subject {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #1e3b5a;
+      background: #e8f0f8;
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+    .challenge-question {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      line-height: 1.45;
+      color: #1e1e1e;
+      margin-bottom: 1.75rem;
+    }
+    .challenge-choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1.75rem;
+    }
+    .choice {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.9rem;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(30,59,90,0.12);
+      background: #fafbfc;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #1e1e1e;
+      width: 100%;
+    }
+    .choice:hover:not(:disabled) { background: #f0f4f8; border-color: #1e3b5a; }
+    .choice:disabled { cursor: default; }
+    .choice .letter {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(30,59,90,0.08);
+      color: #1e3b5a;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+    .choice.selected { border-color: #1e3b5a; background: #e8f0f8; }
+    .choice.correct { background: #d4edda; border-color: #28a745; color: #155724; font-weight: 600; }
+    .choice.correct .letter { background: #28a745; color: #fff; }
+    .choice.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+    .choice.wrong .letter { background: #dc3545; color: #fff; }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 14px 24px;
+      background: #1e3b5a;
+      color: #fff;
+      border: none;
+      border-radius: 40px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .submit-btn:hover:not(:disabled) { background: #152b42; transform: translateY(-1px); }
+    .submit-btn:disabled { background: #b0c4d0; cursor: not-allowed; }
+
+    /* Result view */
+    .result-banner {
+      text-align: center;
+      padding: 1.5rem 1rem 1.25rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+    }
+    .result-banner.correct { background: linear-gradient(135deg, #d4edda, #c3e6cb); border: 1px solid #28a745; }
+    .result-banner.wrong   { background: linear-gradient(135deg, #f8d7da, #f5c6cb); border: 1px solid #dc3545; }
+    .result-banner .emoji { font-size: 2.5rem; line-height: 1; }
+    .result-banner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin: 0.5rem 0 0.25rem;
+    }
+    .result-banner.correct h2 { color: #155724; }
+    .result-banner.wrong h2 { color: #721c24; }
+    .result-banner .pct { font-size: 0.95rem; opacity: 0.85; }
+
+    .explanation-box {
+      background: #f0f4f8;
+      border-left: 4px solid #1e3b5a;
+      padding: 1.1rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+    .explanation-box strong { color: #1e3b5a; }
+
+    .result-actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .result-actions button, .result-actions a {
+      flex: 1 1 auto;
+      min-width: 150px;
+      padding: 12px 20px;
+      border-radius: 40px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #1e3b5a; color: #fff; }
+    .btn-primary:hover { background: #152b42; }
+    .btn-secondary { background: transparent; color: #1e3b5a; border: 2px solid #1e3b5a !important; }
+    .btn-secondary:hover { background: #1e3b5a; color: #fff; }
+    .btn-ghost { background: #e8f0f8; color: #1e3b5a; }
+    .btn-ghost:hover { background: #d4e4f2; }
+
+    .come-back {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: #5c7c9e;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    /* Loading + login */
+    .state-message {
+      text-align: center;
+      color: #5c7c9e;
+      padding: 3rem 1rem;
+      font-size: 1rem;
+    }
+    .state-message a { color: #1e3b5a; font-weight: 600; }
+
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    /* ---------------- Dark mode ---------------- */
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] .daily-hero h1 { color: #8ab4d9; }
+    html[data-theme="dark"] .daily-hero .sub { color: #b8c5d1; }
+    html[data-theme="dark"] .daily-hero .eyebrow { color: #6b8ba3; }
+    html[data-theme="dark"] .streak-strip { background: linear-gradient(135deg, #2d2415, #3d3120); border-color: rgba(246,196,69,0.3); color: #f6c445; }
+    html[data-theme="dark"] .challenge-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); box-shadow: 0 20px 45px rgba(0,0,0,0.3); }
+    html[data-theme="dark"] .challenge-date { color: #8b8b8b; }
+    html[data-theme="dark"] .challenge-subject { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .challenge-question { color: #e8eef5; }
+    html[data-theme="dark"] .choice { background: #162536; border-color: rgba(255,255,255,0.12); color: #e8eef5; }
+    html[data-theme="dark"] .choice:hover:not(:disabled) { background: #23374b; border-color: #8ab4d9; }
+    html[data-theme="dark"] .choice .letter { background: rgba(255,255,255,0.1); color: #8ab4d9; }
+    html[data-theme="dark"] .choice.selected { background: #23374b; border-color: #8ab4d9; }
+    html[data-theme="dark"] .choice.correct { background: #1e4d2b; border-color: #28a745; color: #a8e6b8; }
+    html[data-theme="dark"] .choice.correct .letter { background: #28a745; color: #fff; }
+    html[data-theme="dark"] .choice.wrong { background: #4d1e22; border-color: #dc3545; color: #f5b7bd; }
+    html[data-theme="dark"] .choice.wrong .letter { background: #dc3545; color: #fff; }
+    html[data-theme="dark"] .explanation-box { background: #23374b; border-left-color: #8ab4d9; color: #b8c5d1; }
+    html[data-theme="dark"] .explanation-box strong { color: #8ab4d9; }
+    html[data-theme="dark"] .result-banner.correct { background: linear-gradient(135deg, #1e4d2b, #2a5a34); border-color: #28a745; }
+    html[data-theme="dark"] .result-banner.correct h2 { color: #a8e6b8; }
+    html[data-theme="dark"] .result-banner.wrong { background: linear-gradient(135deg, #4d1e22, #5a2429); border-color: #dc3545; }
+    html[data-theme="dark"] .result-banner.wrong h2 { color: #f5b7bd; }
+    html[data-theme="dark"] .btn-secondary { color: #8ab4d9; border-color: #8ab4d9 !important; }
+    html[data-theme="dark"] .btn-secondary:hover { background: #8ab4d9; color: #0f1a26; }
+    html[data-theme="dark"] .btn-ghost { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .btn-ghost:hover { background: #2d4a6b; }
+    html[data-theme="dark"] .come-back { color: #6b8ba3; }
+    html[data-theme="dark"] .state-message { color: #b8c5d1; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) {
+      .nav-links { gap: 0.75rem; }
+      .nav-links a { font-size: 0.85rem; }
+      header { padding: 0.75rem 1rem; }
+      .daily-main { padding: 2rem 1rem 3rem; }
+      .daily-hero h1 { font-size: 2rem; }
+      .daily-hero .sub { font-size: 0.95rem; }
+      .challenge-card { padding: 1.5rem 1.25rem; border-radius: 18px; }
+      .challenge-question { font-size: 1.2rem; }
+      .choice { padding: 12px 14px; font-size: 0.95rem; }
+      .result-banner h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="focus.html">Focus</a>
+      <a href="daily.html">Daily</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="daily-main">
+    <div class="daily-hero">
+      <div class="eyebrow" id="hero-date">Loading…</div>
+      <h1>Daily Challenge</h1>
+      <p class="sub">One board-style question, refreshed every day. Keep the streak alive.</p>
+      <div class="streak-strip" id="streak-strip" style="display:none;">
+        <span class="fire">🔥</span>
+        <span class="label">Current streak:</span>
+        <span class="num" id="streak-num">0</span>
+        <span class="label">day<span id="streak-s">s</span></span>
+      </div>
+    </div>
+
+    <div id="daily-loading" class="state-message">Loading today's challenge…</div>
+
+    <div id="daily-login-prompt" class="state-message" style="display:none;">
+      <p style="margin-bottom:1rem;">Log in to play the Daily Challenge and build your streak.</p>
+      <a href="signup.html" class="submit-btn" style="display:inline-block;width:auto;padding:12px 32px;">Log In</a>
+    </div>
+
+    <div id="daily-question-card" class="challenge-card" style="display:none;">
+      <div class="challenge-meta">
+        <span class="challenge-date" id="challenge-date"></span>
+        <span class="challenge-subject" id="challenge-subject"></span>
+      </div>
+      <div class="challenge-question" id="challenge-question"></div>
+      <div class="challenge-choices" id="challenge-choices"></div>
+      <button class="submit-btn" id="submit-answer" disabled>Submit Answer</button>
+    </div>
+
+    <div id="daily-result-card" class="challenge-card" style="display:none;"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      let currentUser = null;
+      let todayQuestion = null;
+      let selectedIndex = null;
+
+      // -------------------------------------------------------------------
+      // Date formatting (Manila)
+      // -------------------------------------------------------------------
+      function manilaToday() {
+        const now = new Date();
+        // Rough Manila conversion: UTC+8
+        const manila = new Date(now.getTime() + (8 * 60 + now.getTimezoneOffset()) * 60000);
+        return manila;
+      }
+      function formatDateLong(d) {
+        return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      function dateIso(d) {
+        return d.toISOString().slice(0, 10);
+      }
+
+      // -------------------------------------------------------------------
+      // Streak computation from user's own answer history
+      // -------------------------------------------------------------------
+      async function computeStreak(userId) {
+        const { data } = await sb.from('daily_challenge_answers')
+          .select('challenge_date')
+          .eq('user_id', userId)
+          .order('challenge_date', { ascending: false })
+          .limit(365);
+        if (!data || data.length === 0) return 0;
+
+        const dates = data.map(r => r.challenge_date);
+        const today = dateIso(manilaToday());
+        const yesterday = dateIso(new Date(manilaToday().getTime() - 86400000));
+
+        let expected;
+        if (dates[0] === today) expected = today;
+        else if (dates[0] === yesterday) expected = yesterday;
+        else return 0;
+
+        let streak = 0;
+        for (const d of dates) {
+          if (d === expected) {
+            streak++;
+            expected = dateIso(new Date(new Date(expected).getTime() - 86400000));
+          } else {
+            break;
+          }
+        }
+        return streak;
+      }
+
+      async function renderStreak() {
+        if (!currentUser) return;
+        const n = await computeStreak(currentUser.id);
+        if (n > 0) {
+          document.getElementById('streak-strip').style.display = 'inline-flex';
+          document.getElementById('streak-num').textContent = n;
+          document.getElementById('streak-s').textContent = n === 1 ? '' : 's';
+        } else {
+          document.getElementById('streak-strip').style.display = 'none';
+        }
+      }
+
+      // -------------------------------------------------------------------
+      // Initial render
+      // -------------------------------------------------------------------
+      async function renderDaily() {
+        const loading = document.getElementById('daily-loading');
+        const loginPrompt = document.getElementById('daily-login-prompt');
+        const questionCard = document.getElementById('daily-question-card');
+        const resultCard = document.getElementById('daily-result-card');
+
+        loading.style.display = 'block';
+        loginPrompt.style.display = 'none';
+        questionCard.style.display = 'none';
+        resultCard.style.display = 'none';
+
+        // Set the hero date
+        document.getElementById('hero-date').textContent = formatDateLong(manilaToday());
+
+        if (!currentUser) {
+          loading.style.display = 'none';
+          loginPrompt.style.display = 'block';
+          return;
+        }
+
+        // Fetch today's challenge question
+        const { data: qData, error: qErr } = await sb.rpc('get_today_challenge');
+        if (qErr || !qData || qData.length === 0) {
+          loading.innerHTML = '<p style="color:#c0392b;">Could not load today\'s challenge. Please try again later.</p>';
+          return;
+        }
+        todayQuestion = qData[0];
+
+        // Fetch user's own result for today
+        const { data: rData, error: rErr } = await sb.rpc('get_my_daily_result');
+        const myResult = (rData && rData.length > 0) ? rData[0] : null;
+
+        loading.style.display = 'none';
+
+        if (myResult && myResult.has_answered) {
+          renderResult(myResult);
+        } else {
+          renderQuestion();
+        }
+      }
+
+      // -------------------------------------------------------------------
+      // Question render
+      // -------------------------------------------------------------------
+      function renderQuestion() {
+        const card = document.getElementById('daily-question-card');
+        card.style.display = 'block';
+
+        document.getElementById('challenge-date').textContent = formatDateLong(manilaToday());
+        document.getElementById('challenge-subject').textContent = todayQuestion.course_title || 'General';
+        document.getElementById('challenge-question').textContent = todayQuestion.question;
+
+        const choices = document.getElementById('challenge-choices');
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        choices.innerHTML = todayQuestion.choices.map((c, i) =>
+          `<button class="choice" data-index="${i}"><span class="letter">${letters[i]}</span><span>${window.escapeHtml(c)}</span></button>`
+        ).join('');
+
+        selectedIndex = null;
+        const submitBtn = document.getElementById('submit-answer');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submit Answer';
+
+        choices.querySelectorAll('.choice').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            choices.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedIndex = parseInt(btn.dataset.index, 10);
+            submitBtn.disabled = false;
+          });
+        });
+
+        submitBtn.onclick = submitAnswer;
+      }
+
+      // -------------------------------------------------------------------
+      // Submit answer
+      // -------------------------------------------------------------------
+      async function submitAnswer() {
+        if (selectedIndex === null) return;
+        const submitBtn = document.getElementById('submit-answer');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting…';
+
+        const { data, error } = await sb.rpc('submit_daily_challenge', { p_choice_index: selectedIndex });
+        if (error || !data || data.length === 0) {
+          alert('Failed to submit: ' + (error ? error.message : 'unknown error'));
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Answer';
+          return;
+        }
+
+        // Mark the chosen choice correct/wrong
+        const result = data[0];
+        const choices = document.getElementById('challenge-choices');
+        choices.querySelectorAll('.choice').forEach((btn, i) => {
+          btn.disabled = true;
+          if (i === result.correct_index) btn.classList.add('correct');
+          else if (i === selectedIndex && i !== result.correct_index) btn.classList.add('wrong');
+        });
+
+        // Brief delay so the user sees their answer marked, then switch to result view
+        setTimeout(() => {
+          renderResult({
+            has_answered: true,
+            choice_index: selectedIndex,
+            correct: result.correct,
+            correct_index: result.correct_index,
+            explanation: result.explanation,
+            percent_correct: result.percent_correct,
+            total_answers: result.total_answers
+          });
+        }, 900);
+      }
+
+      // -------------------------------------------------------------------
+      // Result render
+      // -------------------------------------------------------------------
+      function renderResult(r) {
+        const card = document.getElementById('daily-result-card');
+        const qCard = document.getElementById('daily-question-card');
+        qCard.style.display = 'none';
+        card.style.display = 'block';
+
+        const isCorrect = r.correct;
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const correctLetter = letters[r.correct_index];
+        const correctText = todayQuestion.choices[r.correct_index];
+        const chosenText = todayQuestion.choices[r.choice_index];
+
+        const bannerClass = isCorrect ? 'correct' : 'wrong';
+        const bannerEmoji = isCorrect ? '🎯' : '❌';
+        const bannerTitle = isCorrect ? 'Correct!' : 'Not quite';
+        const pct = r.percent_correct !== null ? r.percent_correct : 0;
+        const total = r.total_answers || 0;
+
+        card.innerHTML = `
+          <div class="result-banner ${bannerClass}">
+            <div class="emoji">${bannerEmoji}</div>
+            <h2>${bannerTitle}</h2>
+            <div class="pct">
+              ${total > 0
+                ? `${pct}% of players got this right (${total} ${total === 1 ? 'answer' : 'answers'} today)`
+                : 'You are the first to answer today'}
+            </div>
+          </div>
+
+          <div class="challenge-meta">
+            <span class="challenge-date">${formatDateLong(manilaToday())}</span>
+            <span class="challenge-subject">${window.escapeHtml(todayQuestion.course_title || 'General')}</span>
+          </div>
+
+          <div class="challenge-question">${window.escapeHtml(todayQuestion.question)}</div>
+
+          ${!isCorrect ? `
+            <div class="challenge-choices" style="pointer-events:none;">
+              <div class="choice wrong">
+                <span class="letter">${letters[r.choice_index]}</span>
+                <span>${window.escapeHtml(chosenText)}</span>
+              </div>
+              <div class="choice correct">
+                <span class="letter">${correctLetter}</span>
+                <span>${window.escapeHtml(correctText)}</span>
+              </div>
+            </div>
+          ` : `
+            <div class="challenge-choices" style="pointer-events:none;">
+              <div class="choice correct">
+                <span class="letter">${correctLetter}</span>
+                <span>${window.escapeHtml(correctText)}</span>
+              </div>
+            </div>
+          `}
+
+          ${r.explanation ? `<div class="explanation-box"><strong>Why:</strong> ${window.escapeHtml(r.explanation)}</div>` : ''}
+
+          <div class="result-actions">
+            <button class="btn-primary" id="share-btn">📸 Share Result</button>
+            <a class="btn-secondary" href="courses.html">Review Courses</a>
+          </div>
+
+          <div class="come-back" id="come-back-msg">Come back tomorrow for a fresh question.</div>
+        `;
+
+        document.getElementById('share-btn').addEventListener('click', () => generateShareCard(r));
+        renderStreak();
+      }
+
+      // -------------------------------------------------------------------
+      // Shareable card (canvas → PNG)
+      // -------------------------------------------------------------------
+      function generateShareCard(r) {
+        const W = 1080, H = 1080;
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        // Background gradient
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#1e3b5a');
+        bg.addColorStop(1, '#0f1a26');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Border
+        ctx.strokeStyle = '#f6c445';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(40, 40, W - 80, H - 80);
+
+        // Brand header
+        ctx.fillStyle = '#8ab4d9';
+        ctx.font = '500 30px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('MLS CRASH COURSE', W / 2, 130);
+
+        ctx.fillStyle = '#6b8ba3';
+        ctx.font = '400 22px Inter, sans-serif';
+        ctx.fillText('by RF · Medical Laboratory Science', W / 2, 168);
+
+        // Date + subject
+        ctx.fillStyle = '#b8c5d1';
+        ctx.font = '500 24px Inter, sans-serif';
+        ctx.fillText(formatDateLong(manilaToday()), W / 2, 250);
+
+        const subject = (todayQuestion.course_title || 'General').toUpperCase();
+        ctx.fillStyle = '#f6c445';
+        ctx.font = '700 22px Inter, sans-serif';
+        ctx.fillText(subject, W / 2, 295);
+
+        // Big verdict emoji
+        ctx.font = '200px Inter, sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(r.correct ? '🎯' : '❌', W / 2, 520);
+
+        // Big verdict text
+        ctx.fillStyle = r.correct ? '#a8e6b8' : '#f5b7bd';
+        ctx.font = '700 72px "Playfair Display", serif';
+        ctx.fillText(r.correct ? 'CORRECT!' : 'MISSED IT', W / 2, 620);
+
+        // Percent
+        if (r.total_answers > 0) {
+          ctx.fillStyle = '#b8c5d1';
+          ctx.font = '400 26px Inter, sans-serif';
+          ctx.fillText(`${r.percent_correct}% of players also got this right`, W / 2, 675);
+        }
+
+        // Streak
+        if (streakCache > 0) {
+          ctx.fillStyle = '#f6c445';
+          ctx.font = '700 34px Inter, sans-serif';
+          const streakText = `🔥 ${streakCache} day${streakCache === 1 ? '' : 's'} streak`;
+          ctx.fillText(streakText, W / 2, 780);
+        }
+
+        // Divider
+        ctx.strokeStyle = 'rgba(138,180,217,0.3)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(160, 855);
+        ctx.lineTo(W - 160, 855);
+        ctx.stroke();
+
+        // Bottom URL
+        ctx.fillStyle = '#8ab4d9';
+        ctx.font = '600 28px Inter, sans-serif';
+        ctx.fillText('augnamls.vercel.app', W / 2, 930);
+
+        ctx.fillStyle = '#6b8ba3';
+        ctx.font = '400 20px Inter, sans-serif';
+        ctx.fillText('Join the Daily Challenge →', W / 2, 975);
+
+        // Offer download
+        canvas.toBlob(blob => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `mls-daily-${dateIso(manilaToday())}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }, 'image/png');
+      }
+
+      // Cache streak after computing it, so the share card can access it
+      let streakCache = 0;
+      const origCompute = computeStreak;
+      computeStreak = async function (userId) {
+        streakCache = await origCompute(userId);
+        return streakCache;
+      };
+
+      // -------------------------------------------------------------------
+      // Init
+      // -------------------------------------------------------------------
+      async function pageInit(user) {
+        currentUser = user;
+        await renderDaily();
+      }
+
+      window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+    })();
+  </script>
+</body>
+</html>
