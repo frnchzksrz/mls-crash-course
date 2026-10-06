@@ -612,7 +612,7 @@
       }
 
       // Listen for scroll (wheel, trackpad, touch). Debounce so we only
-      // update BPM once the user has stopped moving.
+      // Update BPM after scrolling stops (works for mouse wheel + trackpad + touch)
       wheel.addEventListener('scroll', () => {
         clearTimeout(scrollDebounce);
         scrollDebounce = setTimeout(() => {
@@ -623,6 +623,50 @@
           }
         }, 90);
       }, { passive: true });
+
+      // ---------- Click-and-drag (mouse only) ----------
+      // Native scroll handles touch and mouse wheel; this adds drag-with-mouse.
+      let isDragging = false;
+      let dragStartY = 0;
+      let dragStartScroll = 0;
+
+      wheel.addEventListener('pointerdown', (e) => {
+        if (e.pointerType !== 'mouse' || e.button !== 0) return;
+        isDragging = true;
+        dragStartY = e.clientY;
+        dragStartScroll = wheel.scrollTop;
+        wheel.style.scrollSnapType = 'none';   // let the drag move freely
+        wheel.style.cursor = 'grabbing';
+        clearTimeout(scrollDebounce);          // cancel any pending snap check
+        try { wheel.setPointerCapture(e.pointerId); } catch (err) {}
+        e.preventDefault();
+      });
+
+      wheel.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dy = e.clientY - dragStartY;
+        wheel.scrollTop = dragStartScroll - dy;
+        e.preventDefault();
+      });
+
+      function endDrag(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        wheel.style.cursor = '';
+        try { wheel.releasePointerCapture(e.pointerId); } catch (err) {}
+
+        // Snap to the closest BPM, then re-enable CSS snap
+        const centered = getCenteredBpm();
+        if (centered !== currentBpm) {
+          currentBpm = centered;
+          highlightActiveBpm();
+        }
+        scrollWheelToBpm(currentBpm, true);
+        setTimeout(() => { wheel.style.scrollSnapType = ''; }, 350);
+      }
+
+      wheel.addEventListener('pointerup', endDrag);
+      wheel.addEventListener('pointercancel', endDrag);
 
       // Arrow keys for accessibility
       wheel.setAttribute('tabindex', '0');
