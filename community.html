@@ -13,11 +13,10 @@
   <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; padding-bottom: 220px; }
+    body { font-family: 'Inter', sans-serif; background: #ffffff; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; padding-bottom: 180px; }
     .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
     html[data-theme="dark"] .diamond { background: #8ab4d9; }
-
     header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
     .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
@@ -60,121 +59,32 @@
     .search-result-item:hover { background: #f0f4f8; }
     .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
-
     .container { max-width: 800px; margin: 0 auto; padding: 2.5rem 2rem 0; }
 
-    /* ---------- PODIUM ---------- */
-    .podium-section {
-      background: linear-gradient(135deg, #1e3b5a 0%, #2d4a6b 60%, #3a5a7d 100%);
-      border-radius: 24px;
-      padding: 1.75rem 1.25rem 0;
-      margin-bottom: 2.5rem;
-      box-shadow: 0 15px 35px rgba(30,59,90,0.15);
-      overflow: hidden;
-      position: relative;
-    }
-    .podium-section::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(246,196,69,0.15) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .podium-header {
-      text-align: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 1.5rem;
-      position: relative;
-      z-index: 1;
-    }
-    .podium-subject {
-      display: block;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #f6c445;
-      margin-top: 0.3rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      transition: opacity 0.3s;
-    }
-    .podium {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 0.6rem;
-      min-height: 250px;
-      position: relative;
-      z-index: 1;
-    }
-    .podium-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      flex: 1;
-      max-width: 160px;
-      padding-bottom: 0;
-    }
-    .podium-score {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #f6c445;
-      line-height: 1;
-      animation: fadeUp 0.5s ease;
-    }
-    .podium-username {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #fff;
-      text-align: center;
-      max-width: 100%;
-      word-break: break-word;
-      line-height: 1.2;
-      animation: fadeUp 0.5s ease 0.05s backwards;
-    }
-    .podium-character {
-      font-size: 2.6rem;
-      line-height: 1;
-      margin-top: 0.3rem;
-      animation: fadeUp 0.5s ease 0.1s backwards;
-    }
+    /* PODIUM */
+    .podium-section { background: linear-gradient(135deg, #1e3b5a 0%, #2d4a6b 60%, #3a5a7d 100%); border-radius: 24px; padding: 1.75rem 1.25rem 0; margin-bottom: 2rem; box-shadow: 0 15px 35px rgba(30,59,90,0.15); overflow: hidden; position: relative; }
+    .podium-section::before { content: ""; position: absolute; top: -50%; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(246,196,69,0.15) 0%, transparent 70%); pointer-events: none; }
+    .podium-header { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 1.5rem; position: relative; z-index: 1; }
+    .podium-subject { display: block; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500; color: #f6c445; margin-top: 0.3rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 0.6rem; min-height: 250px; position: relative; z-index: 1; }
+    .podium-slot { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; flex: 1; max-width: 160px; }
+    .podium-score { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: #f6c445; line-height: 1; animation: fadeUp 0.5s ease; }
+    .podium-username { font-size: 0.82rem; font-weight: 600; color: #fff; text-align: center; max-width: 100%; word-break: break-word; line-height: 1.2; animation: fadeUp 0.5s ease 0.05s backwards; }
+    .podium-character { font-size: 2.6rem; line-height: 1; margin-top: 0.3rem; animation: fadeUp 0.5s ease 0.1s backwards; }
     .podium-slot.first .podium-character { font-size: 3.2rem; }
-    .podium-crown {
-      font-size: 1.3rem;
-      line-height: 1;
-      animation: fadeUp 0.5s ease 0.15s backwards;
-    }
-    .podium-block {
-      width: 100%;
-      border-radius: 12px 12px 0 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      margin-top: 0.4rem;
-      box-shadow: 0 -3px 10px rgba(0,0,0,0.1) inset;
-    }
+    .podium-crown { font-size: 1.3rem; line-height: 1; animation: fadeUp 0.5s ease 0.15s backwards; }
+    .podium-block { width: 100%; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: #fff; margin-top: 0.4rem; box-shadow: 0 -3px 10px rgba(0,0,0,0.1) inset; }
     .podium-slot.first .podium-block { height: 100px; background: linear-gradient(180deg, #f6c445 0%, #d4a017 100%); color: #4a3403; }
     .podium-slot.second .podium-block { height: 72px; background: linear-gradient(180deg, #d8d8d8 0%, #9a9a9a 100%); color: #333; }
     .podium-slot.third .podium-block { height: 52px; background: linear-gradient(180deg, #d4915c 0%, #a05e1f 100%); color: #fff; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ---------- POSTS ---------- */
+    /* TITLE — now above posts */
+    .title-section { text-align: center; padding: 0.5rem 0 1.5rem; }
+    .title-section h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.35rem; }
+    .title-section .subtitle { color: #3a4b5c; font-size: 1.05rem; }
+
+    /* POSTS */
     .post-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 1.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.03); border: 1px solid rgba(30,59,90,0.08); }
     .post-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
     .post-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
@@ -182,8 +92,7 @@
     .post-author { flex: 1; }
     .post-author-name { font-weight: 600; color: #1e3b5a; }
     .post-time { font-size: 0.8rem; color: #8b8b8b; }
-    .post-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #1e3b5a; margin-bottom: 0.5rem; }
-    .post-body { color: #2c3e50; margin-bottom: 1rem; white-space: pre-wrap; }
+    .post-body { color: #2c3e50; margin-bottom: 1rem; white-space: pre-wrap; font-size: 1.02rem; }
     .post-actions { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
     .btn-outline { background: transparent; border: 1px solid #1e3b5a; color: #1e3b5a; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
     .btn-outline:hover { background: #1e3b5a; color: #fff; }
@@ -201,53 +110,11 @@
     .comment-form input { flex: 1; margin-bottom: 0; padding: 8px 12px; border-radius: 20px; border: 1px solid #ccd5de; font-family: inherit; }
     .comment-form button { padding: 8px 16px; border-radius: 20px; background: #1e3b5a; color: #fff; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; }
 
-    /* ---------- TITLE BELOW POSTS ---------- */
-    .title-section {
-      text-align: center;
-      padding: 2.5rem 0 3rem;
-      border-top: 1px solid rgba(30,59,90,0.08);
-      margin-top: 1rem;
-    }
-    .title-section h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.5rem; }
-    .title-section .subtitle { color: #3a4b5c; font-size: 1.1rem; }
-
-    /* ---------- FIXED POSTING BOX ---------- */
-    .posting-box-wrapper {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(30,59,90,0.1);
-      padding: 0.75rem 1rem;
-      z-index: 90;
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.04);
-    }
-    .new-post-form {
-      max-width: 800px;
-      margin: 0 auto;
-      background: none;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      border-radius: 0;
-    }
-    .new-post-form input,
-    .new-post-form textarea {
-      width: 100%;
-      padding: 8px 14px;
-      margin-bottom: 0.5rem;
-      border: 1px solid #ccd5de;
-      border-radius: 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .new-post-form input:focus,
+    /* FIXED POSTING BOX */
+    .posting-box-wrapper { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(30,59,90,0.1); padding: 0.75rem 1rem; z-index: 90; box-shadow: 0 -5px 20px rgba(0,0,0,0.04); }
+    .new-post-form { max-width: 800px; margin: 0 auto; }
+    .new-post-form textarea { width: 100%; padding: 10px 14px; margin-bottom: 0.5rem; border: 1px solid #ccd5de; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; resize: vertical; min-height: 44px; max-height: 120px; }
     .new-post-form textarea:focus { border-color: #1e3b5a; }
-    .new-post-form textarea { resize: vertical; min-height: 38px; max-height: 100px; }
     .posting-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
     .posting-actions #post-error { flex: 1; color: #c0392b; font-size: 0.85rem; margin: 0; }
     .btn { display: inline-block; padding: 8px 22px; border-radius: 40px; font-weight: 500; background: #1e3b5a; color: #fff; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.9rem; transition: background 0.2s; }
@@ -257,7 +124,6 @@
 
     footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; }
 
-    /* ---------- DARK MODE ---------- */
     html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .logo { color: #8ab4d9; }
@@ -281,22 +147,21 @@
     html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
     html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
     html[data-theme="dark"] .post-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
-    html[data-theme="dark"] .post-title { color: #8ab4d9; }
     html[data-theme="dark"] .post-body { color: #b8c5d1; }
     html[data-theme="dark"] .comment-text { color: #b8c5d1; }
     html[data-theme="dark"] .title-section h1 { color: #8ab4d9; }
     html[data-theme="dark"] .title-section .subtitle { color: #b8c5d1; }
-    html[data-theme="dark"] .title-section { border-top-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .posting-box-wrapper { background: rgba(15,26,38,0.96); border-top-color: rgba(255,255,255,0.08); }
-    html[data-theme="dark"] .new-post-form input, html[data-theme="dark"] .new-post-form textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
-    html[data-theme="dark"] .new-post-form input:focus, html[data-theme="dark"] .new-post-form textarea:focus { border-color: #6b9dc9; }
+    html[data-theme="dark"] .new-post-form textarea { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .new-post-form textarea:focus { border-color: #6b9dc9; }
     html[data-theme="dark"] .comment-form input { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
     html[data-theme="dark"] footer { color: #7a8fa3; }
 
     @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
     @media (max-width: 768px) {
       .nav-links { gap: 1rem; }
-      .title-section h1 { font-size: 2.2rem; }
+      .title-section h1 { font-size: 2rem; }
+      .title-section .subtitle { font-size: 0.95rem; }
       .podium-header { font-size: 1.15rem; }
       .podium { min-height: 220px; gap: 0.4rem; }
       .podium-score { font-size: 1.1rem; }
@@ -307,7 +172,7 @@
       .podium-slot.second .podium-block { height: 58px; }
       .podium-slot.third .podium-block { height: 42px; }
       .container { padding: 1.5rem 1rem 0; }
-      body { padding-bottom: 240px; }
+      body { padding-bottom: 200px; }
     }
   </style>
 </head>
@@ -355,12 +220,12 @@
       </div>
     </section>
 
-    <div id="postList"><p style="text-align:center; color:#8b8b8b;">Loading posts…</p></div>
-
     <div class="title-section">
       <h1>Community</h1>
       <p class="subtitle">Share insights, ask questions, and connect with fellow MLS students.</p>
     </div>
+
+    <div id="postList"><p style="text-align:center; color:#8b8b8b;">Loading posts…</p></div>
   </main>
 
   <footer>
@@ -371,7 +236,6 @@
   <div class="posting-box-wrapper">
     <div class="new-post-form" id="new-post-form-container">
       <div id="login-hint" class="login-hint" style="display:none;">Please <a href="signup.html">log in</a> to post.</div>
-      <input type="text" id="postTitle" placeholder="Title">
       <textarea id="postBody" rows="2" placeholder="Share something..."></textarea>
       <div class="posting-actions">
         <p id="post-error"></p>
@@ -386,7 +250,6 @@
       let currentUser = null;
       let userProfile = null;
 
-      // ---------------- PODIUM ----------------
       const SUBJECTS = [
         { slug: 'analysis-of-urine',       title: 'Analysis of Urine & Body Fluids' },
         { slug: 'clinical-chemistry',      title: 'Clinical Chemistry' },
@@ -481,7 +344,6 @@
         }, 10000);
       }
 
-      // ---------------- POSTS / COMMENTS ----------------
       function refreshComposerState() {
         const loginHint = document.getElementById('login-hint');
         const submitBtn = document.getElementById('submitPostBtn');
@@ -499,7 +361,7 @@
         const container = document.getElementById('postList');
         const { data: posts, error } = await sb
           .from('posts')
-          .select('id, title, body, created_at, user_id, profiles(full_name, avatar_url)')
+          .select('id, body, created_at, user_id, profiles(full_name, avatar_url)')
           .order('created_at', { ascending: false })
           .limit(50);
         if (error) { container.innerHTML = '<p style="color:#c0392b;">Failed to load posts.</p>'; return; }
@@ -522,7 +384,6 @@
                   </div>
                 </a>
               </div>
-              <div class="post-title">${window.escapeHtml(post.title)}</div>
               <div class="post-body">${window.escapeHtml(post.body)}</div>
               <div class="post-actions">
                 <button class="btn-outline toggle-comments-btn" data-post-id="${post.id}">💬 Comments</button>
@@ -605,13 +466,15 @@
 
       document.getElementById('submitPostBtn').addEventListener('click', async () => {
         if (!currentUser) return;
-        const title = document.getElementById('postTitle').value.trim();
         const body = document.getElementById('postBody').value.trim();
         const errorEl = document.getElementById('post-error');
-        if (!title || !body) { errorEl.textContent = 'Please fill in both title and body.'; return; }
+        if (!body) { errorEl.textContent = 'Please write something.'; return; }
+        // Derive a title from the first line of the body (max 80 chars)
+        const firstLine = body.split('\n')[0];
+        const title = firstLine.length > 80 ? firstLine.substring(0, 77) + '…' : firstLine;
         const { error } = await sb.from('posts').insert({ user_id: currentUser.id, title, body });
         if (error) { errorEl.textContent = 'Failed: ' + error.message; }
-        else { document.getElementById('postTitle').value = ''; document.getElementById('postBody').value = ''; errorEl.textContent = ''; loadPosts(); }
+        else { document.getElementById('postBody').value = ''; errorEl.textContent = ''; loadPosts(); }
       });
 
       async function pageInit(user) {

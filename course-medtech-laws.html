@@ -357,7 +357,7 @@ html[data-theme="dark"] footer a { color: #7a8fa3; }
       if (!body) { document.getElementById('thought-error').textContent = 'Please write something.'; return; }
       document.getElementById('thought-error').textContent = '';
       if (!await ensureCourseId()) { document.getElementById('thought-error').textContent = 'Course not found.'; return; }
-      const { error } = await sb.from('course_reviews').insert({ user_id: currentUser.id, course_id: cachedCourseId, body });
+      const { error } = await sb.from('course_reviews').insert({ user_id: currentUser.id, course_id: cachedCourseId, course_slug: COURSE_SLUG, body });
       if (error) { document.getElementById('thought-error').textContent = 'Failed to post thought: ' + error.message; return; }
       input.value = ''; loadThoughts();
     });
