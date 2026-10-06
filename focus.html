@@ -355,20 +355,97 @@
       .bpm-num.big { font-size: 2.2rem; }
     }
     @media (max-width: 900px) {
-      .nav-links { gap: 1rem; }
-      .focus-stage { flex-direction: column; gap: 3rem; padding-left: 0; }
-      .timer-wrap { width: 320px; height: 320px; }
-      .timer-display { font-size: 4rem; }
+      header { padding: 0.75rem 1rem; }
+      .nav-links { gap: 0.75rem; }
+      .nav-links a { font-size: 0.85rem; }
+      .nav-links .auth-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+      .logo { font-size: 1.3rem; }
+      .logo span.sub { font-size: 0.65rem; }
+
+      .focus-main {
+        padding: 1.5rem 1rem 1rem;
+        justify-content: flex-start;
+      }
+      .focus-stage {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding-left: 0;
+        align-items: center;
+      }
+      .timer-wrap {
+        width: 100%;
+        height: auto;
+        max-width: 340px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: none;
+      }
+      .timer-circle {
+        width: 280px;
+        height: 280px;
+        flex-shrink: 0;
+      }
+      .timer-display { font-size: 3.6rem; }
+      .timer-sub { font-size: 0.7rem; margin-top: 0.4rem; }
+      .timer-goal {
+        font-size: 0.8rem;
+        margin-top: 0.3rem;
+        padding: 0 0.5rem;
+        text-align: center;
+        animation: none;
+      }
+
       .bpm-panel {
-        position: relative;
+        position: static;
         top: auto;
         left: auto;
         transform: none;
-        order: -1;
+        margin-top: 1.25rem;
         width: auto;
+        animation: none;
       }
-      .start-btn { font-size: 1.3rem; padding: 1.2rem 3rem; }
-      .focus-main { padding: 2rem 1rem 1.5rem; }
+      .bpm-wheel {
+        height: 175px;
+        width: 90px;
+      }
+      .bpm-spacer { height: 68px; }
+      .bpm-item { height: 38px; line-height: 38px; font-size: 1.15rem; }
+      .bpm-item.active { font-size: 2rem; }
+      .bpm-label { font-size: 0.65rem; margin-top: 0.5rem; }
+      .vol-toggle { width: 44px; height: 44px; font-size: 1.2rem; }
+
+      .start-column {
+        width: 100%;
+        max-width: 340px;
+        align-items: center;
+      }
+      .start-btn {
+        font-size: 1.15rem;
+        padding: 0.9rem 2.2rem;
+        animation: none;
+        min-width: 180px;
+      }
+      .hint-text { font-size: 0.8rem; max-width: 260px; }
+
+      .live-feed { max-width: 100%; padding: 0 1rem; }
+      .live-item { font-size: 0.75rem; padding: 0.35rem 0.9rem; }
+
+      .modal { padding: 1.5rem; }
+      .modal h2 { font-size: 1.35rem; }
+
+      footer { padding: 1rem; font-size: 0.8rem; }
+    }
+
+    @media (max-width: 480px) {
+      .timer-circle { width: 240px; height: 240px; }
+      .timer-display { font-size: 3rem; }
+      .timer-sub { font-size: 0.62rem; }
+      .bpm-wheel { height: 155px; }
+      .bpm-spacer { height: 58px; }
+      .bpm-item { height: 34px; line-height: 34px; font-size: 1.05rem; }
+      .bpm-item.active { font-size: 1.8rem; }
+      .start-btn { font-size: 1.05rem; padding: 0.85rem 2rem; }
     }
   </style>
 </head>
