@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en" data-force-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus · MLS Crash Course</title>
+  <meta name="description" content="Three-minute minimum study session with music.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0a1420; color: #e8eef5; line-height: 1.6; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #8ab4d9; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    header { position: relative; z-index: 100; background: rgba(15,26,38,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #8ab4d9; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #6b8ba3; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #b8c5d1; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #8ab4d9; transition: width 0.3s; }
+    .nav-links a:hover { color: #e8eef5; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn, .nav-links .auth-btn:visited { background: #2d4a6b; color: #ffffff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; white-space: nowrap; display: inline-block; }
+    .nav-links .auth-btn:hover { background: #3a5a7d; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #b8c5d1; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #e8eef5; }
+    .icon-btn::after { display: none; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: white; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #1a2b3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); font-weight: 600; color: #e8eef5; }
+    .notif-header button { background: none; border: none; color: #8ab4d9; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; color: #b8c5d1; cursor: pointer; }
+    .notif-item:hover { background: #23374b; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .notif-footer a { color: #8ab4d9; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+
+    /* ------------ FOCUS PAGE ------------ */
+    .focus-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 3rem 1rem 2rem;
+      position: relative;
+      z-index: 2;
+    }
+    .focus-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4rem;
+      margin-bottom: 2.5rem;
+      width: 100%;
+      max-width: 1100px;
+    }
+    .timer-wrap {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      flex-shrink: 0;
+    }
+    .timer-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #1e3b5a 0%, #0f1a26 90%);
+      border: 6px solid #f6c445;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 80px rgba(246,196,69,0.15), inset 0 0 40px rgba(246,196,69,0.08);
+      transition: box-shadow 0.5s;
+      position: relative;
+      z-index: 2;
+    }
+    .timer-circle.running { box-shadow: 0 0 100px rgba(246,196,69,0.35), inset 0 0 60px rgba(246,196,69,0.15); animation: pulseGlow 2s ease-in-out infinite; }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 100px rgba(246,196,69,0.3), inset 0 0 60px rgba(246,196,69,0.12); }
+      50%      { box-shadow: 0 0 120px rgba(246,196,69,0.5), inset 0 0 80px rgba(246,196,69,0.2); }
+    }
+    .timer-display {
+      font-family: 'Playfair Display', serif;
+      font-size: 6.5rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-sub {
+      margin-top: 0.6rem;
+      font-size: 0.85rem;
+      color: #8ab4d9;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .timer-goal {
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+      color: #f6c445;
+      font-style: italic;
+    }
+
+    /* Jam buttons curved along left arc of timer */
+    .jam-btn {
+      position: absolute;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: #1a2b3d;
+      border: 2px solid #2d4a6b;
+      color: #b8c5d1;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.1;
+      padding: 4px;
+      transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.3s;
+      z-index: 3;
+    }
+    .jam-btn .jam-icon { font-size: 1.6rem; margin-bottom: 2px; }
+    .jam-btn:hover { transform: scale(1.08); border-color: #8ab4d9; }
+    .jam-btn.selected {
+      border-color: #f6c445;
+      background: linear-gradient(135deg, #1a2b3d, #3a2a0d);
+      box-shadow: 0 0 25px rgba(246,196,69,0.4);
+      color: #f6c445;
+    }
+    .jam-btn[data-jam="classical"]    { top: 4%;  left: -22%; }
+    .jam-btn[data-jam="generational"] { top: 28%; left: -30%; }
+    .jam-btn[data-jam="light"]        { top: 58%; left: -30%; }
+    .jam-btn[data-jam="party"]        { top: 82%; left: -22%; }
+    .jam-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+
+    /* Start button column */
+    .start-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      min-width: 200px;
+    }
+    .start-btn {
+      background: #f6c445;
+      color: #4a3403;
+      border: none;
+      padding: 1.4rem 3.5rem;
+      border-radius: 60px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 10px 30px rgba(246,196,69,0.25);
+    }
+    .start-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(246,196,69,0.4); }
+    .start-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+    .start-btn.end-btn { background: #c0392b; color: #fff; }
+    .start-btn.end-btn:hover:not(:disabled) { box-shadow: 0 15px 40px rgba(192,57,43,0.4); }
+    .hint-text { color: #8ab4d9; font-size: 0.9rem; text-align: center; max-width: 180px; line-height: 1.4; }
+
+    /* Live feed below timer */
+    .live-feed {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      min-height: 40px;
+    }
+    .live-item {
+      background: rgba(26,43,61,0.85);
+      border: 1px solid rgba(138,180,217,0.2);
+      color: #b8c5d1;
+      padding: 0.45rem 1.2rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      animation: slideIn 0.4s ease, fadeOut 0.6s ease 6s forwards;
+      backdrop-filter: blur(6px);
+    }
+    .live-item.joined { border-color: rgba(39,174,96,0.5); color: #a8e6b8; }
+    .live-item.left   { border-color: rgba(138,180,217,0.3); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeOut { to { opacity: 0; } }
+
+    /* Top-of-screen failure toast */
+    .fail-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #c0392b, #922b21);
+      color: #fff;
+      padding: 0.85rem 1.8rem;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(192,57,43,0.4);
+      z-index: 1000;
+      animation: toastSlide 0.4s ease, toastFade 0.6s ease 4.4s forwards;
+      pointer-events: none;
+      max-width: 90vw;
+      text-align: center;
+    }
+    @keyframes toastSlide { from { opacity: 0; transform: translate(-50%, -30px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    @keyframes toastFade { to { opacity: 0; transform: translate(-50%, -20px); } }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1a2b3d;
+      border: 1px solid rgba(138,180,217,0.2);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #f6c445; margin-bottom: 0.5rem; }
+    .modal p.lead { color: #b8c5d1; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .modal label { display: block; color: #8ab4d9; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal input[type="text"],
+    .modal input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0f1a26;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      color: #e8eef5;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus { border-color: #f6c445; }
+    .rules-box {
+      background: rgba(15,26,38,0.6);
+      border: 1px solid rgba(246,196,69,0.3);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .rules-box h3 { color: #f6c445; font-size: 1rem; margin-bottom: 0.6rem; }
+    .rules-box ul { list-style: none; padding: 0; }
+    .rules-box li { color: #b8c5d1; font-size: 0.88rem; padding: 0.3rem 0 0.3rem 1.4rem; position: relative; line-height: 1.5; }
+    .rules-box li::before { content: "▸"; position: absolute; left: 0; color: #f6c445; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+    .modal-btn { padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.95rem; transition: opacity 0.2s; }
+    .modal-btn:hover { opacity: 0.9; }
+    .modal-btn.cancel { background: #23374b; color: #b8c5d1; }
+    .modal-btn.confirm { background: #f6c445; color: #4a3403; }
+
+    footer { text-align: center; padding: 1.5rem; color: #7a8fa3; font-size: 0.9rem; border-top: 1px solid rgba(255,255,255,0.08); position: relative; z-index: 2; }
+    footer a { color: #7a8fa3; text-decoration: none; margin: 0 10px; }
+
+    @media (max-width: 1100px) {
+      .focus-stage { gap: 2rem; }
+      .timer-wrap { width: 360px; height: 360px; }
+      .timer-display { font-size: 5rem; }
+      .jam-btn { width: 74px; height: 74px; font-size: 0.55rem; }
+      .jam-btn .jam-icon { font-size: 1.3rem; }
+      .jam-btn[data-jam="classical"]    { top: 4%;  left: -24%; }
+      .jam-btn[data-jam="generational"] { top: 28%; left: -34%; }
+      .jam-btn[data-jam="light"]        { top: 58%; left: -34%; }
+      .jam-btn[data-jam="party"]        { top: 82%; left: -24%; }
+    }
+    @media (max-width: 900px) {
+      .nav-links { gap: 1rem; }
+      .focus-stage { flex-direction: column; gap: 3rem; }
+      .timer-wrap { width: 320px; height: 320px; }
+      .timer-display { font-size: 4rem; }
+      .jam-btn { width: 66px; height: 66px; }
+      .jam-btn .jam-icon { font-size: 1.1rem; }
+      .jam-btn[data-jam="classical"]    { top: -8%; left: -12%; }
+      .jam-btn[data-jam="generational"] { top: 18%; left: -22%; }
+      .jam-btn[data-jam="light"]        { top: 70%; left: -22%; }
+      .jam-btn[data-jam="party"]        { top: 92%; left: -12%; }
+      .start-btn { font-size: 1.3rem; padding: 1.2rem 3rem; }
+      .focus-main { padding: 2rem 1rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+    </div>
+    <nav class="nav-links">
+      <a href="courses.html">Courses</a>
+      <a href="focus.html">Focus</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="focus-main">
+    <div class="focus-stage">
+      <div class="timer-wrap">
+        <div class="timer-circle" id="timer-circle">
+          <div class="timer-display" id="timer-display">00:00</div>
+          <div class="timer-sub" id="timer-sub">Minimum 3:00</div>
+          <div class="timer-goal" id="timer-goal"></div>
+        </div>
+        <button class="jam-btn" data-jam="classical" title="Classical Lock In">
+          <span class="jam-icon">🎼</span>Classical<br>Lock In
+        </button>
+        <button class="jam-btn" data-jam="generational" title="Generational Lock In">
+          <span class="jam-icon">🎧</span>Generational<br>Lock In
+        </button>
+        <button class="jam-btn" data-jam="light" title="Light Yearning">
+          <span class="jam-icon">🎹</span>Light<br>Yearning
+        </button>
+        <button class="jam-btn" data-jam="party" title="Party and Study">
+          <span class="jam-icon">🎉</span>Party &amp;<br>Study
+        </button>
+      </div>
+      <div class="start-column">
+        <button class="start-btn" id="start-btn" disabled>▶ Start</button>
+        <div class="hint-text" id="hint-text">Pick a jam to begin</div>
+      </div>
+    </div>
+
+    <div class="live-feed" id="live-feed"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <!-- Audio: place your mp3 files in assets/audio/ -->
+  <audio id="audio-classical"    src="assets/audio/classical-lock-in.mp3"    loop preload="auto"></audio>
+  <audio id="audio-generational" src="assets/audio/generational-lock-in.mp3" loop preload="auto"></audio>
+  <audio id="audio-light"        src="assets/audio/light-yearning.mp3"        loop preload="auto"></audio>
+  <audio id="audio-party"        src="assets/audio/party-and-study.mp3"      loop preload="auto"></audio>
+
+  <!-- Start modal -->
+  <div class="modal-overlay" id="start-modal">
+    <div class="modal">
+      <h2>Ready to focus?</h2>
+      <p class="lead">Tell us what you're working on. Then read the rules one more time.</p>
+
+      <label for="study-topic">What are you studying?</label>
+      <input type="text" id="study-topic" placeholder="e.g., Clinical Hematology Chapter 4" maxlength="100" autocomplete="off">
+
+      <label for="goal-minute">Until what minute do you plan to study?</label>
+      <input type="number" id="goal-minute" placeholder="e.g., 30" min="1" max="240" autocomplete="off">
+
+      <div class="rules-box">
+        <h3>⚠️ Before you begin</h3>
+        <ul>
+          <li>You <strong>cannot pause</strong> this session until the timer reaches <strong>3:00</strong>.</li>
+          <li>You <strong>cannot switch to other pages</strong> while the session is active. Doing so will be discouraged.</li>
+          <li>Your chosen jam will <strong>play continuously</strong> for as long as the timer is running.</li>
+          <li>If you end the session <strong>before reaching your goal minute</strong>, a notice will appear at the top of the screen letting everyone know you didn't hit your goal.</li>
+          <li>Once you've passed 3:00, an <strong>End Session</strong> button appears so you can finish any time.</li>
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="modal-cancel">Cancel</button>
+        <button class="modal-btn confirm" id="modal-confirm">I Understand — Begin Focus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warning modal for nav attempts -->
+  <div class="modal-overlay" id="leave-modal">
+    <div class="modal">
+      <h2>Stay a little longer</h2>
+      <p class="lead">You're in the 3-minute lock-in window. Finish the minimum, then you're free to go.</p>
+      <div class="rules-box">
+        <h3>Why this matters</h3>
+        <ul>
+          <li>The whole point of Focus is to get you past the hardest part — starting.</li>
+          <li>Three minutes is enough to break inertia and get into a rhythm.</li>
+          <li>Once 3:00 is up, you can leave any time by clicking End Session.</li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn confirm" id="leave-ok">Okay, I'll stay</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      let currentUser = null;
+      let userFullName = 'Someone';
+      let selectedJam = null;
+      let timerInterval = null;
+      let tickInterval = null;
+      let elapsedSeconds = 0;
+      let goalMinutes = 0;
+      let studyTopic = '';
+      let sessionActive = false;
+      let failGuard = false;
+
+      const MINIMUM_SECONDS = 180; // 3:00
+      const JAMS = ['classical', 'generational', 'light', 'party'];
+      const JAM_LABELS = {
+        classical: 'Classical Lock In',
+        generational: 'Generational Lock In',
+        light: 'Light Yearning',
+        party: 'Party & Study'
+      };
+
+      // ---------- Realtime channel ----------
+      const channel = sb.channel('focus-mode', { config: { broadcast: { self: false } } });
+      channel.on('broadcast', { event: 'join' }, ({ payload }) => {
+        if (payload.user_id === currentUser?.id) return;
+        addLiveItem(`${payload.name} entered focus mode`, 'joined');
+      });
+      channel.on('broadcast', { event: 'leave' }, ({ payload }) => {
+        if (payload.user_id === currentUser?.id) return;
+        addLiveItem(`${payload.name} left focus mode`, 'left');
+      });
+      channel.on('broadcast', { event: 'fail' }, ({ payload }) => {
+        showFailToast(`${payload.name} failed their goal`);
+      });
+      channel.on('broadcast', { event: 'success' }, ({ payload }) => {
+        addLiveItem(`${payload.name} completed their goal 🎉`, 'joined');
+      });
+
+      function addLiveItem(text, variant) {
+        const feed = document.getElementById('live-feed');
+        const div = document.createElement('div');
+        div.className = 'live-item ' + (variant || '');
+        div.textContent = text;
+        feed.appendChild(div);
+        setTimeout(() => { div.remove(); }, 7000);
+      }
+
+      function showFailToast(text) {
+        const toast = document.createElement('div');
+        toast.className = 'fail-toast';
+        toast.textContent = '⚠️ ' + text;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 5200);
+      }
+
+      // ---------- Format helpers ----------
+      function pad(n) { return n < 10 ? '0' + n : '' + n; }
+      function formatTime(s) {
+        const m = Math.floor(s / 60);
+        const sec = s % 60;
+        return pad(m) + ':' + pad(sec);
+      }
+
+      // ---------- UI wiring ----------
+      document.querySelectorAll('.jam-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (sessionActive) return;
+          document.querySelectorAll('.jam-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedJam = btn.dataset.jam;
+          updateStartButtonState();
+        });
+      });
+
+      function updateStartButtonState() {
+        const btn = document.getElementById('start-btn');
+        const hint = document.getElementById('hint-text');
+        if (sessionActive) return;
+        if (!selectedJam) {
+          btn.disabled = true;
+          hint.textContent = 'Pick a jam to begin';
+        } else {
+          btn.disabled = false;
+          hint.textContent = 'Ready when you are';
+        }
+      }
+
+      // ---------- Start flow ----------
+      document.getElementById('start-btn').addEventListener('click', () => {
+        if (sessionActive) return;
+        if (!selectedJam) return;
+        document.getElementById('study-topic').value = '';
+        document.getElementById('goal-minute').value = '';
+        document.getElementById('start-modal').classList.add('open');
+      });
+
+      document.getElementById('modal-cancel').addEventListener('click', () => {
+        document.getElementById('start-modal').classList.remove('open');
+      });
+
+      document.getElementById('modal-confirm').addEventListener('click', async () => {
+        const topic = document.getElementById('study-topic').value.trim();
+        const goalInput = document.getElementById('goal-minute').value.trim();
+        const goal = parseInt(goalInput, 10);
+        if (!topic) { alert('Please enter what you are studying.'); return; }
+        if (!goal || goal < 1 || goal > 240) { alert('Please enter a goal between 1 and 240 minutes.'); return; }
+        studyTopic = topic;
+        goalMinutes = goal;
+        document.getElementById('start-modal').classList.remove('open');
+        await beginSession();
+      });
+
+      async function beginSession() {
+        sessionActive = true;
+        elapsedSeconds = 0;
+        failGuard = false;
+
+        // UI lock-in
+        document.querySelectorAll('.jam-btn').forEach(b => b.disabled = true);
+        const startBtn = document.getElementById('start-btn');
+        startBtn.disabled = true;
+        startBtn.textContent = '▶ Running';
+        document.getElementById('timer-circle').classList.add('running');
+        document.getElementById('timer-goal').textContent = 'Goal: ' + goalMinutes + ' min — ' + studyTopic;
+        document.getElementById('hint-text').textContent = 'Session active';
+
+        // Play audio
+        const audio = document.getElementById('audio-' + selectedJam);
+        if (audio) {
+          audio.volume = 0.45;
+          try { await audio.play(); } catch (e) { /* autoplay may fail silently */ }
+        }
+
+        // Broadcast join
+        channel.send({
+          type: 'broadcast',
+          event: 'join',
+          payload: { user_id: currentUser?.id, name: userFullName, jam: selectedJam, topic: studyTopic }
+        });
+
+        // Tick loop
+        timerInterval = setInterval(() => {
+          elapsedSeconds++;
+          document.getElementById('timer-display').textContent = formatTime(elapsedSeconds);
+
+          if (elapsedSeconds === MINIMUM_SECONDS) {
+            // Unlock End button
+            const btn = document.getElementById('start-btn');
+            btn.disabled = false;
+            btn.classList.add('end-btn');
+            btn.textContent = '■ End Session';
+            document.getElementById('hint-text').textContent = 'You can end anytime';
+          }
+
+          if (elapsedSeconds >= goalMinutes * 60 && !failGuard) {
+            failGuard = true; // goal reached — don't fire failure later
+          }
+        }, 1000);
+
+        // Guard against navigation
+        window.addEventListener('beforeunload', beforeUnloadGuard);
+        document.querySelectorAll('header a, footer a').forEach(a => {
+          a.addEventListener('click', navGuard, true);
+        });
+      }
+
+      function beforeUnloadGuard(e) {
+        if (!sessionActive || elapsedSeconds < MINIMUM_SECONDS) {
+          e.preventDefault();
+          e.returnValue = '';
+          return '';
+        }
+      }
+
+      function navGuard(e) {
+        if (!sessionActive) return;
+        if (elapsedSeconds < MINIMUM_SECONDS) {
+          e.preventDefault();
+          e.stopPropagation();
+          document.getElementById('leave-modal').classList.add('open');
+        }
+      }
+
+      document.getElementById('leave-ok').addEventListener('click', () => {
+        document.getElementById('leave-modal').classList.remove('open');
+      });
+
+      // End button handler
+      document.getElementById('start-btn').addEventListener('click', () => {
+        if (!sessionActive) return;
+        if (elapsedSeconds < MINIMUM_SECONDS) return; // locked until 3 min
+        endSession();
+      });
+
+      function endSession() {
+        const hitGoal = elapsedSeconds >= goalMinutes * 60;
+
+        // Stop things
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        JAMS.forEach(j => {
+          const a = document.getElementById('audio-' + j);
+          if (a) { a.pause(); a.currentTime = 0; }
+        });
+
+        // Broadcast outcome
+        if (!hitGoal) {
+          channel.send({
+            type: 'broadcast',
+            event: 'fail',
+            payload: { user_id: currentUser?.id, name: userFullName, goal: goalMinutes, actual: Math.floor(elapsedSeconds / 60) }
+          });
+          showFailToast(`${userFullName} failed their goal`);
+        } else {
+          channel.send({
+            type: 'broadcast',
+            event: 'success',
+            payload: { user_id: currentUser?.id, name: userFullName, goal: goalMinutes }
+          });
+        }
+        channel.send({
+          type: 'broadcast',
+          event: 'leave',
+          payload: { user_id: currentUser?.id, name: userFullName }
+        });
+
+        // Reset UI
+        sessionActive = false;
+        selectedJam = null;
+        document.querySelectorAll('.jam-btn').forEach(b => { b.disabled = false; b.classList.remove('selected'); });
+        const btn = document.getElementById('start-btn');
+        btn.disabled = true;
+        btn.classList.remove('end-btn');
+        btn.textContent = '▶ Start';
+        document.getElementById('timer-circle').classList.remove('running');
+        document.getElementById('timer-display').textContent = '00:00';
+        document.getElementById('timer-goal').textContent = '';
+        document.getElementById('hint-text').textContent = 'Pick a jam to begin';
+        elapsedSeconds = 0;
+
+        window.removeEventListener('beforeunload', beforeUnloadGuard);
+        document.querySelectorAll('header a, footer a').forEach(a => {
+          a.removeEventListener('click', navGuard, true);
+        });
+      }
+
+      // ---------- Init ----------
+      async function pageInit(user) {
+        currentUser = user;
+        if (user) {
+          const { data } = await sb.from('profiles').select('full_name').eq('id', user.id).single();
+          userFullName = (data && data.full_name) || user.email || 'Someone';
+        } else {
+          userFullName = 'Guest';
+        }
+      }
+
+      channel.subscribe();
+      window.addEventListener('medlab:ready', (e) => pageInit(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => pageInit(e.detail.user));
+    })();
+  </script>
+</body>
+</html>

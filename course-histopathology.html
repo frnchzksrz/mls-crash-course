@@ -97,6 +97,12 @@
     .thought-author-name { font-weight: 600; color: #1e3b5a; }
     .thought-time { font-size: 0.8rem; color: #8b8b8b; }
     .thought-body { color: #2c3e50; font-size: 1rem; white-space: pre-wrap; }
+    .thought-actions { margin-left: auto; display: flex; gap: 0.4rem; }
+    .edit-thought-btn, .delete-thought-btn { background: transparent; padding: 3px 10px; border-radius: 14px; font-size: 0.75rem; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .edit-thought-btn { border: 1px solid #5c7c9e; color: #5c7c9e; }
+    .edit-thought-btn:hover { background: #5c7c9e; color: #fff; }
+    .delete-thought-btn { border: 1px solid #c0392b; color: #c0392b; }
+    .delete-thought-btn:hover { background: #c0392b; color: #fff; }
     footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; }
     footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
     html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
@@ -147,6 +153,7 @@
         <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
       </div>
       <a href="courses.html">Courses</a>
+      <a href="focus.html">Focus</a>
       <a href="community.html">Community</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
@@ -302,20 +309,69 @@
       await sb.from('saved_courses').upsert({ user_id: currentUser.id, course_id: cachedCourseId, saved_at: new Date() }, { onConflict: 'user_id,course_id' });
     }
 
-    async function loadThoughts() {
+        async function loadThoughts() {
       const list = document.getElementById('thoughts-list');
       list.innerHTML = '<p style="color:#8b8b8b; text-align:center;">Loading thoughts…</p>';
       if (!await ensureCourseId()) { list.innerHTML = '<p style="color:#c0392b;">Course not found.</p>'; return; }
-      const { data: reviews, error } = await sb.from('course_reviews').select('id, body, created_at, user_id, profiles(full_name, avatar_url)').eq('course_id', cachedCourseId).order('created_at', { ascending: false });
+      const { data: reviews, error } = await sb.from('course_reviews')
+        .select('id, body, created_at, user_id, profiles(full_name, avatar_url)')
+        .eq('course_id', cachedCourseId)
+        .order('created_at', { ascending: false });
       if (error) { list.innerHTML = '<p style="color:#c0392b;">Failed to load thoughts.</p>'; return; }
-      if (!reviews || reviews.length === 0) { list.innerHTML = '<p style="color:#8b8b8b; text-align:center;">No thoughts yet. Share yours!</p>'; return; }
+      if (!reviews || reviews.length === 0) {
+        list.innerHTML = '<p style="color:#8b8b8b; text-align:center;">No thoughts yet. Share yours!</p>';
+        return;
+      }
       list.innerHTML = reviews.map(r => {
         const profile = r.profiles || {};
         const name = profile.full_name || 'Anonymous';
         const avatarUrl = profile.avatar_url;
         const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-        return `<div class="thought-item"><div class="thought-header">${avatarUrl ? `<img src="${avatarUrl}" class="thought-avatar" alt="${window.escapeHtml(name)}">` : `<div class="thought-avatar-placeholder">${initials}</div>`}<div class="thought-author"><div class="thought-author-name">${window.escapeHtml(name)}</div><div class="thought-time">${new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div></div></div><div class="thought-body">${window.escapeHtml(r.body)}</div></div>`;
+        const isOwner = currentUser && r.user_id === currentUser.id;
+        const actions = isOwner
+          ? `<div class="thought-actions"><button class="edit-thought-btn" data-id="${r.id}">Edit</button><button class="delete-thought-btn" data-id="${r.id}">Delete</button></div>`
+          : '';
+        return `<div class="thought-item" data-thought-id="${r.id}"><div class="thought-header">${avatarUrl ? `<img src="${avatarUrl}" class="thought-avatar" alt="${window.escapeHtml(name)}">` : `<div class="thought-avatar-placeholder">${initials}</div>`}<div class="thought-author"><div class="thought-author-name">${window.escapeHtml(name)}</div><div class="thought-time">${new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</div></div>${actions}</div><div class="thought-body">${window.escapeHtml(r.body)}</div></div>`;
       }).join('');
+
+      list.querySelectorAll('.edit-thought-btn').forEach(btn => {
+        btn.addEventListener('click', () => startEditThought(btn.dataset.id));
+      });
+      list.querySelectorAll('.delete-thought-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteThought(btn.dataset.id));
+      });
+    }
+
+    function startEditThought(id) {
+      const item = document.querySelector(`.thought-item[data-thought-id="${id}"]`);
+      if (!item) return;
+      const bodyEl = item.querySelector('.thought-body');
+      const original = bodyEl.textContent;
+      bodyEl.innerHTML = `<textarea class="thought-edit-input">${window.escapeHtml(original)}</textarea><div class="thought-edit-actions"><button class="btn-save-thought">Save</button><button class="btn-cancel-thought">Cancel</button></div>`;
+      const input = bodyEl.querySelector('.thought-edit-input');
+      input.focus();
+      input.style.cssText = 'width:100%;padding:10px;border:1px solid #ccd5de;border-radius:8px;font-family:inherit;font-size:1rem;resize:vertical;outline:none;min-height:60px;';
+      const actions = bodyEl.querySelector('.thought-edit-actions');
+      actions.style.cssText = 'display:flex;gap:0.5rem;margin-top:0.5rem;';
+      const saveBtn = bodyEl.querySelector('.btn-save-thought');
+      const cancelBtn = bodyEl.querySelector('.btn-cancel-thought');
+      saveBtn.style.cssText = 'background:#1e3b5a;color:#fff;padding:5px 14px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:0.85rem;';
+      cancelBtn.style.cssText = 'background:#e4ecf2;color:#1e3b5a;padding:5px 14px;border-radius:16px;border:none;cursor:pointer;font-family:inherit;font-size:0.85rem;';
+      saveBtn.addEventListener('click', async () => {
+        const newBody = input.value.trim();
+        if (!newBody) return;
+        const { error } = await sb.from('course_reviews').update({ body: newBody }).eq('id', id);
+        if (error) { alert('Failed: ' + error.message); return; }
+        loadThoughts();
+      });
+      cancelBtn.addEventListener('click', () => { bodyEl.textContent = original; });
+    }
+
+    async function deleteThought(id) {
+      if (!confirm('Delete this thought?')) return;
+      const { error } = await sb.from('course_reviews').delete().eq('id', id);
+      if (error) { alert('Failed: ' + error.message); return; }
+      loadThoughts();
     }
 
     function wireOnce() {

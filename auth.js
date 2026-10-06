@@ -58,14 +58,16 @@
   }
 
   // ---------- Theme ----------
-  function initTheme() {
+    function initTheme() {
+    const forced = document.documentElement.getAttribute('data-force-theme');
     const saved = localStorage.getItem('mls-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = saved || (prefersDark ? 'dark' : 'light');
+    const theme = forced || saved || (prefersDark ? 'dark' : 'light');
     if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
     const toggle = document.getElementById('theme-toggle');
     if (!toggle) return;
+    if (forced) { toggle.style.display = 'none'; return; }
     updateIcon();
     toggle.addEventListener('click', () => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
