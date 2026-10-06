@@ -186,7 +186,7 @@
     </div>
   </section>
 
-  <section class="mockboard-cta auth-only" id="mockboard-cta">
+  <section class="mockboard-cta" id="mockboard-cta" style="display:none;">
     <a href="mockboard.html" class="mockboard-btn">
       <div class="mb-eyebrow">MTLE Full Simulation</div>
       <div class="mb-title">Mock Board Examination</div>
@@ -221,5 +221,17 @@
     <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
     <p><a href="index.html">Home</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
   </footer>
+
+  <script>
+    (function () {
+      const el = document.getElementById('mockboard-cta');
+      if (!el) return;
+      function toggle(user) {
+        el.style.display = user ? 'block' : 'none';
+      }
+      window.addEventListener('medlab:ready', (e) => toggle(e.detail.user));
+      window.addEventListener('medlab:authChanged', (e) => toggle(e.detail.user));
+    })();
+  </script>
 </body>
 </html>
