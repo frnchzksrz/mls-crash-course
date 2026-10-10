@@ -498,11 +498,7 @@
             <img src="assets/mls-logo.png" alt="MLS Crash Course" class="doc-logo">
           </div>
           <div class="doc-corner doc-corner-right">
-            <img
-              src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmlsrf.vercel.app&size=300x300&margin=0&color=1e3b5a&bgcolor=ffffff"
-              alt="Scan to visit mlsrf.vercel.app"
-              class="doc-qr"
-              crossorigin="anonymous">
+            <img src="assets/qr.png" alt="Scan to visit mlsrf.vercel.app" class="doc-qr">
           </div>
 
           <div class="seal-top">Republic of the Philippines</div>
@@ -1224,24 +1220,21 @@
         ctx.font = '700 32px Inter, sans-serif';
         ctx.fillText('MOCK BOARD EXAMINATION', W / 2, 175);
 
-        // QR code — top-right corner, fetched as an image
+        // QR code — top-right corner, from local asset
         const qrImg = new Image();
-        qrImg.crossOrigin = 'anonymous';
         qrImg.onload = function () {
           const qrSize = 180;
           const qrX = W - qrSize - 90;
           const qrY = 80;
-          // White backing plate so the QR is scannable
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
           ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
           downloadCanvas(canvas, 'mock-official-result.png');
         };
         qrImg.onerror = function () {
-          // If the QR service is down, just download without it
           downloadCanvas(canvas, 'mock-official-result.png');
         };
-        qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmlsrf.vercel.app&size=600x600&margin=0&color=1e3b5a&bgcolor=ffffff';
+        qrImg.src = 'assets/qr.png';
               };
               img.src = dataUrl;
             }
