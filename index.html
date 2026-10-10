@@ -138,6 +138,127 @@
       .mockboard-cta .mb-cta { padding: 10px 24px; font-size: 0.85rem; }
     }
 
+    /* ---------- PRC-Style Result Sheet ---------- */
+    .prc-results { position: relative; z-index: 2; display: flex; justify-content: center; padding: 2rem 1.5rem 3rem; }
+    .prc-doc {
+      width: 100%;
+      max-width: 860px;
+      background: #fbfaf6;
+      border: 1px solid #c9bfa3;
+      padding: 2rem 2.25rem 1.5rem;
+      box-shadow: 0 15px 40px rgba(30,59,90,0.08);
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      color: #1e1e1e;
+    }
+    .prc-header {
+      display: grid;
+      grid-template-columns: 60px 1fr 60px;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #d8d0b8;
+    }
+    .prc-logo-left, .prc-logo-right {
+      height: 48px;
+      width: 48px;
+      background: url('assets/mls-logo.png') center/contain no-repeat;
+      opacity: 0.9;
+      justify-self: center;
+    }
+    .prc-logo-right { background-image: url('assets/qr.png'); }
+    .prc-header-center { text-align: center; line-height: 1.3; }
+    .prc-country { font-family: 'Playfair Display', serif; font-size: 0.85rem; font-weight: 600; color: #4a3403; letter-spacing: 0.05em; }
+    .prc-commission { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: #1e3b5a; margin-top: 0.15rem; }
+    .prc-city { font-size: 0.75rem; color: #7a6f4d; margin-top: 0.15rem; letter-spacing: 0.12em; text-transform: uppercase; }
+
+    .prc-note { font-size: 0.82rem; color: #2c3e50; text-align: center; margin: 0 auto 1.5rem; max-width: 620px; line-height: 1.55; font-style: italic; }
+
+    .prc-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .prc-table thead th {
+      background: #f1ede0;
+      color: #4a3403;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.65rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #d8d0b8;
+    }
+    .prc-table thead th.col-rank   { width: 60px;  text-align: center; }
+    .prc-table thead th.col-rating { width: 100px; text-align: right; }
+
+    .prc-table tbody tr { border-bottom: 1px solid #e6e0cd; }
+    .prc-table tbody tr:nth-child(even) { background: #faf8f1; }
+    .prc-table tbody tr:last-child { border-bottom: 1px solid #d8d0b8; }
+
+    .prc-table td { padding: 0.7rem 0.75rem; vertical-align: middle; color: #2c3e50; font-size: 0.85rem; line-height: 1.35; }
+    .prc-table td.rank   { text-align: center; font-weight: 700; color: #1e3b5a; font-family: 'Playfair Display', serif; font-size: 0.95rem; }
+    .prc-table td.name   { font-weight: 600; color: #1e3b5a; text-transform: uppercase; font-size: 0.82rem; letter-spacing: 0.02em; }
+    .prc-table td.school { color: #5c7c9e; font-size: 0.78rem; }
+    .prc-table td.rating { text-align: right; font-weight: 700; color: #1e3b5a; font-variant-numeric: tabular-nums; }
+
+    .prc-table tr.top-rank td.rank { color: #7a4d0b; }
+    .prc-table tr.top-rank { background: linear-gradient(90deg, rgba(246,196,69,0.08), transparent); }
+    .prc-table tr.top-rank:nth-child(even) { background: linear-gradient(90deg, rgba(246,196,69,0.12), #faf8f1 80%); }
+
+    .prc-empty { text-align: center; color: #8b8b8b; font-style: italic; padding: 2rem 1rem !important; }
+
+    .prc-footer {
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      color: #7a6f4d;
+      text-transform: uppercase;
+      padding: 1.25rem 0 0.5rem;
+    }
+
+    /* Dark mode adjustments */
+    html[data-theme="dark"] .prc-doc { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .prc-header { border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .prc-country { color: #f6c445; }
+    html[data-theme="dark"] .prc-commission { color: #8ab4d9; }
+    html[data-theme="dark"] .prc-city { color: #7a8fa3; }
+    html[data-theme="dark"] .prc-note { color: #b8c5d1; }
+    html[data-theme="dark"] .prc-table thead th { background: #23374b; color: #f6c445; border-bottom-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .prc-table tbody tr { border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .prc-table tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+    html[data-theme="dark"] .prc-table tbody tr:last-child { border-bottom-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .prc-table td { color: #b8c5d1; }
+    html[data-theme="dark"] .prc-table td.rank { color: #8ab4d9; }
+    html[data-theme="dark"] .prc-table td.name { color: #8ab4d9; }
+    html[data-theme="dark"] .prc-table td.school { color: #7a8fa3; }
+    html[data-theme="dark"] .prc-table td.rating { color: #8ab4d9; }
+    html[data-theme="dark"] .prc-table tr.top-rank { background: linear-gradient(90deg, rgba(246,196,69,0.08), transparent); }
+    html[data-theme="dark"] .prc-table tr.top-rank:nth-child(even) { background: linear-gradient(90deg, rgba(246,196,69,0.1), rgba(255,255,255,0.02) 80%); }
+    html[data-theme="dark"] .prc-empty { color: #7a8fa3; }
+    html[data-theme="dark"] .prc-footer { color: #7a8fa3; }
+    html[data-theme="dark"] .prc-logo-left, html[data-theme="dark"] .prc-logo-right { opacity: 0.75; }
+
+    @media (max-width: 768px) {
+      .prc-results { padding: 1.5rem 1rem 2.5rem; }
+      .prc-doc { padding: 1.5rem 1.15rem 1rem; }
+      .prc-header { grid-template-columns: 40px 1fr 40px; gap: 0.75rem; margin-bottom: 1.25rem; }
+      .prc-logo-left, .prc-logo-right { width: 36px; height: 36px; }
+      .prc-country { font-size: 0.68rem; }
+      .prc-commission { font-size: 0.85rem; }
+      .prc-city { font-size: 0.65rem; }
+      .prc-note { font-size: 0.75rem; margin-bottom: 1.1rem; }
+      .prc-table { font-size: 0.78rem; }
+      .prc-table thead th { font-size: 0.6rem; padding: 0.5rem 0.35rem; letter-spacing: 0.08em; }
+      .prc-table thead th.col-rank { width: 40px; }
+      .prc-table thead th.col-rating { width: 62px; }
+      .prc-table td { padding: 0.55rem 0.35rem; font-size: 0.72rem; }
+      .prc-table td.rank { font-size: 0.82rem; }
+      .prc-table td.name { font-size: 0.68rem; }
+      .prc-table td.school { font-size: 0.64rem; }
+      .prc-footer { font-size: 0.65rem; letter-spacing: 0.16em; }
+    }
+
     @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
     @media (max-width: 768px) { .hero { flex-direction: column-reverse; text-align: center; padding: 3rem 1.5rem; } .hero-text h1 { font-size: 2.4rem; } .nav-links { gap: 1rem; } .co-intern-banner { margin: 1.5rem 1rem; padding: 2rem 1.5rem; } }
   </style>
@@ -195,6 +316,42 @@
     </a>
   </section>
 
+  <section class="prc-results" id="prc-results">
+    <div class="prc-doc">
+      <div class="prc-header">
+        <div class="prc-logo-left"></div>
+        <div class="prc-header-center">
+          <div class="prc-country">Republic of the Philippines</div>
+          <div class="prc-commission">MLS Crash Course · Professional Regulation Commission Simulation</div>
+          <div class="prc-city">Manila</div>
+        </div>
+        <div class="prc-logo-right"></div>
+      </div>
+
+      <p class="prc-note" id="prc-note">
+        The successful examinees who garnered the ten (10) highest places in the Mock Board Examination are the following:
+      </p>
+
+      <table class="prc-table">
+        <thead>
+          <tr>
+            <th class="col-rank">RANK</th>
+            <th class="col-name">NAME</th>
+            <th class="col-school">SCHOOL</th>
+            <th class="col-rating">RATING (%)</th>
+          </tr>
+        </thead>
+        <tbody id="prc-rows">
+          <tr>
+            <td colspan="4" class="prc-empty">Loading…</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="prc-footer" id="prc-footer" style="display:none;">NOTHING FOLLOWS</div>
+    </div>
+  </section>
+
   <section class="features">
     <h2 class="section-title">Everything you need, in one place</h2>
     <div class="feature-grid">
@@ -231,6 +388,69 @@
       }
       window.addEventListener('medlab:ready', (e) => toggle(e.detail.user));
       window.addEventListener('medlab:authChanged', (e) => toggle(e.detail.user));
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+
+      function escape(s) { return window.escapeHtml ? window.escapeHtml(s) : String(s || ''); }
+
+      function setNote() {
+        const now = new Date();
+        const monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        document.getElementById('prc-note').textContent =
+          `The successful examinees who garnered the ten (10) highest places in the ${monthYear} Mock Board Examination are the following:`;
+      }
+  
+      async function loadTopScorers() {
+        const tbody = document.getElementById('prc-rows');
+        const footer = document.getElementById('prc-footer');
+
+        if (!sb) {
+          tbody.innerHTML = '<tr><td colspan="4" class="prc-empty">Could not load results.</td></tr>';
+          return;
+        }
+
+        const { data, error } = await sb.rpc('get_top_mock_scorers');
+
+        if (error) {
+          console.warn('get_top_mock_scorers failed', error);
+          tbody.innerHTML = '<tr><td colspan="4" class="prc-empty">Could not load results.</td></tr>';
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '';
+          footer.style.display = 'block';
+          return;
+        }
+
+        footer.style.display = 'none';
+        tbody.innerHTML = data.map(row => {
+          const topThree = row.ranking <= 3 ? ' top-rank' : '';
+          return `<tr class="${topThree.trim()}">
+            <td class="rank">${row.ranking}</td>
+            <td class="name">${escape(row.full_name || 'Anonymous')}</td>
+            <td class="school">${escape(row.institution || '—')}</td>
+            <td class="rating">${Number(row.gwa).toFixed(2)}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      function init() {
+        setNote();
+        loadTopScorers();
+      }
+
+      window.addEventListener('medlab:ready', init);
+      // Fallback if medlab:ready fired before this script loaded
+      if (document.readyState !== 'loading' && window.supabaseClient) {
+        setTimeout(() => {
+          if (document.getElementById('prc-rows').querySelector('.prc-empty')) init();
+        }, 100);
+      }
     })();
   </script>
 </body>
