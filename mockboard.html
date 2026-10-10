@@ -11,7 +11,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; transition: background 0.25s, color 0.25s; }
@@ -198,33 +197,21 @@
     .doc-corner-left { left: 1.5rem; }
     .doc-corner-right { right: 1.5rem; }
 
-    .doc-logo { width: 72px; height: 72px; display: block; object-fit: contain; }
-    .doc-logo-caption {
-      font-family: 'Playfair Display', serif;
-      font-size: 0.6rem;
-      color: #7a6f4d;
-      text-align: center;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 600;
+    .doc-logo {
+      width: 96px;
+      height: 96px;
+      display: block;
+      object-fit: contain;
     }
 
     .doc-qr {
-      width: 84px;
-      height: 84px;
+      width: 96px;
+      height: 96px;
       display: block;
       border: 1px solid #d8d0b8;
       padding: 4px;
       background: #fff;
-    }
-    .doc-qr-caption {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.6rem;
-      color: #7a6f4d;
-      text-align: center;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 600;
+      object-fit: contain;
     }
 
     .application-line {
@@ -380,10 +367,8 @@
       .doc-corner { top: 1rem; }
       .doc-corner-left { left: 1rem; }
       .doc-corner-right { right: 1rem; }
-      .doc-logo { width: 48px; height: 48px; }
-      .doc-logo-caption { font-size: 0.5rem; }
-      .doc-qr { width: 62px; height: 62px; }
-      .doc-qr-caption { font-size: 0.5rem; }
+      .doc-logo { width: 64px; height: 64px; }
+      .doc-qr { width: 64px; height: 64px; }
       .application-line { font-size: 0.78rem; }
     }
   </style>
@@ -511,11 +496,13 @@
         <div class="official-doc-inner">
           <div class="doc-corner doc-corner-left">
             <img src="assets/mls-logo.png" alt="MLS Crash Course" class="doc-logo">
-            <div class="doc-logo-caption">MLS Crash Course</div>
           </div>
           <div class="doc-corner doc-corner-right">
-            <canvas id="official-qr" class="doc-qr"></canvas>
-            <div class="doc-qr-caption">Scan to visit</div>
+            <img
+              src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmlsrf.vercel.app&size=300x300&margin=0&color=1e3b5a&bgcolor=ffffff"
+              alt="Scan to visit mlsrf.vercel.app"
+              class="doc-qr"
+              crossorigin="anonymous">
           </div>
 
           <div class="seal-top">Republic of the Philippines</div>
@@ -1101,17 +1088,7 @@
           }
           reasonText = 'With ' + parts.join(' and ');
         }
-        document.getElementById('official-verdict-sub').textContent = reasonText;
-        
-        // Generate the QR code pointing at the site
-        if (window.QRCode && document.getElementById('official-qr')) {
-          window.QRCode.toCanvas(
-            document.getElementById('official-qr'),
-            'https://mlsrf.vercel.app',
-            { width: 168, margin: 0, color: { dark: '#1e3b5a', light: '#ffffff' } },
-            function (err) { if (err) console.warn('QR render failed', err); }
-          );
-        }
+        document.getElementById('official-verdict-sub').textContent = reasonText;       
       }
 
       document.getElementById('official-back').addEventListener('click', () => { showView('view-home'); loadHome(); });
@@ -1247,28 +1224,24 @@
         ctx.font = '700 32px Inter, sans-serif';
         ctx.fillText('MOCK BOARD EXAMINATION', W / 2, 175);
 
-        // QR code — top-right corner
-        if (window.QRCode) {
-          window.QRCode.toDataURL(
-            'https://mlsrf.vercel.app',
-            { width: 240, margin: 1, color: { dark: '#ffffff', light: '#1e3b5a' } },
-            function (err, dataUrl) {
-              if (err || !dataUrl) return;
-              const img = new Image();
-              img.onload = function () {
-                // White backing plate behind the QR for scannability
-                const qrSize = 150;
-                const qrX = W - qrSize - 80;
-                const qrY = 80;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16);
-                ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
-                ctx.fillStyle = '#8ab4d9';
-                ctx.font = '600 16px Inter, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('SCAN TO VISIT', qrX + qrSize / 2, qrY + qrSize + 26);
-                // Re-download after QR is drawn
-                downloadCanvas(canvas, 'mock-official-result.png');
+        // QR code — top-right corner, fetched as an image
+        const qrImg = new Image();
+        qrImg.crossOrigin = 'anonymous';
+        qrImg.onload = function () {
+          const qrSize = 180;
+          const qrX = W - qrSize - 90;
+          const qrY = 80;
+          // White backing plate so the QR is scannable
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
+          ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+          downloadCanvas(canvas, 'mock-official-result.png');
+        };
+        qrImg.onerror = function () {
+          // If the QR service is down, just download without it
+          downloadCanvas(canvas, 'mock-official-result.png');
+        };
+        qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmlsrf.vercel.app&size=600x600&margin=0&color=1e3b5a&bgcolor=ffffff';
               };
               img.src = dataUrl;
             }
