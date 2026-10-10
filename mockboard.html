@@ -18,6 +18,7 @@
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
     html[data-theme="dark"] .diamond { background: #8ab4d9; }
 
+    /* --------- Header --------- */
     header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
     .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
@@ -61,8 +62,10 @@
     .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
 
+    /* --------- Main --------- */
     main { flex: 1; position: relative; z-index: 2; }
 
+    /* --------- HOME VIEW --------- */
     .mock-hero { background: linear-gradient(135deg, #0f1a26 0%, #1e3b5a 55%, #2d4a6b 100%); color: #fff; padding: 3.5rem 2rem 3rem; text-align: center; border-bottom: 3px solid #f6c445; }
     .mock-hero .eyebrow { font-size: 0.75rem; letter-spacing: 0.28em; text-transform: uppercase; color: #f6c445; font-weight: 700; margin-bottom: 1rem; }
     .mock-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
@@ -102,6 +105,7 @@
     .official-card .big-btn:hover { background: #152b42; transform: translateY(-2px); }
     .official-card .big-btn:disabled { background: #b0c4d0; cursor: not-allowed; transform: none; }
 
+    /* --------- EXAM VIEW --------- */
     #view-exam { display: none; background: #f5f7fa; min-height: calc(100vh - 120px); }
     .exam-top { position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid rgba(30,59,90,0.1); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
     .exam-subject { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
@@ -155,6 +159,7 @@
     .nav-bubble.flagged.answered { background: #e67e22; color: #fff; border-color: #c86a15; }
     .nav-bubble.current { box-shadow: 0 0 0 3px rgba(30,59,90,0.25); }
 
+    /* --------- SECTION RESULT --------- */
     #view-section-result { display: none; }
     .result-card { max-width: 640px; margin: 3rem auto; background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 24px; padding: 3rem 2.5rem; text-align: center; box-shadow: 0 20px 45px rgba(30,59,90,0.06); }
     .result-verdict-emoji { font-size: 3.5rem; line-height: 1; margin-bottom: 0.75rem; }
@@ -171,6 +176,7 @@
     .result-actions .secondary { background: transparent; color: #1e3b5a; border: 1.5px solid #1e3b5a; }
     .result-actions .secondary:hover { background: #1e3b5a; color: #fff; }
 
+    /* --------- BREAK VIEW --------- */
     #view-break { display: none; }
     .break-card { max-width: 560px; margin: 4rem auto; background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 24px; padding: 3rem 2.5rem; text-align: center; box-shadow: 0 20px 45px rgba(30,59,90,0.06); }
     .break-card .icon { font-size: 3.5rem; margin-bottom: 1rem; }
@@ -178,26 +184,34 @@
     .break-card p { color: #5c7c9e; font-size: 1rem; margin-bottom: 2rem; }
     .break-card .next-section { font-weight: 600; color: #1e3b5a; padding: 1rem; background: #e8f0f8; border-radius: 12px; margin-bottom: 1.5rem; }
 
+    /* --------- OFFICIAL RESULT --------- */
     #view-official { display: none; }
-    .official-doc { max-width: 800px; margin: 3rem auto; background: #fbfaf6; border: 1px solid #c9bfa3; padding: 3rem 3.5rem; box-shadow: 0 20px 45px rgba(30,59,90,0.1); font-family: 'Inter', sans-serif; color: #1e1e1e; }
-    .official-doc-inner { border: 2px double #7a6f4d; padding: 2.5rem 3rem; position: relative; }
+    .official-doc { max-width: 820px; margin: 3rem auto; background: #fbfaf6; border: 1px solid #c9bfa3; padding: 2.5rem 3rem; box-shadow: 0 20px 45px rgba(30,59,90,0.1); }
+    .official-doc-inner { border: 2px double #7a6f4d; padding: 2rem 2.5rem; position: relative; }
 
-    .doc-corner { position: absolute; top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
-    .doc-corner-left { left: 1.5rem; }
-    .doc-corner-right { right: 1.5rem; }
+    .doc-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    .doc-header-center { text-align: center; padding-top: 0.4rem; }
+    .doc-corner-left, .doc-corner-right { flex-shrink: 0; }
 
     .doc-logo { width: 96px; height: 96px; display: block; object-fit: contain; }
     .doc-qr { width: 96px; height: 96px; display: block; border: 1px solid #d8d0b8; padding: 4px; background: #fff; object-fit: contain; }
 
+    .official-doc .seal-top { text-align: center; font-family: 'Playfair Display', serif; color: #4a3403; font-size: 0.85rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .official-doc .seal-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.25rem; letter-spacing: 0.02em; }
+    .official-doc .seal-sub { text-align: center; font-size: 0.85rem; color: #5c7c9e; letter-spacing: 0.15em; text-transform: uppercase; }
+
+    .official-doc .candidate-line { text-align: center; font-size: 1rem; margin-top: 2rem; margin-bottom: 0.4rem; color: #2c3e50; }
+    .official-doc .candidate-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #1e3b5a; margin: 0.4rem 0 0.2rem; text-align: center; }
+    .official-doc .candidate-date { text-align: center; font-size: 0.85rem; color: #7a8fa3; margin-bottom: 1.5rem; }
     .application-line { text-align: center; font-family: 'Inter', sans-serif; font-size: 0.85rem; color: #4a3403; margin-bottom: 1.5rem; letter-spacing: 0.05em; }
     .application-line span { font-weight: 600; letter-spacing: 0.12em; }
 
-    .official-doc .seal-top { text-align: center; font-family: 'Playfair Display', serif; color: #4a3403; font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.4rem; }
-    .official-doc .seal-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.3rem; letter-spacing: 0.02em; }
-    .official-doc .seal-sub { text-align: center; font-size: 0.9rem; color: #5c7c9e; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2rem; }
-    .official-doc .candidate-line { text-align: center; font-size: 1rem; margin-bottom: 0.4rem; color: #2c3e50; }
-    .official-doc .candidate-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #1e3b5a; margin: 0.4rem 0 0.2rem; text-align: center; }
-    .official-doc .candidate-date { text-align: center; font-size: 0.85rem; color: #7a8fa3; margin-bottom: 2rem; }
     .official-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
     .official-table th, .official-table td { padding: 0.75rem 1rem; text-align: left; font-size: 0.95rem; border-bottom: 1px solid #d8d0b8; }
     .official-table th { font-family: 'Playfair Display', serif; font-weight: 700; color: #4a3403; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; background: #f1ede0; }
@@ -215,6 +229,7 @@
     .official-actions button.secondary { background: transparent; color: #1e3b5a; border: 1.5px solid #1e3b5a; }
     .official-actions button:hover { transform: translateY(-1px); }
 
+    /* --------- Modal --------- */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,38,0.7); backdrop-filter: blur(6px); z-index: 600; align-items: center; justify-content: center; padding: 1rem; }
     .modal-overlay.open { display: flex; }
     .modal { background: #fff; border-radius: 24px; padding: 2.25rem; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
@@ -236,6 +251,7 @@
     footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); position: relative; z-index: 2; }
     footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
 
+    /* --------- DARK MODE --------- */
     html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .logo { color: #8ab4d9; }
@@ -316,25 +332,34 @@
       .mock-container { padding: 2rem 1rem 3rem; }
       .exam-q-text { font-size: 1.05rem; }
       .exam-body { padding: 1.5rem 1rem 0.75rem; }
-      .exam-bottom { padding: 1rem 1rem 2rem; }
       .exam-question-card { padding: 1.5rem 1.25rem; }
+      .exam-bottom { padding: 1rem 1rem 2rem; }
       .exam-bottom-inner { gap: 0.4rem; }
       .exam-btn { padding: 8px 14px; font-size: 0.8rem; }
       .result-card, .break-card { margin: 2rem 1rem; padding: 2rem 1.5rem; }
       .result-score { font-size: 3rem; }
       .official-doc { margin: 2rem 1rem; padding: 1.5rem 1.25rem; }
-      .official-doc-inner { padding: 1.5rem 1rem; }
+      .official-doc-inner { padding: 1.25rem 1rem; }
+      .doc-header {
+        grid-template-columns: auto auto;
+        grid-template-areas:
+          "logo qr"
+          "center center";
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+      }
+      .doc-corner-left { grid-area: logo; }
+      .doc-corner-right { grid-area: qr; }
+      .doc-header-center { grid-area: center; padding-top: 0; }
+      .doc-logo { width: 64px; height: 64px; }
+      .doc-qr { width: 64px; height: 64px; }
       .official-doc .seal-title { font-size: 1.2rem; }
       .official-doc .candidate-name { font-size: 1.2rem; }
       .official-table th, .official-table td { padding: 0.5rem; font-size: 0.85rem; }
       .official-verdict .verdict-word { font-size: 2.5rem; }
-      .nav-grid { grid-template-columns: repeat(6, 1fr); }
-      .doc-corner { top: 1rem; }
-      .doc-corner-left { left: 1rem; }
-      .doc-corner-right { right: 1rem; }
-      .doc-logo { width: 64px; height: 64px; }
-      .doc-qr { width: 64px; height: 64px; }
       .application-line { font-size: 0.78rem; }
+      .nav-grid { grid-template-columns: repeat(6, 1fr); }
     }
   </style>
 </head>
@@ -454,16 +479,19 @@
     <section id="view-official">
       <div class="official-doc">
         <div class="official-doc-inner">
-          <div class="doc-corner doc-corner-left">
-            <img src="assets/mls-logo.png" alt="MLS Crash Course" class="doc-logo">
+          <div class="doc-header">
+            <div class="doc-corner-left">
+              <img src="assets/mls-logo.png" alt="MLS Crash Course" class="doc-logo">
+            </div>
+            <div class="doc-header-center">
+              <div class="seal-top">Republic of the Philippines</div>
+              <div class="seal-title">Mock Board Examination</div>
+              <div class="seal-sub">Official Result of Rating</div>
+            </div>
+            <div class="doc-corner-right">
+              <img src="assets/qr.png" alt="Scan to visit mlsrf.vercel.app" class="doc-qr">
+            </div>
           </div>
-          <div class="doc-corner doc-corner-right">
-            <img src="assets/qr.png" alt="Scan to visit mlsrf.vercel.app" class="doc-qr">
-          </div>
-
-          <div class="seal-top">Republic of the Philippines</div>
-          <div class="seal-title">Mock Board Examination</div>
-          <div class="seal-sub">Official Result of Rating</div>
 
           <div class="candidate-line">This certifies that</div>
           <div class="candidate-name" id="official-name">—</div>
@@ -556,7 +584,7 @@
       const SECTIONS = [
         { slug: 'clinical-chemistry',        name: 'Clinical Chemistry',              day: 1 },
         { slug: 'microbiology',              name: 'Microbiology & Parasitology',     day: 1 },
-        { slug: 'analysis-of-urine',         name: 'Clinical Microscopy (AUBF)',      day: 1 },
+        { slug: 'analysis-of-urine',         name: 'Clinical Microscopy',             day: 1 },
         { slug: 'clinical-hematology',       name: 'Hematology',                      day: 2 },
         { slug: 'immunoserology-blood-bank', name: 'Immunoserology & Blood Banking',  day: 2 },
         { slug: 'histology-histopathology',  name: 'Histopathology & MedTech Laws',   day: 2 }
@@ -794,17 +822,6 @@
       document.getElementById('exam-next').addEventListener('click', () => {
         if (activeIndex < activeQuestions.length - 1) { activeIndex++; renderExamQuestion(); }
       });
-      document.addEventListener('keydown', (e) => {
-        const examView = document.getElementById('view-exam');
-        if (!examView || examView.style.display === 'none') return;
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (activeIndex > 0) { activeIndex--; renderExamQuestion(); }
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (activeIndex < activeQuestions.length - 1) { activeIndex++; renderExamQuestion(); }
-        }
-      });
       document.getElementById('exam-flag').addEventListener('click', () => {
         const q = activeQuestions[activeIndex];
         if (activeFlags[q.id]) delete activeFlags[q.id];
@@ -819,6 +836,19 @@
           ? `You have ${unanswered} unanswered question${unanswered === 1 ? '' : 's'}. Submit anyway?`
           : 'Submit this section?';
         if (confirm(msg)) submitSection();
+      });
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        const examView = document.getElementById('view-exam');
+        if (!examView || examView.style.display === 'none') return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          if (activeIndex > 0) { activeIndex--; renderExamQuestion(); }
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          if (activeIndex < activeQuestions.length - 1) { activeIndex++; renderExamQuestion(); }
+        }
       });
 
       document.getElementById('exam-nav-open').addEventListener('click', () => {
@@ -1124,136 +1154,228 @@
         downloadCanvas(canvas, `mock-${activeSection.slug}.png`);
       }
 
-      function shareOfficialResult() {
-        const W = 1080, H = 1080;
+      async function shareOfficialResult() {
+        const W = 1080, H = 1620;
         const canvas = document.createElement('canvas');
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext('2d');
 
-        const bg = ctx.createLinearGradient(0, 0, 0, H);
-        bg.addColorStop(0, '#1e3b5a');
-        bg.addColorStop(1, '#0f1a26');
-        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+        function loadImage(src) {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+            img.src = src;
+          });
+        }
+        const [logoImg, qrImg] = await Promise.all([
+          loadImage('assets/mls-logo.png'),
+          loadImage('assets/qr.png')
+        ]);
 
-        ctx.strokeStyle = '#f6c445';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(40, 40, W - 80, H - 80);
+        const C = {
+          paper:       '#fbfaf6',
+          outerBorder: '#c9bfa3',
+          innerBorder: '#7a6f4d',
+          navy:        '#1e3b5a',
+          darkBrown:   '#4a3403',
+          tan:         '#7a6f4d',
+          text:        '#2c3e50',
+          muted:       '#5c7c9e',
+          mutedLight:  '#7a8fa3',
+          tableHeader: '#f1ede0',
+          tableLine:   '#d8d0b8',
+          pass:        '#1f6d3d',
+          fail:        '#8b1e1e',
+          white:       '#ffffff'
+        };
 
-        ctx.fillStyle = '#8ab4d9';
-        ctx.font = '500 28px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('MLS CRASH COURSE', W / 2, 120);
+        ctx.fillStyle = C.paper;
+        ctx.fillRect(0, 0, W, H);
 
-        ctx.fillStyle = '#f6c445';
-        ctx.font = '700 32px Inter, sans-serif';
-        ctx.fillText('MOCK BOARD EXAMINATION', W / 2, 175);
+        ctx.strokeStyle = C.outerBorder;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, 50, W - 100, H - 100);
 
-        ctx.fillStyle = '#b8c5d1';
-        ctx.font = '500 24px Inter, sans-serif';
-        ctx.fillText(userFullName || 'Candidate', W / 2, 218);
+        ctx.strokeStyle = C.innerBorder;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(85, 85, W - 170, H - 170);
 
-        if (userApplicationNo) {
-          ctx.fillStyle = '#7a8fa3';
-          ctx.font = '500 18px Inter, sans-serif';
-          ctx.fillText('Application No.: ' + userApplicationNo, W / 2, 248);
+        const contentX = 140;
+        const contentW = W - 2 * contentX;
+        const cornerSize = 130;
+        const headerY = 130;
+        const centerX = W / 2;
+
+        function drawSpacedText(text, x, y, spacing) {
+          const chars = text.split('');
+          const widths = chars.map(c => ctx.measureText(c).width);
+          const totalW = widths.reduce((a, b) => a + b, 0) + spacing * (chars.length - 1);
+          let cursor = x - totalW / 2;
+          const prevAlign = ctx.textAlign;
+          ctx.textAlign = 'left';
+          chars.forEach((c, i) => {
+            ctx.fillText(c, cursor, y);
+            cursor += widths[i] + spacing;
+          });
+          ctx.textAlign = prevAlign;
         }
 
-        const barX = 180, barW = 720;
-        let y = 320;
-        const lineH = 70;
-        SECTIONS.forEach(s => {
+        if (logoImg) {
+          ctx.drawImage(logoImg, contentX, headerY, cornerSize, cornerSize);
+        }
+        if (qrImg) {
+          ctx.fillStyle = C.white;
+          ctx.fillRect(W - contentX - cornerSize - 10, headerY - 10, cornerSize + 20, cornerSize + 20);
+          ctx.strokeStyle = C.tableLine;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(W - contentX - cornerSize - 10, headerY - 10, cornerSize + 20, cornerSize + 20);
+          ctx.drawImage(qrImg, W - contentX - cornerSize, headerY, cornerSize, cornerSize);
+        }
+
+        ctx.fillStyle = C.darkBrown;
+        ctx.font = '500 22px "Playfair Display", serif';
+        ctx.textAlign = 'center';
+        drawSpacedText('REPUBLIC OF THE PHILIPPINES', centerX, headerY + 42, 5);
+
+        ctx.fillStyle = C.navy;
+        ctx.font = '700 42px "Playfair Display", serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Mock Board Examination', centerX, headerY + 92);
+
+        ctx.fillStyle = C.muted;
+        ctx.font = '500 18px Inter, sans-serif';
+        drawSpacedText('OFFICIAL RESULT OF RATING', centerX, headerY + 128, 4);
+
+        let y = headerY + cornerSize + 60;
+
+        ctx.fillStyle = C.text;
+        ctx.font = '400 22px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('This certifies that', centerX, y);
+        y += 62;
+
+        ctx.fillStyle = C.navy;
+        ctx.font = '700 44px "Playfair Display", serif';
+        ctx.fillText(userFullName || 'Candidate', centerX, y);
+        y += 44;
+
+        ctx.fillStyle = C.mutedLight;
+        ctx.font = '400 18px Inter, sans-serif';
+        ctx.fillText('Given this ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), centerX, y);
+        y += 55;
+
+        if (userApplicationNo) {
+          ctx.fillStyle = C.darkBrown;
+          ctx.font = '600 22px Inter, sans-serif';
+          drawSpacedText('Application No.: ' + userApplicationNo, centerX, y, 3);
+        }
+        y += 55;
+
+        const tableX = contentX;
+        const tableW = contentW;
+        const rowH = 58;
+
+        ctx.fillStyle = C.tableHeader;
+        ctx.fillRect(tableX, y, tableW, rowH);
+        ctx.fillStyle = C.darkBrown;
+        ctx.font = '700 18px "Playfair Display", serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('SUBJECT', tableX + 30, y + 36);
+        ctx.textAlign = 'right';
+        ctx.fillText('RATING', tableX + tableW - 30, y + 36);
+        y += rowH;
+
+        const subjects = SECTIONS.map(s => {
           const att = sectionAttempts[s.slug];
           const pct = att ? Number(att.percentage) : 0;
-          ctx.fillStyle = '#b8c5d1';
-          ctx.font = '500 20px Inter, sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(s.name.substring(0, 40), barX, y - 6);
-          ctx.fillStyle = 'rgba(255,255,255,0.08)';
-          ctx.fillRect(barX, y + 4, barW, 14);
-          ctx.fillStyle = pct >= 75 ? '#6fdc92' : pct >= 60 ? '#f6c445' : '#e74c3c';
-          ctx.fillRect(barX, y + 4, barW * (pct / 100), 14);
-          ctx.fillStyle = '#fff';
-          ctx.font = '600 20px Inter, sans-serif';
-          ctx.textAlign = 'right';
-          ctx.fillText(pct.toFixed(1) + '%', barX + barW, y + 15);
-          y += lineH;
+          return { name: s.name, pct };
         });
 
-        const gwa = SECTIONS.reduce((sum, s) => sum + (sectionAttempts[s.slug] ? Number(sectionAttempts[s.slug].percentage) : 0), 0) / SECTIONS.length;
-        const minRating = Math.min(...SECTIONS.map(s => sectionAttempts[s.slug] ? Number(sectionAttempts[s.slug].percentage) : 0));
+        subjects.forEach(s => {
+          ctx.strokeStyle = C.tableLine;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(tableX, y + rowH);
+          ctx.lineTo(tableX + tableW, y + rowH);
+          ctx.stroke();
+
+          ctx.fillStyle = C.text;
+          ctx.font = '400 22px Inter, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(s.name, tableX + 30, y + 37);
+
+          ctx.fillStyle = C.navy;
+          ctx.font = '700 22px Inter, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(s.pct.toFixed(2), tableX + tableW - 30, y + 37);
+          y += rowH;
+        });
+
+        const gwa = subjects.reduce((sum, s) => sum + s.pct, 0) / subjects.length;
+        ctx.fillStyle = C.tableHeader;
+        ctx.fillRect(tableX, y, tableW, rowH);
+        ctx.fillStyle = C.darkBrown;
+        ctx.font = '700 24px "Playfair Display", serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('General Weighted Average', tableX + 30, y + 38);
+        ctx.textAlign = 'right';
+        ctx.fillText(gwa.toFixed(2), tableX + tableW - 30, y + 38);
+        y += rowH + 55;
+
+        ctx.strokeStyle = C.innerBorder;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(tableX + 60, y);
+        ctx.lineTo(tableX + tableW - 60, y);
+        ctx.stroke();
+        y += 80;
+
+        const minRating = Math.min(...subjects.map(s => s.pct));
         const passed = gwa >= 75 && minRating >= 60;
 
-        const gwaFailed = gwa < 75;
-        const failedSubjects = SECTIONS.filter(s => {
-          const att = sectionAttempts[s.slug];
-          const pct = att ? Number(att.percentage) : 0;
-          return pct < 60;
-        }).map(s => s.name);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = passed ? C.pass : C.fail;
+        ctx.font = '800 100px "Playfair Display", serif';
+        ctx.fillText(passed ? 'PASSED' : 'FAILED', centerX, y);
+        y += 50;
 
+        const gwaFailed = gwa < 75;
+        const failedSubjects = subjects.filter(s => s.pct < 60).map(s => s.name);
         let reasonText;
         if (passed) {
-          reasonText = `General average of ${gwa.toFixed(2)}%`;
+          reasonText = `With a general average of ${gwa.toFixed(2)}%`;
         } else {
           const parts = [];
-          if (gwaFailed) parts.push('General average below 75%');
-          if (failedSubjects.length === 1) parts.push(`Below 60% in ${failedSubjects[0]}`);
-          else if (failedSubjects.length === 2) parts.push(`Below 60% in ${failedSubjects[0]} and ${failedSubjects[1]}`);
+          if (gwaFailed) parts.push('a general average below 75%');
+          if (failedSubjects.length === 1) parts.push(`a rating below 60% in ${failedSubjects[0]}`);
+          else if (failedSubjects.length === 2) parts.push(`a rating below 60% in ${failedSubjects[0]} and ${failedSubjects[1]}`);
           else if (failedSubjects.length > 2) {
             const last = failedSubjects[failedSubjects.length - 1];
             const rest = failedSubjects.slice(0, -1).join(', ');
-            parts.push(`Below 60% in ${rest}, and ${last}`);
+            parts.push(`a rating below 60% in ${rest}, and ${last}`);
           }
-          reasonText = parts.join(' · ');
+          reasonText = 'With ' + parts.join(' and ');
         }
 
-        ctx.fillStyle = passed ? '#6fdc92' : '#e74c3c';
-        ctx.font = '700 60px "Playfair Display", serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(passed ? 'PASSED' : 'FAILED', W / 2, y + 90);
-
-        ctx.fillStyle = '#f6c445';
-        ctx.font = '700 32px Inter, sans-serif';
-        ctx.fillText(`GWA: ${gwa.toFixed(2)}%`, W / 2, y + 145);
-
-        ctx.fillStyle = '#b8c5d1';
-        ctx.font = '500 20px Inter, sans-serif';
-        const maxWidth = W - 240;
-        const words = reasonText.split(' ');
-        const lines = [];
-        let currentLine = '';
-        words.forEach(word => {
-          const test = currentLine ? currentLine + ' ' + word : word;
-          if (ctx.measureText(test).width < maxWidth) {
-            currentLine = test;
-          } else {
-            lines.push(currentLine);
-            currentLine = word;
-          }
+        ctx.fillStyle = C.tan;
+        ctx.font = '500 16px Inter, sans-serif';
+        const reasonUpper = reasonText.toUpperCase();
+        const maxReasonW = tableW - 100;
+        const rWords = reasonUpper.split(' ');
+        const rLines = [];
+        let rCur = '';
+        rWords.forEach(w => {
+          const test = rCur ? rCur + ' ' + w : w;
+          if (ctx.measureText(test).width < maxReasonW) rCur = test;
+          else { rLines.push(rCur); rCur = w; }
         });
-        if (currentLine) lines.push(currentLine);
-        lines.forEach((line, i) => {
-          ctx.fillText(line, W / 2, y + 190 + i * 28);
+        if (rCur) rLines.push(rCur);
+        rLines.forEach((line, i) => {
+          drawSpacedText(line, centerX, y + i * 30, 2);
         });
 
-        ctx.fillStyle = '#8ab4d9';
-        ctx.font = '600 24px Inter, sans-serif';
-        ctx.fillText('mlsrf.vercel.app', W / 2, H - 80);
-
-        // QR code — top-right, drawn last so it sits on top
-        const qrImg = new Image();
-        qrImg.onload = function () {
-          const qrSize = 180;
-          const qrX = W - qrSize - 90;
-          const qrY = 80;
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
-          ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-          downloadCanvas(canvas, 'mock-official-result.png');
-        };
-        qrImg.onerror = function () {
-          downloadCanvas(canvas, 'mock-official-result.png');
-        };
-        qrImg.src = 'assets/qr.png';
+        downloadCanvas(canvas, 'mock-official-result.png');
       }
 
       async function pageInit(user) {
