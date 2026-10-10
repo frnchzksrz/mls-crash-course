@@ -245,6 +245,18 @@
     } catch (e) { /* silent */ }
   }
 
+  async function updateLastActive() {
+    if (!currentUser) return;
+    try {
+      const now = new Date();
+      const todayLocal = now.toLocaleDateString('en-CA'); // YYYY-MM-DD, local timezone
+      await sb.from('profiles').update({
+        last_active: now.toISOString(),
+        last_active_date: todayLocal
+      }).eq('id', currentUser.id);
+    } catch (e) { /* silent — never block the page on this */ }
+  }
+
   async function loadNotifDropdown() {
     const list = document.getElementById('notif-list');
     if (!list) return;
@@ -319,6 +331,7 @@
     if (currentUser) {
       await updateBadges();
       setInterval(updateBadges, 60000);
+      updateLastActive();
     }
 
     window.dispatchEvent(new CustomEvent('medlab:ready', {

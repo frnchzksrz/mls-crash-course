@@ -3,37 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up / Login – MLS Crash Course</title>
+  <title>Sign Up / Login · MLS Crash Course</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #1e1e1e; min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow-x: hidden; }
+    body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #1e1e1e; min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow-x: hidden; padding: 1.5rem 0; transition: background 0.25s, color 0.25s; }
     .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
-    .form-wrapper { position: relative; z-index: 2; width: 100%; max-width: 440px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(30,59,90,0.12); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.05); margin: 1rem; }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    .form-wrapper { position: relative; z-index: 2; width: 100%; max-width: 460px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(30,59,90,0.12); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.05); margin: 1rem; transition: background 0.25s, border-color 0.25s; }
     .logo { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.25rem; }
     .logo span { display: block; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.15em; color: #5c7c9e; text-transform: uppercase; margin-top: -0.2rem; }
     .logo i { font-style: italic; }
     .toggle-buttons { display: flex; gap: 0.5rem; margin: 2rem 0 1.5rem; border-bottom: 1px solid rgba(30,59,90,0.1); }
-    .toggle-btn { flex: 1; background: none; border: none; padding: 0.6rem; font-size: 1rem; font-weight: 600; color: #5c7c9e; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; }
+    .toggle-btn { flex: 1; background: none; border: none; padding: 0.6rem; font-size: 1rem; font-weight: 600; color: #5c7c9e; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.2s; font-family: inherit; }
     .toggle-btn.active { color: #1e3b5a; border-bottom-color: #1e3b5a; }
     .form-panel { display: none; }
     .form-panel.active { display: block; }
-    .form-group { margin-bottom: 1.2rem; }
+    .form-group { margin-bottom: 1.1rem; }
     label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.3rem; color: #1e3b5a; }
-    input { width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(30,59,90,0.15); border-radius: 12px; font-size: 1rem; font-family: inherit; background: #fafbfc; transition: border 0.2s; }
+    input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 0.75rem 1rem; border: 1px solid rgba(30,59,90,0.15); border-radius: 12px; font-size: 1rem; font-family: inherit; background: #fafbfc; transition: border 0.2s; }
     input:focus { outline: none; border-color: #1e3b5a; background: #fff; }
-    .submit-btn { width: 100%; padding: 0.8rem; background: #1e3b5a; color: #fff; font-weight: 600; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s; }
+    .role-options { display: flex; gap: 0.6rem; }
+    .role-option { flex: 1; cursor: pointer; }
+    .role-option input { display: none; }
+    .role-option span { display: block; padding: 0.7rem 0.5rem; text-align: center; border: 1.5px solid rgba(30,59,90,0.15); border-radius: 12px; font-size: 0.9rem; font-weight: 500; color: #5c7c9e; background: #fafbfc; transition: all 0.15s; }
+    .role-option input:checked + span { border-color: #1e3b5a; background: #e8f0f8; color: #1e3b5a; font-weight: 600; }
+    .submit-btn { width: 100%; padding: 0.85rem; background: #1e3b5a; color: #fff; font-weight: 600; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s, opacity 0.2s; font-family: inherit; }
     .submit-btn:hover { background: #162d45; }
-    .form-message { margin: 0.5rem 0; font-size: 0.85rem; text-align: center; }
-    .error-msg { color: #c0392b; }
-    .success-msg { color: #1e3b5a; background: #f0f4f8; padding: 0.5rem; border-radius: 8px; }
+    .submit-btn:disabled { background: #b0c4d0; cursor: not-allowed; }
+    .form-message { margin: 0.6rem 0; font-size: 0.88rem; text-align: center; line-height: 1.4; }
+    .error-msg { color: #c0392b; background: #fdecea; padding: 0.6rem 0.9rem; border-radius: 10px; }
+    .success-msg { color: #1f6d3d; background: #e7f6ee; padding: 0.6rem 0.9rem; border-radius: 10px; }
+    .error-msg a, .success-msg a { color: inherit; font-weight: 700; text-decoration: underline; }
     .forgot-link { font-size: 0.8rem; text-align: right; margin-top: -0.5rem; margin-bottom: 0.5rem; }
     .forgot-link a { color: #5c7c9e; text-decoration: none; }
+
+    /* Confirmation modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,38,0.7); backdrop-filter: blur(6px); z-index: 900; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 20px; padding: 2rem; max-width: 480px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #1e3b5a; margin-bottom: 0.5rem; }
+    .modal .lead { color: #5c7c9e; font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .modal .warn-box { background: #fff8e6; border: 1px solid #f6c445; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1.5rem; }
+    .modal .warn-box ul { list-style: none; padding: 0; }
+    .modal .warn-box li { color: #5a4500; font-size: 0.88rem; padding: 0.35rem 0 0.35rem 1.4rem; position: relative; line-height: 1.45; }
+    .modal .warn-box li::before { content: "⚠"; position: absolute; left: 0; color: #d4a017; }
+    .modal .warn-box strong { color: #7a4d0b; }
+    .modal-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+    .modal-btn { padding: 10px 22px; border-radius: 30px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.92rem; transition: all 0.2s; }
+    .modal-btn.cancel { background: #e8f0f8; color: #1e3b5a; }
+    .modal-btn.cancel:hover { background: #d4e4f2; }
+    .modal-btn.confirm { background: #1e3b5a; color: #fff; }
+    .modal-btn.confirm:hover { background: #152b42; }
+
+    /* Dark mode */
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] .form-wrapper { background: rgba(26,43,61,0.95); border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span { color: #6b8ba3; }
+    html[data-theme="dark"] .toggle-buttons { border-bottom-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .toggle-btn { color: #7a8fa3; }
+    html[data-theme="dark"] .toggle-btn.active { color: #8ab4d9; border-bottom-color: #8ab4d9; }
+    html[data-theme="dark"] label { color: #8ab4d9; }
+    html[data-theme="dark"] input[type="text"], html[data-theme="dark"] input[type="email"], html[data-theme="dark"] input[type="password"] { background: #162536; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] input:focus { border-color: #8ab4d9; background: #162536; }
+    html[data-theme="dark"] .role-option span { background: #162536; border-color: rgba(255,255,255,0.15); color: #b8c5d1; }
+    html[data-theme="dark"] .role-option input:checked + span { background: #23374b; border-color: #8ab4d9; color: #8ab4d9; }
+    html[data-theme="dark"] .submit-btn { background: #2d4a6b; }
+    html[data-theme="dark"] .submit-btn:hover { background: #3a5a7d; }
+    html[data-theme="dark"] .submit-btn:disabled { background: #23374b; color: #5c7c9e; }
+    html[data-theme="dark"] .error-msg { background: #4d1e22; color: #f5b7bd; }
+    html[data-theme="dark"] .success-msg { background: #1e4d2b; color: #a8e6b8; }
+    html[data-theme="dark"] .forgot-link a { color: #7a8fa3; }
+    html[data-theme="dark"] .modal { background: #1a2b3d; }
+    html[data-theme="dark"] .modal h2 { color: #8ab4d9; }
+    html[data-theme="dark"] .modal .lead { color: #b8c5d1; }
+    html[data-theme="dark"] .modal .warn-box { background: #3d3120; border-color: #f6c445; }
+    html[data-theme="dark"] .modal .warn-box li { color: #f6c445; }
+    html[data-theme="dark"] .modal .warn-box strong { color: #ffe08a; }
+    html[data-theme="dark"] .modal-btn.cancel { background: #23374b; color: #8ab4d9; }
   </style>
 </head>
 <body>
@@ -52,15 +107,15 @@
       <form id="login-form">
         <div class="form-group">
           <label for="login-email">Email</label>
-          <input type="email" id="login-email" placeholder="you@example.com" required>
+          <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
         </div>
         <div class="form-group">
           <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" required minlength="6">
+          <input type="password" id="login-password" placeholder="••••••••" required minlength="6" autocomplete="current-password">
         </div>
         <div class="forgot-link"><a href="#">Forgot password?</a></div>
         <div id="login-message" class="form-message"></div>
-        <button type="submit" class="submit-btn">Log In</button>
+        <button type="submit" class="submit-btn" id="login-submit">Log In</button>
       </form>
     </div>
 
@@ -68,117 +123,287 @@
       <form id="signup-form">
         <div class="form-group">
           <label for="signup-name">Full Name</label>
-          <input type="text" id="signup-name" placeholder="Juan Dela Cruz" required>
+          <input type="text" id="signup-name" placeholder="Juan Dela Cruz" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="signup-username">Username</label>
+          <input type="text" id="signup-username" placeholder="juandc" required autocomplete="username" maxlength="30">
         </div>
         <div class="form-group">
           <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" placeholder="you@example.com" required>
+          <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
         </div>
         <div class="form-group">
           <label for="signup-password">Password</label>
-          <input type="password" id="signup-password" placeholder="••••••••" required minlength="6">
+          <input type="password" id="signup-password" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="signup-institution">School / College / University / Institution</label>
+          <input type="text" id="signup-institution" placeholder="e.g., University of Santo Tomas" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>I am a</label>
+          <div class="role-options">
+            <label class="role-option">
+              <input type="radio" name="signup-role" value="student" checked>
+              <span>🎓 Student</span>
+            </label>
+            <label class="role-option">
+              <input type="radio" name="signup-role" value="teacher">
+              <span>👨‍🏫 Teacher</span>
+            </label>
+          </div>
         </div>
         <div id="signup-message" class="form-message"></div>
-        <button type="submit" class="submit-btn">Create Account</button>
+        <button type="submit" class="submit-btn" id="signup-submit">Create Account</button>
       </form>
     </div>
   </div>
 
-  <script>
-    (function createDiamonds() {
-      for (let i = 0; i < 15; i++) {
-        const diamond = document.createElement('div');
-        diamond.className = 'diamond';
-        diamond.style.left = Math.random() * 100 + '%';
-        diamond.style.top = Math.random() * 100 + '%';
-        diamond.style.animationDelay = Math.random() * 4 + 's';
-        diamond.style.width = (10 + Math.random() * 15) + 'px';
-        diamond.style.height = diamond.style.width;
-        document.body.appendChild(diamond);
-      }
-    })();
+  <!-- Confirmation modal -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal">
+      <h2>One last thing</h2>
+      <p class="lead">Before we create your account, please read this carefully.</p>
+      <div class="warn-box">
+        <ul>
+          <li>Your username <strong id="cm-username">@username</strong> can only be changed <strong>once every 15 days</strong>.</li>
+          <li>Your institution <strong id="cm-institution">—</strong> is <strong>permanent</strong> and cannot be changed.</li>
+          <li>You are signing up as <strong id="cm-role">Student</strong>.</li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn cancel" id="cm-cancel">Go back</button>
+        <button type="button" class="modal-btn confirm" id="cm-confirm">I understand — Create my account</button>
+      </div>
+    </div>
+  </div>
 
-    document.addEventListener('DOMContentLoaded', function() {
-      let supabaseClient;
-      try {
-        if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
-          document.getElementById('login-message').innerHTML = '<div class="error-msg">Configuration error. Check config.js.</div>';
-          return;
-        }
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      } catch (e) {
-        document.getElementById('login-message').innerHTML = '<div class="error-msg">Failed to initialize Supabase.</div>';
-        return;
+  <script>
+    (function () {
+      const sb = window.supabaseClient;
+      const PROFANITY = ['fuck','fucker','fucking','shit','shitty','bitch','cunt','whore','slut','pussy','rape','rapist','porn','nigga','nigger','faggot','retard','penis','vagina','dick','cock','boobs','tits','sex','xxx','anal','anus'];
+
+      function hasProfanity(text) {
+        const t = (text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        return PROFANITY.some(w => t.includes(w));
       }
+
+      function showMessage(el, html, isError) {
+        el.innerHTML = `<div class="${isError ? 'error-msg' : 'success-msg'}">${html}</div>`;
+      }
+      function clearMessage(el) { el.innerHTML = ''; }
 
       const loginMsg = document.getElementById('login-message');
       const signupMsg = document.getElementById('signup-message');
 
-      function showMessage(el, text, isError) {
-        el.innerHTML = `<div class="${isError ? 'error-msg' : 'success-msg'}">${text}</div>`;
-      }
-
+      // Toggle panels
       const toggleBtns = document.querySelectorAll('.toggle-btn');
       const panels = {
         login: document.getElementById('login-panel'),
         signup: document.getElementById('signup-panel')
       };
+      function switchPanel(target) {
+        toggleBtns.forEach(b => b.classList.toggle('active', b.dataset.panel === target));
+        for (const key in panels) panels[key].classList.toggle('active', key === target);
+        clearMessage(loginMsg); clearMessage(signupMsg);
+      }
+      toggleBtns.forEach(btn => btn.addEventListener('click', () => switchPanel(btn.dataset.panel)));
 
-      toggleBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const target = btn.dataset.panel;
-          toggleBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          for (let key in panels) panels[key].classList.toggle('active', key === target);
-          loginMsg.innerHTML = '';
-          signupMsg.innerHTML = '';
-        });
-      });
-
+      // ---------------- LOGIN ----------------
       document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         if (!email || !password) { showMessage(loginMsg, 'Please fill in all fields.', true); return; }
+
+        const submitBtn = document.getElementById('login-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Checking…';
+
         try {
-          const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-          if (error) {
-            if (error.message.includes('Invalid login credentials')) showMessage(loginMsg, 'Invalid email or password.', true);
-            else showMessage(loginMsg, error.message, true);
+          // Pre-check: does this email exist?
+          const { data: exists, error: rpcErr } = await sb.rpc('email_exists', { p_email: email });
+          if (rpcErr) {
+            // If RPC fails, fall through to attempt login anyway
+            console.warn('email_exists RPC failed:', rpcErr.message);
+          } else if (exists === false) {
+            showMessage(loginMsg, `That email isn't registered yet. <a href="#" id="go-signup-link">Create an account →</a>`, true);
+            const goSignup = document.getElementById('go-signup-link');
+            if (goSignup) goSignup.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              switchPanel('signup');
+              document.getElementById('signup-email').value = email;
+            });
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
             return;
           }
-          window.location.href = 'index.html';
+
+          submitBtn.textContent = 'Logging in…';
+          const { error } = await sb.auth.signInWithPassword({ email, password });
+          if (error) {
+            const m = (error.message || '').toLowerCase();
+            if (m.includes('invalid login credentials')) {
+              showMessage(loginMsg, 'Wrong password. Please try again.', true);
+            } else if (m.includes('email not confirmed')) {
+              showMessage(loginMsg, 'Please confirm your email first. Check your inbox.', true);
+            } else {
+              showMessage(loginMsg, window.escapeHtml(error.message), true);
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Log In';
+            return;
+          }
+          showMessage(loginMsg, 'Logged in! Redirecting…', false);
+          setTimeout(() => { window.location.href = 'index.html'; }, 700);
         } catch (err) {
-          showMessage(loginMsg, 'Error: ' + (err.message || 'Unknown error'), true);
+          showMessage(loginMsg, 'Error: ' + window.escapeHtml(err.message || 'Unknown error'), true);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Log In';
         }
       });
+
+      // ---------------- SIGNUP ----------------
+      let pendingSignup = null;   // { name, username, email, password, institution, role }
 
       document.getElementById('signup-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('signup-name').value.trim();
+        const username = document.getElementById('signup-username').value.trim();
         const email = document.getElementById('signup-email').value.trim();
         const password = document.getElementById('signup-password').value;
-        if (!name || !email || !password) { showMessage(signupMsg, 'Please fill in all fields.', true); return; }
+        const institution = document.getElementById('signup-institution').value.trim();
+        const role = (document.querySelector('input[name="signup-role"]:checked') || {}).value || 'student';
+
+        // Basic validation
+        if (!name || !username || !email || !password || !institution) {
+          showMessage(signupMsg, 'Please fill in all fields.', true); return;
+        }
+        if (password.length < 6) {
+          showMessage(signupMsg, 'Password must be at least 6 characters.', true); return;
+        }
+
+        // Username profanity
+        if (hasProfanity(username)) {
+          showMessage(signupMsg, 'That username contains inappropriate language. Please choose another.', true); return;
+        }
+
+        const submitBtn = document.getElementById('signup-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Checking…';
+
         try {
-          const { error } = await supabaseClient.auth.signUp({
-            email, password,
-            options: { data: { full_name: name } }
-          });
-          if (error) {
-            if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
-              showMessage(signupMsg, 'User already registered. Go to log in.', true);
-            } else {
-              showMessage(signupMsg, error.message, true);
-            }
+          // Check username availability
+          const { data: uExists, error: uErr } = await sb.rpc('username_exists', { p_username: username });
+          if (uErr) {
+            console.warn('username_exists RPC failed:', uErr.message);
+          } else if (uExists === true) {
+            showMessage(signupMsg, 'That username is already taken. Please choose another.', true);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
             return;
           }
-          showMessage(signupMsg, 'Account created! Redirecting…');
-          setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+
+          // Check email availability
+          const { data: eExists, error: eErr } = await sb.rpc('email_exists', { p_email: email });
+          if (eErr) {
+            console.warn('email_exists RPC failed:', eErr.message);
+          } else if (eExists === true) {
+            showMessage(signupMsg, `That email is already registered. <a href="#" id="go-login-link">Go to Log In →</a>`, true);
+            const goLogin = document.getElementById('go-login-link');
+            if (goLogin) goLogin.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              switchPanel('login');
+              document.getElementById('login-email').value = email;
+            });
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+            return;
+          }
+
+          // All checks passed — stash the payload and open the modal
+          pendingSignup = { name, username, email, password, institution, role };
+          document.getElementById('cm-username').textContent = '@' + username;
+          document.getElementById('cm-institution').textContent = institution;
+          document.getElementById('cm-role').textContent = role === 'teacher' ? 'Teacher' : 'Student';
+          document.getElementById('confirm-modal').classList.add('open');
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
         } catch (err) {
-          showMessage(signupMsg, 'Error: ' + (err.message || 'Unknown error'), true);
+          showMessage(signupMsg, 'Error: ' + window.escapeHtml(err.message || 'Unknown error'), true);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
         }
       });
-    });
+
+      // Modal handlers
+      document.getElementById('cm-cancel').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.remove('open');
+        pendingSignup = null;
+      });
+
+      document.getElementById('cm-confirm').addEventListener('click', async () => {
+        if (!pendingSignup) return;
+        const submitBtn = document.getElementById('signup-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account…';
+        document.getElementById('confirm-modal').classList.remove('open');
+
+        try {
+          const { data, error } = await sb.auth.signUp({
+            email: pendingSignup.email,
+            password: pendingSignup.password,
+            options: {
+              data: {
+                full_name:   pendingSignup.name,
+                username:    pendingSignup.username,
+                institution: pendingSignup.institution,
+                role:        pendingSignup.role
+              }
+            }
+          });
+
+          if (error) {
+            const m = (error.message || '').toLowerCase();
+            if (m.includes('already registered') || m.includes('already exists') || m.includes('user already')) {
+              showMessage(signupMsg, `That email is already registered. <a href="#" id="go-login-link2">Go to Log In →</a>`, true);
+              const goLogin = document.getElementById('go-login-link2');
+              if (goLogin) goLogin.addEventListener('click', (ev) => {
+                ev.preventDefault();
+                switchPanel('login');
+                document.getElementById('login-email').value = pendingSignup.email;
+              });
+            } else if (m.includes('duplicate') && m.includes('username')) {
+              showMessage(signupMsg, 'That username was just taken. Please choose another.', true);
+            } else {
+              showMessage(signupMsg, window.escapeHtml(error.message), true);
+            }
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+            pendingSignup = null;
+            return;
+          }
+
+          // Success
+          if (data.session) {
+            showMessage(signupMsg, 'Account created! Redirecting…', false);
+            setTimeout(() => { window.location.href = 'index.html'; }, 900);
+          } else {
+            showMessage(signupMsg, 'Account created! Please check your email to confirm, then log in.', false);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+            pendingSignup = null;
+          }
+        } catch (err) {
+          showMessage(signupMsg, 'Error: ' + window.escapeHtml(err.message || 'Unknown error'), true);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
+          pendingSignup = null;
+        }
+      });
+    })();
   </script>
 </body>
 </html>
