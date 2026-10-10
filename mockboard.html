@@ -117,7 +117,7 @@
     .exam-nav-toggle { padding: 6px 16px; border-radius: 30px; border: 1.5px solid #1e3b5a; background: transparent; color: #1e3b5a; font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
     .exam-nav-toggle:hover { background: #1e3b5a; color: #fff; }
 
-    .exam-body { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+    .exam-body { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 1rem; }
     .exam-question-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(30,59,90,0.04); }
     .exam-q-number { font-size: 0.85rem; font-weight: 600; color: #f6c445; background: #1e3b5a; display: inline-block; padding: 4px 12px; border-radius: 20px; margin-bottom: 1rem; }
     .exam-q-text { font-size: 1.15rem; font-weight: 500; color: #1e1e1e; line-height: 1.5; margin-bottom: 1.75rem; }
@@ -128,8 +128,8 @@
     .exam-choice .letter { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: rgba(30,59,90,0.08); color: #1e3b5a; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
     .exam-choice.selected .letter { background: #1e3b5a; color: #fff; }
 
-    .exam-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); border-top: 1px solid rgba(30,59,90,0.1); padding: 0.85rem 1.5rem; display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; z-index: 40; box-shadow: 0 -5px 20px rgba(0,0,0,0.04); }
-    .exam-bottom-inner { max-width: 780px; margin: 0 auto; width: 100%; display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; }
+    .exam-bottom { max-width: 780px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; }
+    .exam-bottom-inner { width: 100%; display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; }
     .exam-btn { padding: 10px 22px; border-radius: 40px; font-family: inherit; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
     .exam-btn.secondary { background: #e8f0f8; color: #1e3b5a; }
     .exam-btn.secondary:hover:not(:disabled) { background: #d4e4f2; }
@@ -285,7 +285,6 @@
     html[data-theme="dark"] .exam-choice:hover { background: #23374b; border-color: #8ab4d9; }
     html[data-theme="dark"] .exam-choice.selected { background: #23374b; border-color: #8ab4d9; }
     html[data-theme="dark"] .exam-choice .letter { background: rgba(255,255,255,0.1); color: #8ab4d9; }
-    html[data-theme="dark"] .exam-bottom { background: rgba(15,26,38,0.96); border-top-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .exam-btn.secondary { background: #23374b; color: #8ab4d9; }
     html[data-theme="dark"] .nav-panel { background: #1a2b3d; }
     html[data-theme="dark"] .nav-panel-header h3 { color: #8ab4d9; }
@@ -318,7 +317,8 @@
       .mock-hero .sub { font-size: 0.95rem; }
       .mock-container { padding: 2rem 1rem 3rem; }
       .exam-q-text { font-size: 1.05rem; }
-      .exam-body { padding: 1.5rem 1rem 6rem; }
+      .exam-body { padding: 1.5rem 1rem 0.75rem; }
+      .exam-bottom { padding: 1rem 1rem 2rem; }
       .exam-question-card { padding: 1.5rem 1.25rem; }
       .exam-bottom-inner { gap: 0.4rem; }
       .exam-btn { padding: 8px 14px; font-size: 0.8rem; }
@@ -801,6 +801,18 @@
       });
       document.getElementById('exam-next').addEventListener('click', () => {
         if (activeIndex < activeQuestions.length - 1) { activeIndex++; renderExamQuestion(); }
+      });
+      // Keyboard navigation: arrow keys change items (desktop)
+      document.addEventListener('keydown', (e) => {
+        const examView = document.getElementById('view-exam');
+        if (!examView || examView.style.display === 'none') return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          if (activeIndex > 0) { activeIndex--; renderExamQuestion(); }
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          if (activeIndex < activeQuestions.length - 1) { activeIndex++; renderExamQuestion(); }
+        }
       });
       document.getElementById('exam-flag').addEventListener('click', () => {
         const q = activeQuestions[activeIndex];
