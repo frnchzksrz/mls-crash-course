@@ -191,6 +191,51 @@
     .official-doc { max-width: 800px; margin: 3rem auto; background: #fbfaf6; border: 1px solid #c9bfa3; padding: 3rem 3.5rem; box-shadow: 0 20px 45px rgba(30,59,90,0.1); font-family: 'Inter', sans-serif; color: #1e1e1e; }
     .official-doc::before { content: ""; position: absolute; }
     .official-doc-inner { border: 2px double #7a6f4d; padding: 2.5rem 3rem; position: relative; }
+    .official-doc-inner { position: relative; }
+
+    .doc-corner { position: absolute; top: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.35rem; }
+    .doc-corner-left { left: 1.5rem; }
+    .doc-corner-right { right: 1.5rem; }
+
+    .doc-logo { width: 72px; height: 72px; display: block; }
+    .doc-logo-caption {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.6rem;
+      color: #7a6f4d;
+      text-align: center;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .doc-photo-box {
+      width: 76px;
+      height: 76px;
+      border: 1.5px dashed #7a6f4d;
+      background: #f9f7f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #7a6f4d;
+      text-align: center;
+      line-height: 1.35;
+      letter-spacing: 0.08em;
+    }
+
+    .application-line {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: #4a3403;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.05em;
+    }
+    .application-line span { font-weight: 600; letter-spacing: 0.12em; }
+
     .official-doc .seal-top { text-align: center; font-family: 'Playfair Display', serif; color: #4a3403; font-size: 0.9rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.4rem; }
     .official-doc .seal-title { text-align: center; font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.3rem; letter-spacing: 0.02em; }
     .official-doc .seal-sub { text-align: center; font-size: 0.9rem; color: #5c7c9e; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 2rem; }
@@ -331,6 +376,13 @@
       .official-table th, .official-table td { padding: 0.5rem; font-size: 0.85rem; }
       .official-verdict .verdict-word { font-size: 2.5rem; }
       .nav-grid { grid-template-columns: repeat(6, 1fr); }
+      .doc-corner { top: 1rem; }
+      .doc-corner-left { left: 1rem; }
+      .doc-corner-right { right: 1rem; }
+      .doc-logo { width: 48px; height: 48px; }
+      .doc-logo-caption { font-size: 0.5rem; }
+      .doc-photo-box { width: 54px; height: 54px; font-size: 0.55rem; }
+      .application-line { font-size: 0.78rem; }
     }
   </style>
 </head>
@@ -455,6 +507,23 @@
     <section id="view-official">
       <div class="official-doc">
         <div class="official-doc-inner">
+          <div class="doc-corner doc-corner-left">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="doc-logo">
+              <circle cx="50" cy="50" r="47" fill="none" stroke="#7a6f4d" stroke-width="1.5"/>
+              <circle cx="50" cy="50" r="40" fill="#1e3b5a"/>
+              <text x="50" y="61" text-anchor="middle" fill="#f6c445"
+                    font-family="Playfair Display, serif" font-size="32" font-weight="700"
+                    letter-spacing="0.5">MLS</text>
+            </svg>
+            <div class="doc-logo-caption">MLS Crash Course</div>
+          </div>
+          <div class="doc-corner doc-corner-right">
+            <div class="doc-photo-box">
+              <span>2 × 2</span>
+              <span>PHOTO</span>
+            </div>
+          </div>
+
           <div class="seal-top">Republic of the Philippines</div>
           <div class="seal-title">Mock Board Examination</div>
           <div class="seal-sub">Official Result of Rating</div>
@@ -462,6 +531,10 @@
           <div class="candidate-line">This certifies that</div>
           <div class="candidate-name" id="official-name">—</div>
           <div class="candidate-date" id="official-date">—</div>
+
+          <div class="application-line">
+            <span id="official-app-no">—</span>
+          </div>
 
           <table class="official-table">
             <thead>
@@ -544,6 +617,7 @@
       const sb = window.supabaseClient;
       let currentUser = null;
       let userFullName = '';
+      let userApplicationNo = null;
 
       // Section definitions — order matches real MTLE
       const SECTIONS = [
@@ -982,6 +1056,9 @@
         showView('view-official');
         document.getElementById('official-name').textContent = userFullName || 'Candidate';
         document.getElementById('official-date').textContent = 'Given this ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('official-app-no').textContent = userApplicationNo
+          ? `Application No.: ${userApplicationNo}`
+          : '';
 
         const rows = SECTIONS.map(s => {
           const att = sectionAttempts[s.slug];
@@ -1168,11 +1245,17 @@
 
         ctx.fillStyle = '#b8c5d1';
         ctx.font = '500 24px Inter, sans-serif';
-        ctx.fillText(userFullName || 'Candidate', W / 2, 220);
+        ctx.fillText(userFullName || 'Candidate', W / 2, 218);
+
+        if (userApplicationNo) {
+          ctx.fillStyle = '#7a8fa3';
+          ctx.font = '500 18px Inter, sans-serif';
+          ctx.fillText('Application No.: ' + userApplicationNo, W / 2, 248);
+        }
 
         // Subject bars
         const barX = 180, barW = 720;
-        let y = 290;
+        let y = 320;
         const lineH = 70;
         SECTIONS.forEach(s => {
           const att = sectionAttempts[s.slug];
@@ -1265,8 +1348,14 @@
           document.getElementById('home-loading').innerHTML = '<p>Please <a href="signup.html" style="color:#1e3b5a;font-weight:600;">log in</a> to take the Mock Board Examination.</p>';
           return;
         }
-        const { data } = await sb.from('profiles').select('full_name').eq('id', user.id).single();
+        const { data } = await sb.from('profiles')
+          .select('full_name, application_number')
+          .eq('id', user.id)
+          .single();
         userFullName = (data && data.full_name) || user.email || 'Candidate';
+        userApplicationNo = (data && data.application_number)
+          ? String(data.application_number).padStart(12, '0')
+          : null;
         await loadHome();
       }
 
