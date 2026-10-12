@@ -191,6 +191,31 @@ html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,
 html[data-theme="dark"] footer a { color: #7a8fa3; }
 @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
 @media (max-width: 768px) { .nav-links { gap: 1rem; } .hub-hero h1 { font-size: 1.8rem; } .activity-grid { grid-template-columns: 1fr; } .flash-buttons { grid-template-columns: repeat(2, 1fr); } .container { padding: 2rem 1.25rem 3rem; } }
+
+    .hub-ref-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      background: linear-gradient(135deg, #f9fbfd, #eef4f9);
+      border: 1px solid rgba(30,59,90,0.1);
+      border-radius: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .hub-ref-link:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(30,59,90,0.08); border-color: #1e3b5a; }
+    .hub-ref-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .hub-ref-body { flex: 1; }
+    .hub-ref-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: #1e3b5a; margin-bottom: 0.15rem; }
+    .hub-ref-desc { font-size: 0.82rem; color: #5c7c9e; line-height: 1.35; }
+    .hub-ref-arrow { font-size: 1.3rem; color: #1e3b5a; flex-shrink: 0; }
+    html[data-theme="dark"] .hub-ref-link { background: linear-gradient(135deg, #1a2b3d, #162536); border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .hub-ref-link:hover { border-color: #8ab4d9; }
+    html[data-theme="dark"] .hub-ref-title { color: #8ab4d9; }
+    html[data-theme="dark"] .hub-ref-desc { color: #b8c5d1; }
+    html[data-theme="dark"] .hub-ref-arrow { color: #8ab4d9; }
 </style>
 </head>
 <body>
@@ -255,6 +280,15 @@ html[data-theme="dark"] footer a { color: #7a8fa3; }
         <div class="activity-count" id="case-count"></div>
       </button>
     </div>
+    <a href="reference.html?subject=medtech-laws" class="hub-ref-link">
+      <div class="hub-ref-icon">📊</div>
+      <div class="hub-ref-body">
+        <div class="hub-ref-title">Reference Values & Calculators</div>
+        <div class="hub-ref-desc">Laws, board composition, biosafety levels, and QC rules for MT Laws.</div>
+      </div>
+      <div class="hub-ref-arrow">→</div>
+    </a>
+  </section>
   </section>
 
   <section id="view-loading" style="text-align:center; padding:4rem 2rem;">
