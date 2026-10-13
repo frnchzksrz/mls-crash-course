@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Atlas · MLS Crash Course</title>
+  <meta name="description" content="A visual atlas of hematology, urinalysis, and microbiology images with identification keys.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="atlas-data.js"></script>
+  <script src="auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; transition: background 0.25s, color 0.25s; }
+    .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
+    @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
+    html[data-theme="dark"] .diamond { background: #8ab4d9; }
+
+    header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
+    .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
+    .logo span.sub { font-size: 0.75rem; font-weight: 500; color: #5c7c9e; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
+    .logo i { font-style: italic; }
+    .logo:hover { color: #162d45; }
+    .theme-toggle { font-size: 1.15rem; }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a { text-decoration: none; color: #1e3b5a; font-weight: 500; font-size: 0.95rem; position: relative; padding-bottom: 4px; transition: color 0.2s; }
+    .nav-links a::after { content: ""; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px; background: #1e3b5a; transition: width 0.3s; }
+    .nav-links a:hover { color: #000; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links .auth-btn { background: #1e3b5a; color: #fff; padding: 0.6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-block; }
+    .nav-links .auth-btn:hover { background: #162d45; }
+    .nav-links .auth-btn::after { display: none; }
+    .icon-btn { position: relative; font-size: 1.3rem; cursor: pointer; background: none; border: none; text-decoration: none; color: #1e3b5a; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0.3rem; transition: transform 0.2s ease, color 0.2s ease; }
+    .icon-btn::after { display: none; }
+    .icon-btn:hover { transform: scale(1.2) translateY(-1px); color: #000; }
+    #notif-bell { font-size: 1.25rem; }
+    .badge { position: absolute; top: 0; right: 0; background: #c0392b; color: #fff; font-size: 0.6rem; font-weight: 700; min-width: 16px; height: 16px; padding: 0 4px; display: flex; align-items: center; justify-content: center; border-radius: 8px; line-height: 1; }
+    .badge:empty { display: none; }
+    .notif-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 320px; max-height: 400px; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); z-index: 200; overflow: hidden; flex-direction: column; }
+    .notif-dropdown.open { display: flex; }
+    .notif-header { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.08); font-weight: 600; color: #1e3b5a; }
+    .notif-header button { background: none; border: none; color: #1e3b5a; font-weight: 500; cursor: pointer; font-size: 0.8rem; }
+    .notif-list { overflow-y: auto; flex: 1; padding: 0.5rem 0; }
+    .notif-item { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(30,59,90,0.04); font-size: 0.9rem; color: #2c3e50; cursor: pointer; }
+    .notif-item:hover { background: #f8fafc; }
+    .notif-item.unread { font-weight: 600; }
+    .notif-item .notif-time { font-size: 0.75rem; color: #8b8b8b; display: block; margin-top: 0.2rem; }
+    .notif-footer { text-align: center; padding: 0.6rem; border-top: 1px solid rgba(30,59,90,0.08); }
+    .notif-footer a { color: #1e3b5a; font-weight: 600; text-decoration: none; font-size: 0.85rem; }
+    .auth-only { display: none; }
+    .search-container { position: relative; display: flex; align-items: center; }
+    .search-input { position: absolute; right: 100%; margin-right: 8px; width: 0; opacity: 0; padding: 0; border: 1px solid transparent; border-radius: 20px; background: transparent; font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; color: #1e1e1e; pointer-events: none; transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+    .search-container:hover .search-input, .search-container:focus-within .search-input { width: 220px; opacity: 1; padding: 6px 14px; border-color: rgba(30,59,90,0.15); background: #fafbfc; pointer-events: auto; }
+    .search-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 0.5rem; width: 300px; max-height: 340px; overflow-y: auto; background: #fff; border: 1px solid rgba(30,59,90,0.12); border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); padding: 0.5rem; z-index: 200; }
+    .search-dropdown.open { display: block; }
+    .search-result-item { display: block; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; transition: background 0.15s; }
+    .search-result-item:hover { background: #f0f4f8; }
+    .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
+    .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
+
+    .atlas-main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; position: relative; z-index: 2; }
+    .atlas-hero { text-align: center; margin-bottom: 1.75rem; }
+    .atlas-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; color: #1e3b5a; margin-bottom: 0.4rem; }
+    .atlas-hero p { color: #5c7c9e; font-size: 1rem; }
+
+    .atlas-search { position: sticky; top: 12px; z-index: 40; margin-bottom: 1.25rem; position: relative; }
+    .atlas-search input { width: 100%; padding: 14px 50px; border: 1.5px solid rgba(30,59,90,0.15); border-radius: 40px; font-family: inherit; font-size: 1rem; background: #fff; box-shadow: 0 8px 20px rgba(30,59,90,0.06); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+    .atlas-search input:focus { border-color: #1e3b5a; box-shadow: 0 8px 25px rgba(30,59,90,0.12); }
+    .atlas-search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: #8b8b8b; pointer-events: none; }
+    .atlas-search-clear { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.1rem; color: #8b8b8b; cursor: pointer; padding: 4px 8px; border-radius: 50%; display: none; }
+    .atlas-search-clear.visible { display: block; }
+
+    .atlas-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0 1.25rem; scrollbar-width: none; }
+    .atlas-tabs::-webkit-scrollbar { display: none; }
+    .atlas-tab { flex-shrink: 0; padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(30,59,90,0.15); background: #fff; color: #5c7c9e; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .atlas-tab:hover { border-color: #1e3b5a; color: #1e3b5a; }
+    .atlas-tab.active { background: #1e3b5a; color: #fff; border-color: #1e3b5a; }
+
+    .atlas-section { margin-bottom: 2.5rem; }
+    .atlas-section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(30,59,90,0.08); }
+    .atlas-section-icon { font-size: 1.6rem; }
+    .atlas-section-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #1e3b5a; }
+    .atlas-section-desc { font-size: 0.9rem; color: #5c7c9e; margin-top: 0.15rem; }
+
+    .atlas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+    .atlas-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; text-align: left; font-family: inherit; padding: 0; }
+    .atlas-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(30,59,90,0.1); border-color: #1e3b5a; }
+    .atlas-thumb { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; background: #e8f0f8; }
+    .atlas-thumb-placeholder { width: 100%; aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #e8f0f8, #d4e4f2); color: #1e3b5a; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 0.9rem; text-align: center; padding: 1rem; line-height: 1.3; }
+    .atlas-thumb-placeholder .ph-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+    .atlas-card-body { padding: 0.85rem 1rem 1rem; }
+    .atlas-card-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; color: #1e3b5a; line-height: 1.25; margin-bottom: 0.35rem; }
+    .atlas-card-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .atlas-card-tag { font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #e8f0f8; color: #1e3b5a; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .atlas-empty { text-align: center; padding: 3rem 1rem; color: #8b8b8b; }
+    .atlas-empty .big { font-size: 3rem; margin-bottom: 0.75rem; }
+    .atlas-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #1e3b5a; margin-bottom: 0.4rem; }
+
+    /* Modal */
+    .atlas-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,38,0.75); backdrop-filter: blur(6px); z-index: 900; align-items: center; justify-content: center; padding: 1rem; }
+    .atlas-modal-overlay.open { display: flex; }
+    .atlas-modal { background: #fff; border-radius: 20px; max-width: 780px; width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3); position: relative; }
+    .atlas-modal-close { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5rem; color: #1e3b5a; cursor: pointer; line-height: 1; z-index: 5; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .atlas-modal-close:hover { background: #fff; }
+    .atlas-modal-image { width: 100%; max-height: 460px; object-fit: contain; background: #f0f4f8; display: block; }
+    .atlas-modal-image-ph { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #e8f0f8, #d4e4f2); color: #1e3b5a; font-family: 'Playfair Display', serif; font-size: 1.1rem; text-align: center; padding: 2rem; }
+    .atlas-modal-body { padding: 1.5rem 1.75rem 2rem; }
+    .atlas-modal-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: #1e3b5a; margin-bottom: 0.5rem; line-height: 1.2; }
+    .atlas-modal-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.25rem; }
+    .atlas-modal-tag { font-size: 0.68rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; background: #e8f0f8; color: #1e3b5a; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .atlas-block { margin-bottom: 1.5rem; }
+    .atlas-block-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #8b8b8b; margin-bottom: 0.5rem; }
+    .atlas-features { list-style: none; padding: 0; }
+    .atlas-features li { padding: 0.45rem 0 0.45rem 1.4rem; position: relative; color: #2c3e50; font-size: 0.95rem; line-height: 1.5; border-bottom: 1px dashed rgba(30,59,90,0.08); }
+    .atlas-features li:last-child { border-bottom: none; }
+    .atlas-features li::before { content: "▸"; position: absolute; left: 0; color: #f6c445; font-weight: 700; }
+    .atlas-associated { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .atlas-associated-pill { padding: 5px 12px; border-radius: 20px; background: #fef6e5; border: 1px solid rgba(246,196,69,0.5); color: #7a4d0b; font-size: 0.82rem; font-weight: 500; }
+
+    footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); margin-top: 3rem; position: relative; z-index: 2; }
+    footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
+
+    html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
+    html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .logo { color: #8ab4d9; }
+    html[data-theme="dark"] .logo span.sub { color: #6b8ba3; }
+    html[data-theme="dark"] .nav-links a { color: #b8c5d1; }
+    html[data-theme="dark"] .nav-links a:hover { color: #e8eef5; }
+    html[data-theme="dark"] .nav-links a::after { background: #8ab4d9; }
+    html[data-theme="dark"] .icon-btn { color: #b8c5d1; }
+    html[data-theme="dark"] .icon-btn:hover { color: #e8eef5; }
+    html[data-theme="dark"] .auth-btn { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .notif-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .notif-header { color: #e8eef5; border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-header button { color: #8ab4d9; }
+    html[data-theme="dark"] .notif-item { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .notif-item:hover { background: #23374b; }
+    html[data-theme="dark"] .notif-footer { border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .notif-footer a { color: #8ab4d9; }
+    html[data-theme="dark"] .search-input { color: #e8eef5; }
+    html[data-theme="dark"] .search-container:hover .search-input, html[data-theme="dark"] .search-container:focus-within .search-input { background: #162536; border-color: rgba(255,255,255,0.15); }
+    html[data-theme="dark"] .search-dropdown { background: #1a2b3d; border-color: rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .search-result-item:hover { background: #23374b; }
+    html[data-theme="dark"] .search-result-item .title { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-hero h1 { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-hero p { color: #b8c5d1; }
+    html[data-theme="dark"] .atlas-search input { background: #1a2b3d; border-color: rgba(255,255,255,0.15); color: #e8eef5; }
+    html[data-theme="dark"] .atlas-search input:focus { border-color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-tab { background: #1a2b3d; border-color: rgba(255,255,255,0.15); color: #b8c5d1; }
+    html[data-theme="dark"] .atlas-tab:hover { border-color: #8ab4d9; color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-tab.active { background: #2d4a6b; color: #fff; border-color: #2d4a6b; }
+    html[data-theme="dark"] .atlas-section-header { border-bottom-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] .atlas-section-title { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-section-desc { color: #b8c5d1; }
+    html[data-theme="dark"] .atlas-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .atlas-card:hover { border-color: #8ab4d9; box-shadow: 0 12px 28px rgba(0,0,0,0.4); }
+    html[data-theme="dark"] .atlas-thumb { background: #23374b; }
+    html[data-theme="dark"] .atlas-thumb-placeholder { background: linear-gradient(135deg, #23374b, #162536); color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-card-title { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-card-tag { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-empty { color: #7a8fa3; }
+    html[data-theme="dark"] .atlas-empty h3 { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-modal { background: #1a2b3d; }
+    html[data-theme="dark"] .atlas-modal-close { background: rgba(26,43,61,0.9); color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-modal-close:hover { background: #23374b; }
+    html[data-theme="dark"] .atlas-modal-image { background: #23374b; }
+    html[data-theme="dark"] .atlas-modal-image-ph { background: linear-gradient(135deg, #23374b, #162536); color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-modal-title { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-modal-tag { background: #23374b; color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-block-label { color: #7a8fa3; }
+    html[data-theme="dark"] .atlas-features li { color: #b8c5d1; border-bottom-color: rgba(255,255,255,0.06); }
+    html[data-theme="dark"] .atlas-associated-pill { background: #3d3120; border-color: rgba(246,196,69,0.4); color: #f6c445; }
+    html[data-theme="dark"] footer { color: #7a8fa3; border-top-color: rgba(255,255,255,0.08); }
+    html[data-theme="dark"] footer a { color: #7a8fa3; }
+
+    @media (max-width: 900px) { .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; } }
+    @media (max-width: 768px) {
+      header { padding: 0.75rem 1rem; }
+      .nav-links { gap: 0.75rem; }
+      .nav-links a { font-size: 0.85rem; }
+      .nav-links .auth-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
+      .atlas-hero h1 { font-size: 2rem; }
+      .atlas-hero p { font-size: 0.9rem; }
+      .atlas-main { padding: 1.5rem 1rem 3rem; }
+      .atlas-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+      .atlas-card-body { padding: 0.7rem 0.8rem 0.85rem; }
+      .atlas-card-title { font-size: 0.92rem; }
+      .atlas-card-tag { font-size: 0.58rem; padding: 1px 6px; }
+      .atlas-modal-body { padding: 1.25rem 1.25rem 1.75rem; }
+      .atlas-modal-title { font-size: 1.4rem; }
+      .atlas-modal-image { max-height: 320px; }
+      .atlas-section-title { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-wrapper">
+      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <nav class="nav-links">
+      <div class="search-container" id="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
+        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
+        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+      </div>
+      <a href="courses.html">Courses</a>
+      <a href="focus.html">Focus</a>
+      <a href="daily.html">Daily</a>
+      <a href="community.html">Community</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
+      <span class="auth-only" id="notif-bell-container" style="position:relative;">
+        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-item" style="text-align:center;">Loading…</div></div>
+          <div class="notif-footer"><a href="notifications.html">View all</a></div>
+        </div>
+      </span>
+      <span class="auth-only" id="msg-envelope-container">
+        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+      </span>
+    </nav>
+  </header>
+
+  <main class="atlas-main">
+    <div class="atlas-hero">
+      <h1>Image Atlas</h1>
+      <p>A visual reference for cells, crystals, casts, and colonies. Tap any image for identification keys.</p>
+    </div>
+
+    <div class="atlas-search">
+      <span class="atlas-search-icon">🔍</span>
+      <input type="text" id="atlas-search-input" placeholder="Search by name, feature, or association…" autocomplete="off">
+      <button class="atlas-search-clear" id="atlas-search-clear" title="Clear">×</button>
+    </div>
+
+    <div class="atlas-tabs" id="atlas-tabs"></div>
+    <div id="atlas-content"></div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
+    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+  </footer>
+
+  <div class="atlas-modal-overlay" id="atlas-modal">
+    <div class="atlas-modal">
+      <button class="atlas-modal-close" id="atlas-modal-close">×</button>
+      <div id="atlas-modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const DATA = window.ATLAS_DATA || {};
+      const SLUG_TO_KEY = {
+        'clinical-chemistry': 'chemistry',
+        'clinical-hematology': 'hematology',
+        'analysis-of-urine': 'analysis-of-urine',
+        'microbiology': 'microbiology',
+        'immunoserology-blood-bank': 'immunoserology-blood-bank',
+        'histology-histopathology': 'histology-histopathology'
+      };
+
+      let activeFilter = 'all';
+      let searchQuery = '';
+
+      // ---------- Tabs ----------
+      function renderTabs() {
+        const tabs = document.getElementById('atlas-tabs');
+        const entries = [['all', { label: 'All Subjects', icon: '📚' }]].concat(Object.entries(DATA).map(([k, v]) => [k, v]));
+        tabs.innerHTML = entries.map(([key, v]) =>
+          `<button class="atlas-tab${activeFilter === key ? ' active' : ''}" data-key="${key}">${v.icon} ${v.label}</button>`
+        ).join('');
+        tabs.querySelectorAll('.atlas-tab').forEach(btn => {
+          btn.addEventListener('click', () => {
+            activeFilter = btn.dataset.key;
+            renderTabs();
+            renderContent();
+          });
+        });
+      }
+
+      // ---------- Content ----------
+      function matchesSearch(entry) {
+        if (!searchQuery) return true;
+        const text = (
+          entry.title + ' ' +
+          (entry.features || []).join(' ') + ' ' +
+          (entry.associated || []).join(' ') + ' ' +
+          (entry.tags || []).join(' ')
+        ).toLowerCase();
+        return text.includes(searchQuery);
+      }
+
+      function renderContent() {
+        const container = document.getElementById('atlas-content');
+        const subjectKeys = activeFilter === 'all' ? Object.keys(DATA) : [activeFilter];
+
+        let html = '';
+        let totalShown = 0;
+
+        subjectKeys.forEach(key => {
+          const subject = DATA[key];
+          if (!subject) return;
+
+          const matches = (subject.entries || []).filter(matchesSearch);
+          if (matches.length === 0) return;
+
+          totalShown += matches.length;
+
+          html += `<section class="atlas-section" id="section-${key}">
+            <div class="atlas-section-header">
+              <span class="atlas-section-icon">${subject.icon}</span>
+              <div>
+                <h2 class="atlas-section-title">${subject.label}</h2>
+                ${subject.description ? `<div class="atlas-section-desc">${window.escapeHtml(subject.description)}</div>` : ''}
+              </div>
+            </div>
+            <div class="atlas-grid">`;
+
+          matches.forEach(entry => {
+            // Use inline onerror to swap to a placeholder if the image 404s
+            html += `<button class="atlas-card" data-entry-id="${entry.id}" data-subject="${key}">
+              <img
+                src="${entry.image}"
+                alt="${window.escapeHtml(entry.title)}"
+                class="atlas-thumb"
+                loading="lazy"
+                onerror="this.outerHTML='<div class=&quot;atlas-thumb-placeholder&quot;><div class=&quot;ph-icon&quot;>🖼️</div><div>${window.escapeHtml(entry.title).replace(/'/g, '&#39;')}</div></div>'">
+              <div class="atlas-card-body">
+                <div class="atlas-card-title">${window.escapeHtml(entry.title)}</div>
+                <div class="atlas-card-tags">
+                  ${(entry.tags || []).slice(0, 3).map(t => `<span class="atlas-card-tag">${window.escapeHtml(t)}</span>`).join('')}
+                </div>
+              </div>
+            </button>`;
+          });
+
+          html += `</div></section>`;
+        });
+
+        if (totalShown === 0) {
+          html = `<div class="atlas-empty">
+            <div class="big">🔍</div>
+            <h3>No matches</h3>
+            <p>Try a different search term or subject filter.</p>
+          </div>`;
+        }
+
+        container.innerHTML = html;
+        container.querySelectorAll('.atlas-card').forEach(card => {
+          card.addEventListener('click', () => openEntry(card.dataset.subject, card.dataset.entryId));
+        });
+      }
+
+      // ---------- Modal ----------
+      function openEntry(subjectKey, entryId) {
+        const subject = DATA[subjectKey];
+        if (!subject) return;
+        const entry = (subject.entries || []).find(e => e.id === entryId);
+        if (!entry) return;
+
+        const content = document.getElementById('atlas-modal-content');
+        content.innerHTML = `
+          <img
+            src="${entry.image}"
+            alt="${window.escapeHtml(entry.title)}"
+            class="atlas-modal-image"
+            onerror="this.outerHTML='<div class=&quot;atlas-modal-image-ph&quot;>Image not yet uploaded — add it to <code>${entry.image}</code></div>'">
+          <div class="atlas-modal-body">
+            <h2 class="atlas-modal-title">${window.escapeHtml(entry.title)}</h2>
+            <div class="atlas-modal-tags">
+              ${(entry.tags || []).map(t => `<span class="atlas-modal-tag">${window.escapeHtml(t)}</span>`).join('')}
+            </div>
+            ${entry.features && entry.features.length ? `
+              <div class="atlas-block">
+                <div class="atlas-block-label">Key Features</div>
+                <ul class="atlas-features">
+                  ${entry.features.map(f => `<li>${window.escapeHtml(f)}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+            ${entry.associated && entry.associated.length ? `
+              <div class="atlas-block">
+                <div class="atlas-block-label">Associated With</div>
+                <div class="atlas-associated">
+                  ${entry.associated.map(a => `<span class="atlas-associated-pill">${window.escapeHtml(a)}</span>`).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        document.getElementById('atlas-modal').classList.add('open');
+      }
+
+      document.getElementById('atlas-modal-close').addEventListener('click', () => {
+        document.getElementById('atlas-modal').classList.remove('open');
+      });
+      document.getElementById('atlas-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'atlas-modal') document.getElementById('atlas-modal').classList.remove('open');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') document.getElementById('atlas-modal').classList.remove('open');
+      });
+
+      // ---------- Search ----------
+      const searchInput = document.getElementById('atlas-search-input');
+      const searchClear = document.getElementById('atlas-search-clear');
+      searchInput.addEventListener('input', () => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        searchClear.classList.toggle('visible', searchQuery.length > 0);
+        renderContent();
+      });
+      searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchQuery = '';
+        searchClear.classList.remove('visible');
+        renderContent();
+        searchInput.focus();
+      });
+
+      // ---------- Init ----------
+      function pageInit() {
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('subject');
+        if (slug && SLUG_TO_KEY[slug] && DATA[SLUG_TO_KEY[slug]]) {
+          activeFilter = SLUG_TO_KEY[slug];
+        }
+        renderTabs();
+        renderContent();
+      }
+
+      window.addEventListener('medlab:ready', pageInit);
+      if (document.readyState !== 'loading' && window.supabaseClient) {
+        setTimeout(() => {
+          if (!document.getElementById('atlas-content').innerHTML) pageInit();
+        }, 100);
+      }
+    })();
+  </script>
+</body>
+</html>
