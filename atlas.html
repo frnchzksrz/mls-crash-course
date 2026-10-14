@@ -67,6 +67,33 @@
     .atlas-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; color: #1e3b5a; margin-bottom: 0.4rem; }
     .atlas-hero p { color: #5c7c9e; font-size: 1rem; }
 
+    .atlas-credits {
+      text-align: center;
+      font-size: 0.72rem;
+      font-style: italic;
+      color: #8b8b8b;
+      letter-spacing: 0.02em;
+      margin: 3rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(30,59,90,0.06);
+      max-width: 720px;
+      line-height: 1.6;
+    }
+    .atlas-credits a {
+      color: #8b8b8b;
+      text-decoration: underline;
+      text-decoration-color: rgba(139,139,139,0.4);
+      transition: color 0.2s;
+    }
+    .atlas-credits a:hover { color: #1e3b5a; }
+
+    html[data-theme="dark"] .atlas-credits {
+      color: #6b8ba3;
+      border-top-color: rgba(255,255,255,0.06);
+    }
+    html[data-theme="dark"] .atlas-credits a { color: #6b8ba3; }
+    html[data-theme="dark"] .atlas-credits a:hover { color: #8ab4d9; }
+
     .atlas-search { position: relative; margin-bottom: 1.25rem; }
     .atlas-search input { width: 100%; padding: 14px 50px; border: 1.5px solid rgba(30,59,90,0.15); border-radius: 40px; font-family: inherit; font-size: 1rem; background: #fff; box-shadow: 0 8px 20px rgba(30,59,90,0.06); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
     .atlas-search input:focus { border-color: #1e3b5a; box-shadow: 0 8px 25px rgba(30,59,90,0.12); }
@@ -322,14 +349,6 @@
       <p>A visual reference for cells, crystals, casts, colonies, and patterns. Tap any image for identification keys.</p>
     </div>
 
-    <div class="atlas-disclaimer">
-      <span class="atlas-disclaimer-icon">ℹ️</span>
-      <div class="atlas-disclaimer-text">
-        <strong>Image credits & notice.</strong>
-        All images in this atlas belong to their respective owners. They were sourced from public sources on the internet and are compiled here purely for educational, non-commercial study and reference. If you own an image and would like it credited, updated, or removed, please <a href="contact.html">contact me</a>.
-      </div>
-    </div>
-
     <div class="atlas-search">
       <span class="atlas-search-icon">🔍</span>
       <input type="text" id="atlas-search-input" placeholder="Search by name, feature, or association…" autocomplete="off">
@@ -338,6 +357,11 @@
 
     <div class="atlas-tabs" id="atlas-tabs"></div>
     <div id="atlas-content"></div>
+
+    <p class="atlas-credits">
+      Images belong to their respective owners, sourced from public internet sources and compiled here for educational, non-commercial use.
+      <a href="contact.html">Request removal or credit</a>.
+    </p>
   </main>
 
   <footer>
