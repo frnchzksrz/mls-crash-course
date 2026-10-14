@@ -42,6 +42,19 @@
     return Math.floor(diff / 86400) + 'd ago';
   };
 
+  window.track = function (eventName, metadata) {
+    try {
+      const payload = {
+        event_name: String(eventName).slice(0, 80),
+        page: window.location.pathname,
+        metadata: metadata || null,
+        user_id: currentUser ? currentUser.id : null
+      };
+      // Fire-and-forget — never block the UI on analytics
+      sb.from('analytics_events').insert(payload).then(() => {}).catch(() => {});
+    } catch (e) { /* silent */ }
+  };
+
   // ---------- Diamonds ----------
   function createDiamonds(count) {
     count = count || 20;
@@ -334,6 +347,20 @@
       updateLastActive();
     }
 
+    // Ask for notification permission once per session, if the user is logged in
+    if (currentUser && notificationsSupported() && Notification.permission === 'default') {
+      setTimeout(() => { ensureNotificationPermission(); }, 5000);
+    }
+
+    // Start live updates if logged in
+    if (currentUser) subscribeToLiveUpdates();
+
+    // Auto page-view event
+    window.track('page_view', {
+      referrer: document.referrer || null,
+      title: document.title
+    });
+
     window.dispatchEvent(new CustomEvent('medlab:ready', {
       detail: { user: currentUser, supabase: sb }
     }));
@@ -352,5 +379,71 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  // ---------- In-browser push notifications ----------
+  function notificationsSupported() {
+    return typeof window.Notification !== 'undefined' && window.isSecureContext;
+  }
+
+  async function ensureNotificationPermission() {
+    if (!notificationsSupported()) return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    const result = await Notification.requestPermission();
+    return result === 'granted';
+  }
+
+  function showBrowserNotification(title, body, url) {
+    if (!notificationsSupported() || Notification.permission !== 'granted') return;
+    try {
+      const n = new Notification(title, {
+        body: body || '',
+        icon: '/assets/icons/icon-192.png',
+        badge: '/assets/icons/icon-192.png',
+        tag: 'mls-' + Date.now(),
+        renotify: false
+      });
+      n.onclick = () => {
+        window.focus();
+        if (url) window.location.href = url;
+        n.close();
+      };
+    } catch (e) { /* some browsers require SW notification, ignore */ }
+  }
+
+  function subscribeToLiveUpdates() {
+    if (!currentUser) return;
+    // Notifications for this user
+    sb.channel('live-notifications')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${currentUser.id}` },
+        (payload) => {
+          const row = payload.new || {};
+          showBrowserNotification('MLS Crash Course', row.message || 'You have a new notification.', row.link || 'notifications.html');
+          updateBadges();
+        })
+      .subscribe();
+
+    // Direct messages addressed to this user
+    sb.channel('live-messages')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `to_user_id=eq.${currentUser.id}` },
+        (payload) => {
+          const row = payload.new || {};
+          showBrowserNotification('New message', row.message ? String(row.message).slice(0, 100) : 'You have a new message.', 'messages.html');
+          updateBadges();
+        })
+      .subscribe();
+  }
+
+  // ---------- PWA service worker ----------
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        // Silent — PWA is a progressive enhancement, never break the page
+        console.warn('[auth.js] SW registration failed:', err && err.message);
+      });
+    });
   }
 })();

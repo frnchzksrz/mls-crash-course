@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Focus · MLS Crash Course</title>
   <meta name="description" content="Three-minute minimum study session with metronome.">
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -918,6 +919,8 @@
         if (timerInterval) clearInterval(timerInterval);
         timerInterval = null;
         stopMetronome();
+
+        window.track('focus_session_ended', { duration_seconds: elapsedSeconds, goal_minutes: goalMinutes, hit_goal: hitGoal });
 
         // Show your own leave message before the broadcasts go out
         addLiveItem(`${userFullName} left focus mode`, 'left');
