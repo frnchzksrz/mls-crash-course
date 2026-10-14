@@ -98,6 +98,47 @@
     .atlas-tab:hover { border-color: #1e3b5a; color: #1e3b5a; }
     .atlas-tab.active { background: #1e3b5a; color: #fff; border-color: #1e3b5a; }
 
+    .atlas-tabs.hidden { display: none; }
+    .atlas-search-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #1e3b5a;
+      text-align: center;
+      margin-bottom: 0.4rem;
+    }
+    .atlas-search-summary {
+      text-align: center;
+      color: #5c7c9e;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    .atlas-search-summary strong { color: #1e3b5a; font-weight: 700; }
+    .atlas-search-subject {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e3b5a;
+      margin: 1.75rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(30,59,90,0.1);
+    }
+    .atlas-search-subject .count-badge {
+      margin-left: auto;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #8b8b8b;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    html[data-theme="dark"] .atlas-search-heading { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-search-summary { color: #b8c5d1; }
+    html[data-theme="dark"] .atlas-search-summary strong { color: #8ab4d9; }
+    html[data-theme="dark"] .atlas-search-subject { color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.08); }
+
     .atlas-section { margin-bottom: 3rem; }
     .atlas-section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 0.6rem; border-bottom: 2px solid rgba(30,59,90,0.08); }
     .atlas-section-icon { font-size: 1.6rem; }
@@ -316,14 +357,14 @@
         'histology-histopathology': 'histology-histopathology'
       };
       const SUBJECT_ORDER = ['hematology', 'analysis-of-urine', 'microbiology', 'chemistry', 'immunoserology-blood-bank', 'histology-histopathology'];
-
-      // Pick the first available subject as default (no more "All")
+  
       let activeFilter = SUBJECT_ORDER.find(k => DATA[k]) || null;
       let searchQuery = '';
-
-      // ---------- Tabs (no "All Subjects") ----------
+  
+      // ---------- Tabs ----------
       function renderTabs() {
         const tabs = document.getElementById('atlas-tabs');
+        tabs.classList.toggle('hidden', !!searchQuery);
         const available = SUBJECT_ORDER.filter(k => DATA[k]);
         tabs.innerHTML = available.map(key => {
           const v = DATA[key];
@@ -337,8 +378,8 @@
           });
         });
       }
-
-      // ---------- Search ----------
+  
+      // ---------- Search match ----------
       function matchesSearch(entry) {
         if (!searchQuery) return true;
         const text = (
@@ -349,8 +390,8 @@
         ).toLowerCase();
         return text.includes(searchQuery);
       }
-
-      // ---------- Render a single card ----------
+  
+      // ---------- Single card ----------
       function cardHtml(entry, subjectKey) {
         const safeTitle = window.escapeHtml(entry.title);
         return `<button class="atlas-card" data-entry-id="${entry.id}" data-subject="${subjectKey}">
@@ -368,17 +409,16 @@
           </div>
         </button>`;
       }
-
-      // ---------- Render a subject section, grouped by category ----------
+  
+      // ---------- Normal subject view (categorized) ----------
       function renderSubject(key) {
         const subject = DATA[key];
         if (!subject) return '';
-
         const matches = (subject.entries || []).filter(matchesSearch);
         if (matches.length === 0) return '';
-
+  
         const categoryMap = CATEGORIES[key] || null;
-
+  
         let html = `<section class="atlas-section" id="section-${key}">
           <div class="atlas-section-header">
             <span class="atlas-section-icon">${subject.icon}</span>
@@ -387,9 +427,8 @@
               ${subject.description ? `<div class="atlas-section-desc">${window.escapeHtml(subject.description)}</div>` : ''}
             </div>
           </div>`;
-
+  
         if (!categoryMap) {
-          // No categories — flat grid
           html += `<div class="atlas-grid">${matches.map(e => cardHtml(e, key)).join('')}</div>`;
         } else {
           const claimed = new Set();
@@ -402,7 +441,6 @@
               <div class="atlas-grid">${catEntries.map(e => cardHtml(e, key)).join('')}</div>
             </div>`;
           });
-          // Uncategorized bucket
           const leftover = matches.filter(e => !claimed.has(e.id));
           if (leftover.length > 0) {
             html += `<div class="atlas-category">
@@ -411,44 +449,84 @@
             </div>`;
           }
         }
-
+  
         html += `</section>`;
         return html;
       }
-
-      // ---------- Render content ----------
-      function renderContent() {
-        const container = document.getElementById('atlas-content');
-
-        // If a filter is active, render only that subject.
-        // Search should search across all subjects even when a filter is on? No — respect the filter.
-        const keys = activeFilter ? [activeFilter] : SUBJECT_ORDER.filter(k => DATA[k]);
-
-        let html = '';
-        keys.forEach(k => { html += renderSubject(k); });
-
-        // If nothing rendered (e.g. search matched nothing in this subject), show empty state
-        if (!html) {
-          html = `<div class="atlas-empty">
+  
+      // ---------- Search results across all subjects ----------
+      function renderSearchResults() {
+        const subjects = SUBJECT_ORDER.filter(k => DATA[k]);
+        let totalMatches = 0;
+        let subjectCount = 0;
+        const blocks = [];
+  
+        subjects.forEach(key => {
+          const subject = DATA[key];
+          const matches = (subject.entries || []).filter(matchesSearch);
+          if (matches.length === 0) return;
+          totalMatches += matches.length;
+          subjectCount++;
+          blocks.push(`
+            <div class="atlas-search-subject">
+              <span>${subject.icon}</span>
+              <span>${window.escapeHtml(subject.label)}</span>
+              <span class="count-badge">${matches.length} result${matches.length === 1 ? '' : 's'}</span>
+            </div>
+            <div class="atlas-grid">${matches.map(e => cardHtml(e, key)).join('')}</div>
+          `);
+        });
+  
+        if (totalMatches === 0) {
+          return `<div class="atlas-empty">
             <div class="big">🔍</div>
             <h3>No matches</h3>
-            <p>Try a different search term or subject filter.</p>
+            <p>Nothing in the atlas matches "${window.escapeHtml(searchQuery)}".</p>
           </div>`;
         }
-
+  
+        return `
+          <div class="atlas-search-heading">Search Results</div>
+          <div class="atlas-search-summary">
+            <strong>${totalMatches}</strong> match${totalMatches === 1 ? '' : 'es'} across
+            <strong>${subjectCount}</strong> subject${subjectCount === 1 ? '' : 's'}
+            for "${window.escapeHtml(searchQuery)}"
+          </div>
+          ${blocks.join('')}
+        `;
+      }
+  
+      // ---------- Main render ----------
+      function renderContent() {
+        const container = document.getElementById('atlas-content');
+        let html;
+  
+        if (searchQuery) {
+          html = renderSearchResults();
+        } else {
+          const keys = activeFilter ? [activeFilter] : SUBJECT_ORDER.filter(k => DATA[k]);
+          html = keys.map(k => renderSubject(k)).join('');
+          if (!html) {
+            html = `<div class="atlas-empty">
+              <div class="big">🔍</div>
+              <h3>Nothing to show</h3>
+              <p>Pick a subject above.</p>
+            </div>`;
+          }
+        }
+  
         container.innerHTML = html;
         container.querySelectorAll('.atlas-card').forEach(card => {
           card.addEventListener('click', () => openEntry(card.dataset.subject, card.dataset.entryId));
         });
       }
-
+  
       // ---------- Modal ----------
       function openEntry(subjectKey, entryId) {
         const subject = DATA[subjectKey];
         if (!subject) return;
         const entry = (subject.entries || []).find(e => e.id === entryId);
         if (!entry) return;
-
         const safeTitle = window.escapeHtml(entry.title);
         const content = document.getElementById('atlas-modal-content');
         content.innerHTML = `
@@ -482,7 +560,7 @@
         `;
         document.getElementById('atlas-modal').classList.add('open');
       }
-
+  
       document.getElementById('atlas-modal-close').addEventListener('click', () => {
         document.getElementById('atlas-modal').classList.remove('open');
       });
@@ -492,23 +570,25 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') document.getElementById('atlas-modal').classList.remove('open');
       });
-
+  
       // ---------- Search binding ----------
       const searchInput = document.getElementById('atlas-search-input');
       const searchClear = document.getElementById('atlas-search-clear');
       searchInput.addEventListener('input', () => {
         searchQuery = searchInput.value.trim().toLowerCase();
         searchClear.classList.toggle('visible', searchQuery.length > 0);
+        renderTabs();       // hides tabs when searchQuery is non-empty
         renderContent();
       });
       searchClear.addEventListener('click', () => {
         searchInput.value = '';
         searchQuery = '';
         searchClear.classList.remove('visible');
+        renderTabs();
         renderContent();
         searchInput.focus();
       });
-
+  
       // ---------- Init ----------
       function pageInit() {
         const params = new URLSearchParams(window.location.search);
@@ -519,7 +599,7 @@
         renderTabs();
         renderContent();
       }
-
+  
       window.addEventListener('medlab:ready', pageInit);
       if (document.readyState !== 'loading' && window.supabaseClient) {
         setTimeout(() => {
