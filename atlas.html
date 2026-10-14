@@ -71,27 +71,23 @@
       text-align: center;
       font-size: 0.72rem;
       font-style: italic;
-      color: #8b8b8b;
-      letter-spacing: 0.02em;
-      margin: 3rem auto 0;
-      padding-top: 1.5rem;
-      border-top: 1px solid rgba(30,59,90,0.06);
+      color: #9aa8b5;
+      letter-spacing: 0.01em;
+      margin: 0 auto 1.25rem;
       max-width: 720px;
-      line-height: 1.6;
+      line-height: 1.55;
+      padding: 0 1rem;
     }
     .atlas-credits a {
-      color: #8b8b8b;
+      color: #9aa8b5;
       text-decoration: underline;
-      text-decoration-color: rgba(139,139,139,0.4);
+      text-decoration-color: rgba(154,168,181,0.35);
       transition: color 0.2s;
     }
     .atlas-credits a:hover { color: #1e3b5a; }
 
-    html[data-theme="dark"] .atlas-credits {
-      color: #6b8ba3;
-      border-top-color: rgba(255,255,255,0.06);
-    }
-    html[data-theme="dark"] .atlas-credits a { color: #6b8ba3; }
+    html[data-theme="dark"] .atlas-credits { color: #6b8ba3; }
+    html[data-theme="dark"] .atlas-credits a { color: #6b8ba3; text-decoration-color: rgba(107,139,163,0.35); }
     html[data-theme="dark"] .atlas-credits a:hover { color: #8ab4d9; }
 
     .atlas-search { position: relative; margin-bottom: 1.25rem; }
@@ -349,6 +345,10 @@
       <p>A visual reference for cells, crystals, casts, colonies, and patterns. Tap any image for identification keys.</p>
     </div>
 
+    <p class="atlas-credits">
+      Images belong to their respective owners, sourced from public internet sources and compiled here for educational, non-commercial use. <a href="contact.html">Request removal or credit</a>.
+    </p>
+
     <div class="atlas-search">
       <span class="atlas-search-icon">🔍</span>
       <input type="text" id="atlas-search-input" placeholder="Search by name, feature, or association…" autocomplete="off">
@@ -357,11 +357,6 @@
 
     <div class="atlas-tabs" id="atlas-tabs"></div>
     <div id="atlas-content"></div>
-
-    <p class="atlas-credits">
-      Images belong to their respective owners, sourced from public internet sources and compiled here for educational, non-commercial use.
-      <a href="contact.html">Request removal or credit</a>.
-    </p>
   </main>
 
   <footer>
