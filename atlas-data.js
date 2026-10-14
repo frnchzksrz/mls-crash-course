@@ -938,3 +938,128 @@ window.ATLAS_DATA = {
     ]
   },
 };
+
+// ============================================================
+// CATEGORIES — assign each entry to a subheading within its subject.
+// To add a new category, add a key with an array of entry IDs.
+// Entries not listed anywhere fall into an "Other" bucket.
+// ============================================================
+window.ATLAS_CATEGORIES = {
+  hematology: {
+    'Normal Blood Cells': [
+      'normal-rbc',
+      'segmented-neutrophil',
+      'band-neutrophil',
+      'lymphocyte',
+      'monocyte',
+      'eosinophil',
+      'basophil',
+      'platelet'
+    ],
+    'RBC Morphology': [
+      'target-cell',
+      'sickle-cell',
+      'spherocyte',
+      'schistocyte',
+      'ovalocyte',
+      'stomatocyte'
+    ],
+    'RBC Inclusions': [
+      'basophilic-stippling',
+      'howell-jolly',
+      'pappenheimer',
+      'heinz-body'
+    ],
+    'WBC Abnormalities': [
+      'hypersegmented-neutrophil',
+      'blast-cell'
+    ]
+  },
+  'analysis-of-urine': {
+    'Cells': [
+      'squamous-epithelial',
+      'transitional-epithelial',
+      'renal-tubular-epithelial',
+      'yeast-cell'
+    ],
+    'Casts': [
+      'hyaline-cast',
+      'rbc-cast',
+      'wbc-cast',
+      'granular-cast',
+      'waxy-cast'
+    ],
+    'Crystals': [
+      'calcium-oxalate-dihydrate',
+      'uric-acid-crystal',
+      'struvite-crystal',
+      'cystine-crystal'
+    ]
+  },
+  microbiology: {
+    'Colony Morphology': [
+      'staph-aureus-colonies',
+      'pseudomonas-colonies',
+      'e-coli-macconkey'
+    ],
+    'Gram Stain Appearances': [
+      'gram-positive-cocci-clusters',
+      'gram-negative-diplococci',
+      'gram-positive-bacilli-spores'
+    ]
+  },
+  chemistry: {
+    'Sample Integrity': [
+      'icteric-sample',
+      'lipemic-sample',
+      'hemolyzed-sample'
+    ],
+    'Electrophoresis Patterns': [
+      'spe-normal',
+      'spe-myeloma',
+      'spe-nephrotic',
+      'spe-cirrhosis',
+      'hb-electrophoresis-normal',
+      'hb-electrophoresis-sc'
+    ],
+    'Principles & Graphs': [
+      'michaelis-menten'
+    ]
+  },
+  'immunoserology-blood-bank': {
+    'Agglutination Reactions': [
+      'agglutination-grading',
+      'mixed-field-reaction',
+      'gel-column-reaction'
+    ],
+    'Blood Typing': [
+      'abo-forward-typing',
+      'abo-reverse-typing',
+      'weak-d-test',
+      'anti-d-reaction'
+    ],
+    'Antibody Detection': [
+      'dat-positive',
+      'iat-antibody-screen',
+      'hdfn-cord-blood-dat'
+    ]
+  },
+  'histology-histopathology': {
+    'Normal Tissue': [
+      'he-normal-liver'
+    ],
+    'Special Stains': [
+      'masson-trichrome',
+      'pas-stain',
+      'congo-red-birefringence',
+      'prussian-blue-iron'
+    ],
+    'Pathological Patterns': [
+      'he-cirrhosis',
+      'granuloma',
+      'adenocarcinoma',
+      'squamous-cell-carcinoma',
+      'caseating-necrosis'
+    ]
+  }
+};

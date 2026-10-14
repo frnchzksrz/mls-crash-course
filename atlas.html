@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image Atlas · MLS Crash Course</title>
-  <meta name="description" content="A visual atlas of hematology, urinalysis, and microbiology images with identification keys.">
+  <meta name="description" content="A visual atlas of hematology, urinalysis, microbiology, chemistry, ISBB, and histopathology images with identification keys.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -67,24 +67,64 @@
     .atlas-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.6rem; color: #1e3b5a; margin-bottom: 0.4rem; }
     .atlas-hero p { color: #5c7c9e; font-size: 1rem; }
 
-    .atlas-search { position: sticky; top: 12px; z-index: 40; margin-bottom: 1.25rem; position: relative; }
+    .atlas-search { position: relative; margin-bottom: 1.25rem; }
     .atlas-search input { width: 100%; padding: 14px 50px; border: 1.5px solid rgba(30,59,90,0.15); border-radius: 40px; font-family: inherit; font-size: 1rem; background: #fff; box-shadow: 0 8px 20px rgba(30,59,90,0.06); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
     .atlas-search input:focus { border-color: #1e3b5a; box-shadow: 0 8px 25px rgba(30,59,90,0.12); }
     .atlas-search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: #8b8b8b; pointer-events: none; }
     .atlas-search-clear { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.1rem; color: #8b8b8b; cursor: pointer; padding: 4px 8px; border-radius: 50%; display: none; }
     .atlas-search-clear.visible { display: block; }
 
-    .atlas-tabs { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0 1.25rem; scrollbar-width: none; }
-    .atlas-tabs::-webkit-scrollbar { display: none; }
-    .atlas-tab { flex-shrink: 0; padding: 8px 18px; border-radius: 30px; border: 1.5px solid rgba(30,59,90,0.15); background: #fff; color: #5c7c9e; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    /* Tabs — wrap so all fit on every screen */
+    .atlas-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: 0.25rem 0 1.5rem;
+    }
+    .atlas-tab {
+      padding: 8px 18px;
+      border-radius: 30px;
+      border: 1.5px solid rgba(30,59,90,0.15);
+      background: #fff;
+      color: #5c7c9e;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
     .atlas-tab:hover { border-color: #1e3b5a; color: #1e3b5a; }
     .atlas-tab.active { background: #1e3b5a; color: #fff; border-color: #1e3b5a; }
 
-    .atlas-section { margin-bottom: 2.5rem; }
-    .atlas-section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(30,59,90,0.08); }
+    .atlas-section { margin-bottom: 3rem; }
+    .atlas-section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; padding-bottom: 0.6rem; border-bottom: 2px solid rgba(30,59,90,0.08); }
     .atlas-section-icon { font-size: 1.6rem; }
-    .atlas-section-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: #1e3b5a; }
+    .atlas-section-title { font-family: 'Playfair Display', serif; font-size: 1.7rem; color: #1e3b5a; }
     .atlas-section-desc { font-size: 0.9rem; color: #5c7c9e; margin-top: 0.15rem; }
+
+    .atlas-category { margin-bottom: 2.25rem; }
+    .atlas-category-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e3b5a;
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid rgba(30,59,90,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .atlas-category-title::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: #f6c445;
+      border-radius: 50%;
+      display: inline-block;
+    }
 
     .atlas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
     .atlas-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; text-align: left; font-family: inherit; padding: 0; }
@@ -101,7 +141,6 @@
     .atlas-empty .big { font-size: 3rem; margin-bottom: 0.75rem; }
     .atlas-empty h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #1e3b5a; margin-bottom: 0.4rem; }
 
-    /* Modal */
     .atlas-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,26,38,0.75); backdrop-filter: blur(6px); z-index: 900; align-items: center; justify-content: center; padding: 1rem; }
     .atlas-modal-overlay.open { display: flex; }
     .atlas-modal { background: #fff; border-radius: 20px; max-width: 780px; width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3); position: relative; }
@@ -158,6 +197,7 @@
     html[data-theme="dark"] .atlas-section-header { border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .atlas-section-title { color: #8ab4d9; }
     html[data-theme="dark"] .atlas-section-desc { color: #b8c5d1; }
+    html[data-theme="dark"] .atlas-category-title { color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .atlas-card { background: #1a2b3d; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .atlas-card:hover { border-color: #8ab4d9; box-shadow: 0 12px 28px rgba(0,0,0,0.4); }
     html[data-theme="dark"] .atlas-thumb { background: #23374b; }
@@ -188,6 +228,8 @@
       .atlas-hero h1 { font-size: 2rem; }
       .atlas-hero p { font-size: 0.9rem; }
       .atlas-main { padding: 1.5rem 1rem 3rem; }
+      .atlas-tabs { justify-content: flex-start; }
+      .atlas-tab { padding: 6px 14px; font-size: 0.8rem; }
       .atlas-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
       .atlas-card-body { padding: 0.7rem 0.8rem 0.85rem; }
       .atlas-card-title { font-size: 0.92rem; }
@@ -195,7 +237,8 @@
       .atlas-modal-body { padding: 1.25rem 1.25rem 1.75rem; }
       .atlas-modal-title { font-size: 1.4rem; }
       .atlas-modal-image { max-height: 320px; }
-      .atlas-section-title { font-size: 1.35rem; }
+      .atlas-section-title { font-size: 1.4rem; }
+      .atlas-category-title { font-size: 1rem; }
     }
   </style>
 </head>
@@ -235,7 +278,7 @@
   <main class="atlas-main">
     <div class="atlas-hero">
       <h1>Image Atlas</h1>
-      <p>A visual reference for cells, crystals, casts, and colonies. Tap any image for identification keys.</p>
+      <p>A visual reference for cells, crystals, casts, colonies, and patterns. Tap any image for identification keys.</p>
     </div>
 
     <div class="atlas-search">
@@ -263,6 +306,7 @@
   <script>
     (function () {
       const DATA = window.ATLAS_DATA || {};
+      const CATEGORIES = window.ATLAS_CATEGORIES || {};
       const SLUG_TO_KEY = {
         'clinical-chemistry': 'chemistry',
         'clinical-hematology': 'hematology',
@@ -271,17 +315,20 @@
         'immunoserology-blood-bank': 'immunoserology-blood-bank',
         'histology-histopathology': 'histology-histopathology'
       };
+      const SUBJECT_ORDER = ['hematology', 'analysis-of-urine', 'microbiology', 'chemistry', 'immunoserology-blood-bank', 'histology-histopathology'];
 
-      let activeFilter = 'all';
+      // Pick the first available subject as default (no more "All")
+      let activeFilter = SUBJECT_ORDER.find(k => DATA[k]) || null;
       let searchQuery = '';
 
-      // ---------- Tabs ----------
+      // ---------- Tabs (no "All Subjects") ----------
       function renderTabs() {
         const tabs = document.getElementById('atlas-tabs');
-        const entries = [['all', { label: 'All Subjects', icon: '📚' }]].concat(Object.entries(DATA).map(([k, v]) => [k, v]));
-        tabs.innerHTML = entries.map(([key, v]) =>
-          `<button class="atlas-tab${activeFilter === key ? ' active' : ''}" data-key="${key}">${v.icon} ${v.label}</button>`
-        ).join('');
+        const available = SUBJECT_ORDER.filter(k => DATA[k]);
+        tabs.innerHTML = available.map(key => {
+          const v = DATA[key];
+          return `<button class="atlas-tab${activeFilter === key ? ' active' : ''}" data-key="${key}">${v.icon} ${v.label}</button>`;
+        }).join('');
         tabs.querySelectorAll('.atlas-tab').forEach(btn => {
           btn.addEventListener('click', () => {
             activeFilter = btn.dataset.key;
@@ -291,7 +338,7 @@
         });
       }
 
-      // ---------- Content ----------
+      // ---------- Search ----------
       function matchesSearch(entry) {
         if (!searchQuery) return true;
         const text = (
@@ -303,54 +350,85 @@
         return text.includes(searchQuery);
       }
 
+      // ---------- Render a single card ----------
+      function cardHtml(entry, subjectKey) {
+        const safeTitle = window.escapeHtml(entry.title);
+        return `<button class="atlas-card" data-entry-id="${entry.id}" data-subject="${subjectKey}">
+          <img
+            src="${entry.image}"
+            alt="${safeTitle}"
+            class="atlas-thumb"
+            loading="lazy"
+            onerror="this.outerHTML='<div class=&quot;atlas-thumb-placeholder&quot;><div class=&quot;ph-icon&quot;>🖼️</div><div>${safeTitle.replace(/'/g, '&#39;')}</div></div>'">
+          <div class="atlas-card-body">
+            <div class="atlas-card-title">${safeTitle}</div>
+            <div class="atlas-card-tags">
+              ${(entry.tags || []).slice(0, 3).map(t => `<span class="atlas-card-tag">${window.escapeHtml(t)}</span>`).join('')}
+            </div>
+          </div>
+        </button>`;
+      }
+
+      // ---------- Render a subject section, grouped by category ----------
+      function renderSubject(key) {
+        const subject = DATA[key];
+        if (!subject) return '';
+
+        const matches = (subject.entries || []).filter(matchesSearch);
+        if (matches.length === 0) return '';
+
+        const categoryMap = CATEGORIES[key] || null;
+
+        let html = `<section class="atlas-section" id="section-${key}">
+          <div class="atlas-section-header">
+            <span class="atlas-section-icon">${subject.icon}</span>
+            <div>
+              <h2 class="atlas-section-title">${subject.label}</h2>
+              ${subject.description ? `<div class="atlas-section-desc">${window.escapeHtml(subject.description)}</div>` : ''}
+            </div>
+          </div>`;
+
+        if (!categoryMap) {
+          // No categories — flat grid
+          html += `<div class="atlas-grid">${matches.map(e => cardHtml(e, key)).join('')}</div>`;
+        } else {
+          const claimed = new Set();
+          Object.entries(categoryMap).forEach(([catName, ids]) => {
+            const catEntries = matches.filter(e => ids.includes(e.id));
+            if (catEntries.length === 0) return;
+            catEntries.forEach(e => claimed.add(e.id));
+            html += `<div class="atlas-category">
+              <h3 class="atlas-category-title">${window.escapeHtml(catName)}</h3>
+              <div class="atlas-grid">${catEntries.map(e => cardHtml(e, key)).join('')}</div>
+            </div>`;
+          });
+          // Uncategorized bucket
+          const leftover = matches.filter(e => !claimed.has(e.id));
+          if (leftover.length > 0) {
+            html += `<div class="atlas-category">
+              <h3 class="atlas-category-title">Other</h3>
+              <div class="atlas-grid">${leftover.map(e => cardHtml(e, key)).join('')}</div>
+            </div>`;
+          }
+        }
+
+        html += `</section>`;
+        return html;
+      }
+
+      // ---------- Render content ----------
       function renderContent() {
         const container = document.getElementById('atlas-content');
-        const subjectKeys = activeFilter === 'all' ? Object.keys(DATA) : [activeFilter];
+
+        // If a filter is active, render only that subject.
+        // Search should search across all subjects even when a filter is on? No — respect the filter.
+        const keys = activeFilter ? [activeFilter] : SUBJECT_ORDER.filter(k => DATA[k]);
 
         let html = '';
-        let totalShown = 0;
+        keys.forEach(k => { html += renderSubject(k); });
 
-        subjectKeys.forEach(key => {
-          const subject = DATA[key];
-          if (!subject) return;
-
-          const matches = (subject.entries || []).filter(matchesSearch);
-          if (matches.length === 0) return;
-
-          totalShown += matches.length;
-
-          html += `<section class="atlas-section" id="section-${key}">
-            <div class="atlas-section-header">
-              <span class="atlas-section-icon">${subject.icon}</span>
-              <div>
-                <h2 class="atlas-section-title">${subject.label}</h2>
-                ${subject.description ? `<div class="atlas-section-desc">${window.escapeHtml(subject.description)}</div>` : ''}
-              </div>
-            </div>
-            <div class="atlas-grid">`;
-
-          matches.forEach(entry => {
-            // Use inline onerror to swap to a placeholder if the image 404s
-            html += `<button class="atlas-card" data-entry-id="${entry.id}" data-subject="${key}">
-              <img
-                src="${entry.image}"
-                alt="${window.escapeHtml(entry.title)}"
-                class="atlas-thumb"
-                loading="lazy"
-                onerror="this.outerHTML='<div class=&quot;atlas-thumb-placeholder&quot;><div class=&quot;ph-icon&quot;>🖼️</div><div>${window.escapeHtml(entry.title).replace(/'/g, '&#39;')}</div></div>'">
-              <div class="atlas-card-body">
-                <div class="atlas-card-title">${window.escapeHtml(entry.title)}</div>
-                <div class="atlas-card-tags">
-                  ${(entry.tags || []).slice(0, 3).map(t => `<span class="atlas-card-tag">${window.escapeHtml(t)}</span>`).join('')}
-                </div>
-              </div>
-            </button>`;
-          });
-
-          html += `</div></section>`;
-        });
-
-        if (totalShown === 0) {
+        // If nothing rendered (e.g. search matched nothing in this subject), show empty state
+        if (!html) {
           html = `<div class="atlas-empty">
             <div class="big">🔍</div>
             <h3>No matches</h3>
@@ -371,15 +449,16 @@
         const entry = (subject.entries || []).find(e => e.id === entryId);
         if (!entry) return;
 
+        const safeTitle = window.escapeHtml(entry.title);
         const content = document.getElementById('atlas-modal-content');
         content.innerHTML = `
           <img
             src="${entry.image}"
-            alt="${window.escapeHtml(entry.title)}"
+            alt="${safeTitle}"
             class="atlas-modal-image"
             onerror="this.outerHTML='<div class=&quot;atlas-modal-image-ph&quot;>Image not yet uploaded — add it to <code>${entry.image}</code></div>'">
           <div class="atlas-modal-body">
-            <h2 class="atlas-modal-title">${window.escapeHtml(entry.title)}</h2>
+            <h2 class="atlas-modal-title">${safeTitle}</h2>
             <div class="atlas-modal-tags">
               ${(entry.tags || []).map(t => `<span class="atlas-modal-tag">${window.escapeHtml(t)}</span>`).join('')}
             </div>
@@ -414,7 +493,7 @@
         if (e.key === 'Escape') document.getElementById('atlas-modal').classList.remove('open');
       });
 
-      // ---------- Search ----------
+      // ---------- Search binding ----------
       const searchInput = document.getElementById('atlas-search-input');
       const searchClear = document.getElementById('atlas-search-clear');
       searchInput.addEventListener('input', () => {
