@@ -1,8 +1,9 @@
 // auth.js — Shared script for MLS Crash Course
 // Must be loaded AFTER config.js, BEFORE page-specific scripts.
 // Handles: Supabase client, diamonds, theme, search, header auth UI,
-//          notification bell + dropdown, message envelope badge.
-// Exposes: window.supabaseClient, window.escapeHtml, window.timeAgo
+//          notification bell + dropdown, message envelope badge,
+//          in-browser push notifications, update popup, PWA registration.
+// Exposes: window.supabaseClient, window.escapeHtml, window.timeAgo, window.track
 // Fires:   window 'medlab:ready'       -> { detail: { user, supabase } }
 //          window 'medlab:authChanged' -> { detail: { user } }
 
@@ -71,7 +72,7 @@
   }
 
   // ---------- Theme ----------
-    function initTheme() {
+  function initTheme() {
     const forced = document.documentElement.getAttribute('data-force-theme');
     const saved = localStorage.getItem('mls-theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -331,58 +332,6 @@
     });
   }
 
-  // ---------- Init ----------
-  async function init() {
-    createDiamonds();
-    initTheme();
-    initSearch();
-    wireNotifBell();
-
-    const { data: { session } } = await sb.auth.getSession();
-    currentUser = session?.user ?? null;
-    updateAuthUI(currentUser);
-    if (currentUser) {
-      await updateBadges();
-      setInterval(updateBadges, 60000);
-      updateLastActive();
-    }
-
-    // Ask for notification permission once per session, if the user is logged in
-    if (currentUser && notificationsSupported() && Notification.permission === 'default') {
-      setTimeout(() => { ensureNotificationPermission(); }, 5000);
-    }
-
-    // Start live updates if logged in
-    if (currentUser) subscribeToLiveUpdates();
-
-    // Auto page-view event
-    window.track('page_view', {
-      referrer: document.referrer || null,
-      title: document.title
-    });
-
-    checkForUpdates();
-
-    window.dispatchEvent(new CustomEvent('medlab:ready', {
-      detail: { user: currentUser, supabase: sb }
-    }));
-
-    sb.auth.onAuthStateChange(async (_event, session) => {
-      currentUser = session?.user ?? null;
-      updateAuthUI(currentUser);
-      await updateBadges();
-      window.dispatchEvent(new CustomEvent('medlab:authChanged', {
-        detail: { user: currentUser }
-      }));
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
   // ---------- In-browser push notifications ----------
   function notificationsSupported() {
     return typeof window.Notification !== 'undefined' && window.isSecureContext;
@@ -416,6 +365,7 @@
 
   function subscribeToLiveUpdates() {
     if (!currentUser) return;
+
     // Notifications for this user
     sb.channel('live-notifications')
       .on('postgres_changes',
@@ -426,6 +376,18 @@
           updateBadges();
         })
       .subscribe();
+
+    // Direct messages addressed to this user
+    sb.channel('live-messages')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `to_user_id=eq.${currentUser.id}` },
+        (payload) => {
+          const row = payload.new || {};
+          showBrowserNotification('New message', row.message ? String(row.message).slice(0, 100) : 'You have a new message.', 'messages.html');
+          updateBadges();
+        })
+      .subscribe();
+  }
 
   // ---------- Update popup ----------
   function injectUpdatePopupStyles() {
@@ -597,16 +559,61 @@
     } catch (e) { /* silent */ }
   }
 
-    // Direct messages addressed to this user
-    sb.channel('live-messages')
-      .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `to_user_id=eq.${currentUser.id}` },
-        (payload) => {
-          const row = payload.new || {};
-          showBrowserNotification('New message', row.message ? String(row.message).slice(0, 100) : 'You have a new message.', 'messages.html');
-          updateBadges();
-        })
-      .subscribe();
+  // ---------- Init ----------
+  async function init() {
+    createDiamonds();
+    initTheme();
+    initSearch();
+    wireNotifBell();
+
+    const { data: { session } } = await sb.auth.getSession();
+    currentUser = session?.user ?? null;
+    updateAuthUI(currentUser);
+
+    if (currentUser) {
+      await updateBadges();
+      setInterval(updateBadges, 60000);
+      updateLastActive();
+    }
+
+    // Ask for notification permission once per session, if the user is logged in
+    if (currentUser && notificationsSupported() && Notification.permission === 'default') {
+      setTimeout(() => { ensureNotificationPermission(); }, 5000);
+    }
+
+    // Start live updates if logged in
+    if (currentUser) subscribeToLiveUpdates();
+
+    // Auto page-view event
+    window.track('page_view', {
+      referrer: document.referrer || null,
+      title: document.title
+    });
+
+    // Update popup (non-blocking)
+    checkForUpdates();
+
+    // Signal to page-specific scripts that everything is ready
+    window.dispatchEvent(new CustomEvent('medlab:ready', {
+      detail: { user: currentUser, supabase: sb }
+    }));
+
+    // Auth state changes
+    sb.auth.onAuthStateChange(async (_event, session) => {
+      currentUser = session?.user ?? null;
+      updateAuthUI(currentUser);
+      await updateBadges();
+      window.dispatchEvent(new CustomEvent('medlab:authChanged', {
+        detail: { user: currentUser }
+      }));
+    });
+  }
+
+  // ---------- Bootstrap ----------
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 
   // ---------- PWA service worker ----------
