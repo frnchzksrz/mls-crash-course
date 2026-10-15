@@ -1,0 +1,11 @@
+{
+  "version": "2026-10-15",
+  "title": "What's new",
+  "items": [
+    { "icon": "🖼️", "text": "Image Atlas — hematology, urinalysis, microbiology, chemistry, ISBB, and histopathology." },
+    { "icon": "📊", "text": "Reference values & clinical calculators for all six subjects." },
+    { "icon": "🏛️", "text": "Mock Board top 10 ranking on the homepage, styled like the real PRC results sheet." },
+    { "icon": "🔔", "text": "Live push notifications for new messages, follows, and approvals." },
+    { "icon": "📱", "text": "Install MLS Crash Course as an app on your phone — look for the install prompt." }
+  ]
+}

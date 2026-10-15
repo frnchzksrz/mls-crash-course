@@ -361,6 +361,8 @@
       title: document.title
     });
 
+    checkForUpdates();
+
     window.dispatchEvent(new CustomEvent('medlab:ready', {
       detail: { user: currentUser, supabase: sb }
     }));
@@ -425,6 +427,176 @@
         })
       .subscribe();
 
+  // ---------- Update popup ----------
+  function injectUpdatePopupStyles() {
+    if (document.getElementById('mls-update-popup-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'mls-update-popup-styles';
+    style.textContent = `
+      .mls-update-popup {
+        position: fixed;
+        top: 88px;
+        right: 24px;
+        width: 340px;
+        max-width: calc(100vw - 32px);
+        background: linear-gradient(135deg, #1e3b5a 0%, #2d4a6b 100%);
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 1.1rem 1.15rem 1.4rem;
+        box-shadow: 0 25px 60px rgba(15,26,38,0.35);
+        z-index: 9999;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+        border: 1px solid rgba(246,196,69,0.35);
+        box-sizing: border-box;
+      }
+      .mls-update-popup.visible {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      .mls-update-close {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.55);
+        font-size: 1.4rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 50%;
+        transition: background 0.2s, color 0.2s;
+      }
+      .mls-update-close:hover {
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+      }
+      .mls-update-header {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 0.7rem;
+        padding-right: 1.5rem;
+      }
+      .mls-update-icon {
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+      .mls-update-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #f6c445;
+        letter-spacing: 0.01em;
+      }
+      .mls-update-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+      }
+      .mls-update-list li {
+        display: flex;
+        gap: 0.55rem;
+        align-items: flex-start;
+        font-size: 0.82rem;
+        line-height: 1.4;
+        color: #e8eef5;
+      }
+      .mls-update-list li .mls-update-item-icon {
+        flex-shrink: 0;
+        font-size: 0.95rem;
+        line-height: 1.35;
+      }
+      .mls-update-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        width: 100%;
+        background: linear-gradient(90deg, #f6c445, #ffe08a);
+        transform-origin: left;
+        animation: mls-update-countdown 10s linear forwards;
+      }
+      @keyframes mls-update-countdown {
+        from { transform: scaleX(1); }
+        to   { transform: scaleX(0); }
+      }
+      @media (max-width: 600px) {
+        .mls-update-popup {
+          top: auto;
+          bottom: 20px;
+          left: 16px;
+          right: 16px;
+          width: auto;
+          transform: translateY(120%);
+        }
+        .mls-update-popup.visible {
+          transform: translateY(0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function showUpdatePopup(data) {
+    if (!data || !Array.isArray(data.items) || data.items.length === 0) return;
+    injectUpdatePopupStyles();
+
+    const popup = document.createElement('div');
+    popup.className = 'mls-update-popup';
+    popup.innerHTML = `
+      <button class="mls-update-close" aria-label="Dismiss">×</button>
+      <div class="mls-update-header">
+        <span class="mls-update-icon">✨</span>
+        <span class="mls-update-title">${window.escapeHtml(data.title || "What's new")}</span>
+      </div>
+      <ul class="mls-update-list">
+        ${data.items.map(i => `
+          <li>
+            <span class="mls-update-item-icon">${window.escapeHtml(i.icon || '•')}</span>
+            <span>${window.escapeHtml(i.text || '')}</span>
+          </li>
+        `).join('')}
+      </ul>
+      <div class="mls-update-progress"></div>
+    `;
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.classList.add('visible'));
+
+    let dismissed = false;
+    function dismiss() {
+      if (dismissed) return;
+      dismissed = true;
+      popup.classList.remove('visible');
+      setTimeout(() => popup.remove(), 500);
+    }
+
+    popup.querySelector('.mls-update-close').addEventListener('click', dismiss);
+    setTimeout(dismiss, 10000);
+  }
+
+  async function checkForUpdates() {
+    try {
+      const res = await fetch('/updates.json', { cache: 'no-cache' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.version) return;
+      const seen = localStorage.getItem('mls-seen-update-version');
+      if (seen === data.version) return;
+      // Mark as seen immediately so a page navigation mid-popup doesn't repeat it
+      localStorage.setItem('mls-seen-update-version', data.version);
+      // Delay slightly so it doesn't fight with page load
+      setTimeout(() => showUpdatePopup(data), 800);
+    } catch (e) { /* silent */ }
+  }
+
     // Direct messages addressed to this user
     sb.channel('live-messages')
       .on('postgres_changes',
@@ -440,10 +612,16 @@
   // ---------- PWA service worker ----------
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        // Silent — PWA is a progressive enhancement, never break the page
-        console.warn('[auth.js] SW registration failed:', err && err.message);
-      });
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => {
+          // Ask the SW to silently refresh its offline cache of the core pages
+          navigator.serviceWorker.ready.then((reg) => {
+            if (reg.active) reg.active.postMessage({ type: 'REFRESH_CACHE' });
+          });
+        })
+        .catch((err) => {
+          console.warn('[auth.js] SW registration failed:', err && err.message);
+        });
     });
   }
 })();
