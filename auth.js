@@ -2,7 +2,8 @@
 // Must be loaded AFTER config.js, BEFORE page-specific scripts.
 // Handles: Supabase client, diamonds, theme, search, header auth UI,
 //          notification bell + dropdown, message envelope badge,
-//          in-browser push notifications, update popup, PWA registration.
+//          in-browser push notifications, update popup,
+//          install-app reminder, PWA registration.
 // Exposes: window.supabaseClient, window.escapeHtml, window.timeAgo, window.track
 // Fires:   window 'medlab:ready'       -> { detail: { user, supabase } }
 //          window 'medlab:authChanged' -> { detail: { user } }
@@ -543,6 +544,206 @@
     } catch (e) { /* silent */ }
   }
 
+  // ---------- Install app reminder ----------
+  let deferredInstallPrompt = null;
+  let appInstalledFlag = false;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+  });
+
+  window.addEventListener('appinstalled', () => {
+    appInstalledFlag = true;
+    deferredInstallPrompt = null;
+    const popup = document.querySelector('.mls-install-popup');
+    if (popup) {
+      popup.classList.remove('visible');
+      setTimeout(() => popup.remove(), 500);
+    }
+  });
+
+  function isAppInstalled() {
+    if (appInstalledFlag) return true;
+    try {
+      if (window.matchMedia('(display-mode: standalone)').matches) return true;
+      if (window.matchMedia('(display-mode: fullscreen)').matches) return true;
+      if (window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+    } catch (e) { /* older browsers */ }
+    if (window.navigator.standalone === true) return true; // iOS Safari
+    return false;
+  }
+
+  function isIosSafari() {
+    const ua = window.navigator.userAgent || '';
+    const isIos = /iPhone|iPad|iPod/.test(ua);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+    return isIos && isSafari;
+  }
+
+  function todayLocalDate() {
+    return new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+  }
+
+  function injectInstallPopupStyles() {
+    if (document.getElementById('mls-install-popup-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'mls-install-popup-styles';
+    style.textContent = `
+      .mls-install-popup .mls-install-body {
+        font-size: 0.85rem;
+        line-height: 1.45;
+        color: #e8eef5;
+        margin-bottom: 0.9rem;
+      }
+      .mls-install-popup .mls-install-actions {
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
+      }
+      .mls-install-popup .mls-install-btn {
+        flex: 1;
+        background: #f6c445;
+        color: #4a3403;
+        border: none;
+        border-radius: 30px;
+        padding: 9px 18px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        letter-spacing: 0.02em;
+      }
+      .mls-install-popup .mls-install-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(246,196,69,0.4);
+      }
+      .mls-install-popup .mls-install-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .mls-install-popup .mls-install-hint {
+        font-size: 0.72rem;
+        color: #b8c5d1;
+        margin-top: 0.5rem;
+        line-height: 1.45;
+      }
+      .mls-install-popup .mls-install-hint strong {
+        color: #f6c445;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  async function triggerInstall() {
+    if (!deferredInstallPrompt) return false;
+    try {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        window.track('pwa_install_accepted');
+        return true;
+      }
+      window.track('pwa_install_dismissed');
+      return false;
+    } catch (e) {
+      return false;
+    } finally {
+      deferredInstallPrompt = null;
+    }
+  }
+
+  function showInstallPopup() {
+    if (document.querySelector('.mls-install-popup')) return;
+
+    const canPrompt = !!deferredInstallPrompt;
+    const iosSafari = isIosSafari();
+    if (!canPrompt && !iosSafari) return;
+
+    injectInstallPopupStyles();
+
+    // Stack below any visible update popup (desktop only)
+    const isMobile = window.matchMedia('(max-width: 600px)').matches;
+    const visibleUpdates = document.querySelectorAll('.mls-update-popup.visible:not(.mls-install-popup)').length;
+
+    const popup = document.createElement('div');
+    popup.className = 'mls-update-popup mls-install-popup';
+    if (!isMobile && visibleUpdates > 0) {
+      popup.style.top = (88 + visibleUpdates * 200) + 'px';
+    }
+
+    let bodyHtml;
+    if (canPrompt) {
+      bodyHtml = `
+        <div class="mls-install-body">
+          Add MLS x RF to your home screen for one-tap access, offline reading, and a full-screen experience.
+        </div>
+        <div class="mls-install-actions">
+          <button class="mls-install-btn" id="mls-install-trigger">Install App</button>
+        </div>
+      `;
+    } else {
+      bodyHtml = `
+        <div class="mls-install-body">
+          Add MLS x RF to your home screen for one-tap access and a full-screen experience.
+        </div>
+        <div class="mls-install-hint">
+          Tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+        </div>
+      `;
+    }
+
+    popup.innerHTML = `
+      <button class="mls-update-close" aria-label="Dismiss">×</button>
+      <div class="mls-update-header">
+        <span class="mls-update-icon">📱</span>
+        <span class="mls-update-title">Install the App</span>
+      </div>
+      ${bodyHtml}
+    `;
+
+    document.body.appendChild(popup);
+    requestAnimationFrame(() => popup.classList.add('visible'));
+
+    popup.querySelector('.mls-update-close').addEventListener('click', () => {
+      localStorage.setItem('mls-install-reminder-shown', todayLocalDate());
+      popup.classList.remove('visible');
+      setTimeout(() => popup.remove(), 500);
+    });
+
+    const installBtn = popup.querySelector('#mls-install-trigger');
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        installBtn.disabled = true;
+        installBtn.textContent = 'Opening installer…';
+        const accepted = await triggerInstall();
+        if (accepted) return; // appinstalled event will remove the popup
+        installBtn.disabled = false;
+        installBtn.textContent = 'Install App';
+      });
+    }
+
+    window.track('pwa_install_prompt_shown', { canPrompt, iosSafari });
+  }
+
+  function maybeShowInstallReminder() {
+    if (isAppInstalled()) return;
+    const today = todayLocalDate();
+    if (localStorage.getItem('mls-install-reminder-shown') === today) return;
+
+    // Give beforeinstallprompt a moment to fire (Chrome needs a beat)
+    setTimeout(() => {
+      if (isAppInstalled()) return;
+      const canPrompt = !!deferredInstallPrompt;
+      const iosSafari = isIosSafari();
+      // If we can't actually offer an install here, retry on the next page load
+      if (!canPrompt && !iosSafari) return;
+      showInstallPopup();
+      localStorage.setItem('mls-install-reminder-shown', today);
+    }, 4000);
+  }
+
   // ---------- Init ----------
   async function init() {
     createDiamonds();
@@ -574,8 +775,11 @@
       title: document.title
     });
 
-    // Update popup (non-blocking)
+    // Update popup (once per version, non-blocking)
     checkForUpdates();
+
+    // Install reminder (once per day for non-installed users, non-blocking)
+    maybeShowInstallReminder();
 
     // Signal to page-specific scripts that everything is ready
     window.dispatchEvent(new CustomEvent('medlab:ready', {
