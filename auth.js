@@ -476,20 +476,6 @@
         font-size: 0.95rem;
         line-height: 1.35;
       }
-      .mls-update-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
-        width: 100%;
-        background: linear-gradient(90deg, #f6c445, #ffe08a);
-        transform-origin: left;
-        animation: mls-update-countdown 10s linear forwards;
-      }
-      @keyframes mls-update-countdown {
-        from { transform: scaleX(1); }
-        to   { transform: scaleX(0); }
-      }
       @media (max-width: 600px) {
         .mls-update-popup {
           top: auto;
@@ -527,7 +513,6 @@
           </li>
         `).join('')}
       </ul>
-      <div class="mls-update-progress"></div>
     `;
     document.body.appendChild(popup);
     requestAnimationFrame(() => popup.classList.add('visible'));
@@ -541,7 +526,6 @@
     }
 
     popup.querySelector('.mls-update-close').addEventListener('click', dismiss);
-    setTimeout(dismiss, 10000);
   }
 
   async function checkForUpdates() {
