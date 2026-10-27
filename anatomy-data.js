@@ -1,23 +1,14 @@
 // anatomy-data.js
 // Curated MLS profiles keyed by lowercase, space-separated structure name.
-// Matching in anatomy.html normalises mesh names and falls back through:
-// exact -> whole-word prefix -> first word -> any word -> system fallback.
+// Matching in anatomy.html normalises mesh names (Bone_Femur_R -> "femur")
+// and falls back through: exact -> whole-word prefix -> first word -> any word -> system fallback.
 
 window.MLS_ANATOMY_DATA = {
 
-  /* ===================== MAJOR ORGANS (Rich Detail) ===================== */
-  
+  /* ===================== ORGANS ===================== */
   heart: {
     type: 'Cardiovascular System',
-    latin: 'Cor',
-    description: 'A muscular pump that moves blood through the body.',
-    function: 'Generates the pressure gradient driving pulmonary and systemic circulation. The conduction system coordinates atrial and ventricular contraction.',
-    location: 'Middle mediastinum, center-left chest',
-    size: 'About the size of a fist',
-    weight: '250–350 g',
-    bloodSupply: 'Left and right coronary arteries',
-    tissue: 'Cardiac muscle',
-    note: 'The heart beats about 100,000 times per day in a typical adult.',
+    function: 'Four-chambered muscular pump that generates the pressure gradient driving pulmonary and systemic circulation. The conduction system coordinates atrial and ventricular contraction.',
     labTests: [
       'High-sensitivity troponin I/T',
       'CK-MB',
@@ -38,76 +29,9 @@ window.MLS_ANATOMY_DATA = {
     linkText: 'Clinical Chemistry'
   },
 
-  brain: {
-    type: 'Nervous System',
-    latin: 'Encephalon',
-    description: 'The central organ of the nervous system, responsible for thought, memory, and control.',
-    function: 'Central control organ for cognition, sensation, movement, and homeostasis. The choroid plexus produces cerebrospinal fluid (CSF).',
-    location: 'Cranial cavity',
-    size: 'About three pounds',
-    weight: '1.3–1.4 kg',
-    bloodSupply: 'Internal carotid and vertebral arteries',
-    tissue: 'Nervous tissue (neurons and glia)',
-    note: 'The brain uses about 20% of the body\'s total oxygen and calories.',
-    labTests: [
-      'CSF cell count with differential',
-      'CSF protein and glucose',
-      'CSF lactate',
-      'CSF Gram stain and culture',
-      'CSF India ink (Cryptococcus)',
-      'Serum electrolytes, ammonia'
-    ],
-    clinical: [
-      'Bacterial meningitis — high PMNs, low glucose, high protein',
-      'Viral meningitis — lymphocytosis, normal glucose',
-      'Subarachnoid haemorrhage — uniformly blood-stained CSF, xanthochromia',
-      'Multiple sclerosis — oligoclonal bands'
-    ],
-    examTip: 'CSF glucose is normally ~60% of serum glucose. A CSF:serum ratio <0.4 strongly suggests bacterial meningitis.',
-    link: 'course-analysis-of-urine.html',
-    linkText: 'Body Fluids (CSF)'
-  },
-
-  lungs: {
-    type: 'Respiratory System',
-    latin: 'Pulmones',
-    description: 'Pair of spongy, air-filled organs located on either side of the chest.',
-    function: 'Gas exchange — oxygen diffuses into pulmonary capillary blood and CO₂ diffuses out across the alveolar–capillary membrane.',
-    location: 'Thoracic cavity',
-    size: 'Left lung is smaller than the right',
-    weight: '~1 kg combined',
-    bloodSupply: 'Pulmonary arteries and bronchial arteries',
-    tissue: 'Spongy, porous tissue (alveoli)',
-    note: 'The surface area of the lungs is roughly equal to a tennis court.',
-    labTests: [
-      'Arterial blood gas (pO₂, pCO₂, pH, HCO₃)',
-      'Sputum Gram stain and culture',
-      'AFB smear and culture (TB)',
-      'Sputum cytology',
-      'Pleural fluid analysis'
-    ],
-    clinical: [
-      'Pneumonia — sputum culture, Gram stain',
-      'Pulmonary tuberculosis — AFB, GeneXpert',
-      'Respiratory acidosis/alkalosis by ABG',
-      'Lung cancer — sputum cytology, biopsy'
-    ],
-    examTip: 'Sputum is not saliva — a good specimen has >25 PMNs and <10 squamous epithelial cells per low-power field.',
-    link: 'course-microbiology.html',
-    linkText: 'Microbiology'
-  },
-
   liver: {
     type: 'Hepatobiliary System',
-    latin: 'Hepar',
-    description: 'The largest internal organ, responsible for detoxification and metabolism.',
-    function: 'Metabolises carbohydrates, proteins and lipids; synthesises albumin and clotting factors; conjugates and excretes bilirubin; detoxifies ammonia to urea.',
-    location: 'Right upper quadrant of the abdomen',
-    size: 'About the size of a football',
-    weight: '1.4–1.6 kg',
-    bloodSupply: 'Hepatic artery and portal vein',
-    tissue: 'Hepatocytes',
-    note: 'The liver can regenerate itself, even if 75% of it is removed.',
+    function: 'Metabolises carbohydrates, proteins and lipids; synthesises albumin and clotting factors; conjugates and excretes bilirubin; detoxifies ammonia to urea; stores glycogen, iron and fat-soluble vitamins.',
     labTests: [
       'ALT and AST',
       'ALP and GGT',
@@ -132,15 +56,7 @@ window.MLS_ANATOMY_DATA = {
 
   kidney: {
     type: 'Urinary System',
-    latin: 'Ren',
-    description: 'Bean-shaped organs that filter blood to produce urine.',
     function: 'Filters plasma at the glomerulus, reabsorbs water and solutes along the nephron, regulates acid–base and electrolyte balance, produces erythropoietin and renin.',
-    location: 'Retroperitoneum (T12–L3)',
-    size: 'About the size of a bar of soap',
-    weight: '120–150 g each',
-    bloodSupply: 'Renal arteries',
-    tissue: 'Nephrons (cortex and medulla)',
-    note: 'The kidneys filter about 150 quarts of blood daily.',
     labTests: [
       'Serum creatinine',
       'BUN',
@@ -162,17 +78,52 @@ window.MLS_ANATOMY_DATA = {
     linkText: 'Urinalysis & Body Fluids'
   },
 
+  lung: {
+    type: 'Respiratory System',
+    function: 'Gas exchange — oxygen diffuses into pulmonary capillary blood and CO₂ diffuses out across the alveolar–capillary membrane.',
+    labTests: [
+      'Arterial blood gas (pO₂, pCO₂, pH, HCO₃)',
+      'Sputum Gram stain and culture',
+      'AFB smear and culture (TB)',
+      'Sputum cytology',
+      'Pleural fluid analysis'
+    ],
+    clinical: [
+      'Pneumonia — sputum culture, Gram stain',
+      'Pulmonary tuberculosis — AFB, GeneXpert',
+      'Respiratory acidosis/alkalosis by ABG',
+      'Lung cancer — sputum cytology, biopsy'
+    ],
+    examTip: 'Sputum is not saliva — a good specimen has >25 PMNs and <10 squamous epithelial cells per low-power field.',
+    link: 'course-microbiology.html',
+    linkText: 'Microbiology'
+  },
+
+  brain: {
+    type: 'Nervous System',
+    function: 'Central control organ for cognition, sensation, movement, and homeostasis. The choroid plexus produces cerebrospinal fluid (CSF).',
+    labTests: [
+      'CSF cell count with differential',
+      'CSF protein and glucose',
+      'CSF lactate',
+      'CSF Gram stain and culture',
+      'CSF India ink (Cryptococcus)',
+      'Serum electrolytes, ammonia'
+    ],
+    clinical: [
+      'Bacterial meningitis — high PMNs, low glucose, high protein',
+      'Viral meningitis — lymphocytosis, normal glucose',
+      'Subarachnoid haemorrhage — uniformly blood-stained CSF, xanthochromia',
+      'Multiple sclerosis — oligoclonal bands'
+    ],
+    examTip: 'CSF glucose is normally ~60% of serum glucose. A CSF:serum ratio <0.4 strongly suggests bacterial meningitis.',
+    link: 'course-analysis-of-urine.html',
+    linkText: 'Body Fluids (CSF)'
+  },
+
   stomach: {
     type: 'Digestive System',
-    latin: 'Gaster',
-    description: 'A muscular organ that stores and breaks down food.',
     function: 'Stores and mechanically churns food, secretes HCl and pepsinogen for protein digestion, and secretes intrinsic factor essential for vitamin B₁₂ absorption.',
-    location: 'Left upper quadrant of the abdomen',
-    size: 'Holds about 1–1.5 liters of food',
-    weight: 'Varies',
-    bloodSupply: 'Left and right gastric arteries',
-    tissue: 'Gastric mucosa (parietal and chief cells)',
-    note: 'The stomach produces a new lining every few days to prevent self-digestion.',
     labTests: [
       'Rapid urease (CLO) test for H. pylori',
       'H. pylori stool antigen',
@@ -192,15 +143,7 @@ window.MLS_ANATOMY_DATA = {
 
   pancreas: {
     type: 'Digestive & Endocrine',
-    latin: 'Pancreas',
-    description: 'A glandular organ behind the stomach with both digestive and hormonal functions.',
     function: 'Exocrine acinar cells secrete digestive enzymes; endocrine islets (of Langerhans) secrete insulin, glucagon, somatostatin and pancreatic polypeptide.',
-    location: 'Behind the stomach',
-    size: 'About 6 inches long',
-    weight: '~100 g',
-    bloodSupply: 'Splenic artery',
-    tissue: 'Acinar cells and Islets of Langerhans',
-    note: 'The pancreas secretes about 1.5 liters of digestive juice daily.',
     labTests: [
       'Serum amylase',
       'Serum lipase',
@@ -221,15 +164,7 @@ window.MLS_ANATOMY_DATA = {
 
   spleen: {
     type: 'Lymphoid System',
-    latin: 'Splen',
-    description: 'The largest lymphatic organ, acting as a blood filter.',
     function: 'Filters blood, removes senescent or damaged RBCs, mounts immune responses to encapsulated organisms, and serves as a reservoir for platelets and monocytes.',
-    location: 'Left upper quadrant, behind the stomach',
-    size: 'About the size of a fist',
-    weight: '150–200 g',
-    bloodSupply: 'Splenic artery',
-    tissue: 'Red pulp and white pulp',
-    note: 'The spleen removes old red blood cells and produces antibodies.',
     labTests: [
       'CBC with peripheral smear',
       'Howell–Jolly bodies (post-splenectomy)',
@@ -248,35 +183,6 @@ window.MLS_ANATOMY_DATA = {
     linkText: 'Clinical Hematology'
   },
 
-  penis: {
-    type: 'Reproductive System',
-    latin: 'Penis',
-    description: 'The male organ for urination and sexual reproduction.',
-    function: 'Excretion of urine, delivery of semen.',
-    location: 'Anterior to the scrotum',
-    size: 'Varies',
-    weight: 'Varies',
-    bloodSupply: 'Internal pudendal artery',
-    tissue: 'Erectile tissue (corpora cavernosa)',
-    note: 'It contains a network of blood vessels that fill during an erection.',
-    labTests: [
-      'Urinalysis',
-      'STI cultures/PCR (Chlamydia, Gonorrhea)',
-      'Syphilis serology'
-    ],
-    clinical: [
-      'Hypospadias',
-      'Erectile dysfunction',
-      'Phimosis',
-      'Urethritis'
-    ],
-    examTip: 'The urethra passes through the corpus spongiosum.',
-    link: 'course-microbiology.html',
-    linkText: 'Microbiology'
-  },
-
-  /* ===================== DIGESTIVE & RESPIRATORY ===================== */
-  
   intestine: {
     type: 'Digestive System',
     function: 'Small intestine (duodenum, jejunum, ileum) is the main site of nutrient absorption. Large intestine reabsorbs water and electrolytes and forms stool.',
@@ -531,7 +437,6 @@ window.MLS_ANATOMY_DATA = {
   },
 
   /* ===================== BONES ===================== */
-  
   femur: {
     type: 'Skeletal System',
     function: 'Longest and strongest bone; transmits body weight from hip to tibia and provides attachment for the thigh and hip muscles. Proximal metaphysis contains red marrow in adults.',
@@ -654,7 +559,6 @@ window.MLS_ANATOMY_DATA = {
   },
 
   /* ===================== MUSCLES ===================== */
-  
   biceps: {
     type: 'Muscular System',
     function: 'Flexes the elbow and supinates the forearm; the short head also assists shoulder flexion.',
@@ -764,7 +668,6 @@ window.MLS_ANATOMY_DATA = {
   },
 
   /* ===================== VESSELS ===================== */
-  
   aorta: {
     type: 'Cardiovascular (Arterial)',
     function: 'Main systemic artery; carries oxygenated blood from the left ventricle to the body.',
@@ -830,7 +733,6 @@ window.MLS_ANATOMY_DATA = {
   },
 
   /* ===================== NERVES ===================== */
-  
   'spinal cord': {
     type: 'Nervous System',
     function: 'Conducts motor and sensory signals between brain and body; site of reflex arcs and CSF circulation.',
@@ -882,7 +784,6 @@ window.MLS_ANATOMY_DATA = {
   },
 
   /* ===================== INTEGUMENT / LYMPHOID MISC ===================== */
-  
   skin: {
     type: 'Integumentary System',
     function: 'Protects against pathogens and water loss, regulates temperature, synthesises vitamin D, and provides sensation.',
@@ -901,44 +802,6 @@ window.MLS_ANATOMY_DATA = {
     examTip: 'Painless, firm, fixed lymph nodes suggest malignancy; tender, mobile nodes usually indicate infection.',
     link: 'course-clinical-hematology.html',
     linkText: 'Clinical Hematology'
-  },
-
-  /* ===================== SUB-PARTS (Inheritance) ===================== */
-  
-  'aorta': {
-    type: 'Cardiovascular (Arterial)',
-    description: 'The main and largest artery in the human body.',
-    function: 'Carries oxygenated blood from the left ventricle to the systemic circulation.',
-    labTests: ['Lipid profile', 'hs-CRP', 'Creatinine'],
-    clinical: ['Aortic aneurysm', 'Aortic dissection', 'Atherosclerosis'],
-    examTip: 'Aortic dissection classically presents with a widened mediastinum.'
-  },
-  
-  'left atrium': {
-    type: 'Cardiovascular System',
-    description: 'One of the four chambers of the heart.',
-    function: 'Receives oxygen-rich blood from the lungs and pumps it to the left ventricle.',
-    labTests: ['BNP', 'Troponin'],
-    clinical: ['Mitral stenosis', 'Atrial fibrillation'],
-    examTip: 'The left atrium is the most common site for blood clots that cause stroke.'
-  },
-  
-  'right atrium': {
-    type: 'Cardiovascular System',
-    description: 'One of the four chambers of the heart.',
-    function: 'Receives oxygen-poor blood from the body and pumps it to the right ventricle.',
-    labTests: ['CVP monitoring', 'BNP'],
-    clinical: ['Tricuspid regurgitation', 'Right heart failure'],
-    examTip: 'The SA node is located in the upper wall of the right atrium.'
-  },
-  
-  'renal cortex': {
-    type: 'Urinary System',
-    description: 'The outer portion of the kidney.',
-    function: 'Contains the glomeruli and convoluted tubules where filtration begins.',
-    labTests: ['Creatinine', 'BUN', 'Urinalysis'],
-    clinical: ['Cortical necrosis', 'Glomerulonephritis'],
-    examTip: 'The renal cortex produces erythropoietin (EPO).'
   }
 };
 
