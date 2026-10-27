@@ -9,68 +9,200 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
-  <script src="anatomy-data.js"></script> <!-- Load the data file -->
+  <script src="anatomy-data.js"></script>
   <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; width: 100%; overflow: hidden; background: #0f1a26; }
-    body { font-family: 'Inter', sans-serif; color: #e8eef5; display: flex; flex-direction: column; }
-    
-    header { z-index: 100; background: rgba(15,26,38,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; height: 70px; flex-shrink: 0; }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      width: 100%;
+      overflow: hidden;
+      background: #0f1a26;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #e8eef5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      z-index: 100;
+      background: rgba(15,26,38,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      height: 70px;
+      flex-shrink: 0;
+    }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #8ab4d9; text-decoration: none; }
+    .logo i { font-style: italic; font-weight: 500; }
     .logo span { font-size: 0.75rem; color: #6b8ba3; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
     .nav-links { display: flex; align-items: center; gap: 1.75rem; }
     .nav-links a { text-decoration: none; color: #b8c5d1; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
     .nav-links a:hover { color: #e8eef5; }
     .nav-links a.active { color: #f6c445; }
-    
-    .main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
-    #canvas-container { flex: 1; width: 100%; height: 100%; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
-    
-    /* Left Sidebar */
-    .system-panel { position: absolute; top: 20px; left: 20px; background: rgba(26,43,61,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; width: 280px; max-height: calc(100% - 40px); overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-    .system-panel h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #8ab4d9; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
+
+    /* ---------- Layout ---------- */
+    .main-container {
+      flex: 1 1 auto;
+      min-height: 0;          /* CRITICAL: allow flex child to shrink */
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvas-container {
+      position: absolute;     /* fill the relative parent, bypass flex sizing */
+      inset: 0;
+      background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%);
+    }
+    #canvas-container canvas { display: block; }
+
+    /* ---------- Sidebar ---------- */
+    .system-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(26,43,61,0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1.25rem;
+      width: 280px;
+      max-height: calc(100% - 40px);
+      overflow-y: auto;
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .system-panel h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: #8ab4d9;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 0.5rem;
+    }
     .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .toggle-row:last-child { border-bottom: none; }
     .toggle-label { font-size: 0.9rem; color: #e8eef5; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
-    .toggle-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    
+    .toggle-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5a6b; transition: .4s; border-radius: 22px; }
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: #8ab4d9; }
     input:checked + .slider:before { transform: translateX(18px); }
-    
-    /* Right Info Panel */
-    .info-panel { position: absolute; top: 20px; right: 20px; background: rgba(26,43,61,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; width: 340px; max-height: calc(100% - 40px); overflow-y: auto; display: none; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-    .info-panel.visible { display: block; animation: slideIn 0.3s ease; }
+    input:disabled + .slider { opacity: 0.35; cursor: not-allowed; }
+
+    .panel-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .panel-actions button {
+      flex: 1;
+      background: #1e3b5a;
+      color: #e8eef5;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.5rem 0.6rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .panel-actions button:hover { background: #2d4a6b; }
+
+    /* ---------- Info panel ---------- */
+    .info-panel {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(26,43,61,0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 360px;
+      max-height: calc(100% - 40px);
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .info-panel.visible { display: block; animation: slideIn 0.25s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-    .info-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #f6c445; margin-bottom: 0.2rem; }
+
+    .info-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #f6c445; margin-bottom: 0.2rem; padding-right: 2rem; }
     .info-panel .type { font-size: 0.75rem; color: #8ab4d9; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; }
-    .info-panel .mls-correlation { background: rgba(138,180,217,0.1); border-left: 3px solid #8ab4d9; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
-    .info-panel .mls-correlation h4 { font-size: 0.8rem; color: #8ab4d9; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .info-panel .mls-correlation ul { padding-left: 1.2rem; margin: 0; }
-    .info-panel .mls-correlation li { font-size: 0.85rem; color: #e8eef5; line-height: 1.5; margin-bottom: 0.6rem; }
-    .info-panel .mls-correlation li:last-child { margin-bottom: 0; }
-    .info-panel .mls-correlation strong { color: #f6c445; }
-    .info-panel .mls-link { display: inline-block; background: #1e3b5a; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s, transform 0.2s; }
+
+    .info-block { background: rgba(138,180,217,0.08); border-left: 3px solid #8ab4d9; padding: 0.85rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.9rem; }
+    .info-block h4 { font-size: 0.75rem; color: #8ab4d9; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .info-block p, .info-block li { font-size: 0.85rem; color: #e8eef5; line-height: 1.55; }
+    .info-block ul { padding-left: 1.1rem; margin: 0; }
+    .info-block li { margin-bottom: 0.35rem; }
+    .info-block li:last-child { margin-bottom: 0; }
+    .info-block.info-tip { border-left-color: #f6c445; background: rgba(246,196,69,0.08); }
+    .info-block.info-tip h4 { color: #f6c445; }
+    .info-block.info-tip p { color: #f9e6b5; font-style: italic; }
+
+    .info-panel .mls-link { display: inline-block; background: #1e3b5a; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s, transform 0.2s; margin-top: 0.25rem; }
     .info-panel .mls-link:hover { background: #2d4a6b; transform: translateY(-2px); }
     #close-info { float: right; background: none; border: none; color: #8ab4d9; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
-    
-    /* Moved instructions to bottom-left to avoid overlapping the model */
-    .instructions { position: absolute; bottom: 20px; left: 20px; background: rgba(15,26,38,0.8); backdrop-filter: blur(4px); color: #b8c5d1; font-size: 0.85rem; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); pointer-events: none; display: flex; gap: 1rem; align-items: center; }
+
+    /* ---------- Instructions + Fit button ---------- */
+    .instructions {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(15,26,38,0.8);
+      backdrop-filter: blur(4px);
+      color: #b8c5d1;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.1);
+      pointer-events: none;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
     .key-badge { background: #2d4a6b; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
 
-    #loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1a26; z-index: 50; transition: opacity 0.5s; }
+    /* ---------- Loading ---------- */
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0f1a26;
+      z-index: 50;
+      transition: opacity 0.5s;
+    }
     #loading.hidden { opacity: 0; pointer-events: none; }
     .spinner { width: 40px; height: 40px; border: 4px solid rgba(138,180,217,0.3); border-top-color: #8ab4d9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    
+
     @media (max-width: 768px) {
       .instructions { display: none; }
-      .system-panel { width: calc(100% - 40px); max-height: 25vh; }
-      .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; max-height: 40vh; }
+      .system-panel { width: calc(100% - 40px); max-height: 30vh; }
+      .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; right: 20px; max-height: 45vh; }
     }
   </style>
 </head>
@@ -87,28 +219,28 @@
   </header>
 
   <main class="main-container">
+    <div id="canvas-container"></div>
+
     <div id="loading">
       <div class="spinner"></div>
       <p>Loading anatomical systems…</p>
     </div>
-    
-    <div id="canvas-container"></div>
-    
-    <div class="system-panel">
-      <h3>Systems & Layers</h3>
+
+    <aside class="system-panel">
+      <h3>Systems &amp; Layers</h3>
       <div id="system-toggles"></div>
-    </div>
-    
-    <div class="info-panel" id="info-panel">
-      <button id="close-info">×</button>
+      <div class="panel-actions">
+        <button id="fit-btn" type="button">Fit view</button>
+      </div>
+    </aside>
+
+    <aside class="info-panel" id="info-panel">
+      <button id="close-info" aria-label="Close">×</button>
       <h2 id="info-title">Structure Name</h2>
       <span class="type" id="info-type">System</span>
-      <div class="mls-correlation" id="info-correlation-box">
-        <h4>In MLS</h4>
-        <div id="info-desc"></div>
-      </div>
+      <div id="info-desc"></div>
       <a href="#" class="mls-link" id="info-mls-link">View related course →</a>
-    </div>
+    </aside>
 
     <div class="instructions">
       <span><span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> to Pan</span>
@@ -132,137 +264,225 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    const container = document.getElementById('canvas-container');
-    const infoPanel = document.getElementById('info-panel');
-    const infoTitle = document.getElementById('info-title');
-    const infoType = document.getElementById('info-type');
-    const infoDesc = document.getElementById('info-desc');
-    const infoMlsLink = document.getElementById('info-mls-link');
+    /* ------------------------------------------------------------------ */
+    /*  DOM refs                                                          */
+    /* ------------------------------------------------------------------ */
+    const container     = document.getElementById('canvas-container');
+    const infoPanel     = document.getElementById('info-panel');
+    const infoTitle     = document.getElementById('info-title');
+    const infoType      = document.getElementById('info-type');
+    const infoDesc      = document.getElementById('info-desc');
+    const infoMlsLink   = document.getElementById('info-mls-link');
     const toggleContainer = document.getElementById('system-toggles');
-    const loadingText = document.querySelector('#loading p');
+    const loadingText   = document.querySelector('#loading p');
+    const fitBtn        = document.getElementById('fit-btn');
 
-    // Use the data from anatomy-data.js
-    const mlsData = window.MLS_ANATOMY_DATA;
+    const mlsData       = window.MLS_ANATOMY_DATA     || {};
+    const systemFallback = window.MLS_SYSTEM_FALLBACKS || {};
 
+    /* ------------------------------------------------------------------ */
+    /*  Systems                                                           */
+    /* ------------------------------------------------------------------ */
     const systems = [
-      { id: 'skeleton', label: 'Skeletal System', file: 'skeleton.glb', color: '#e8dcc4' },
-      { id: 'muscles', label: 'Muscular System', file: 'muscles.glb', color: '#c0392b' },
-      { id: 'organs', label: 'Internal Organs', file: 'organs.glb', color: '#e67e22' },
-      { id: 'nerves', label: 'Nervous System', file: 'nerves.glb', color: '#f6c445' },
-      { id: 'circulatory', label: 'Circulatory System', file: 'circulatory.glb', color: '#e74c3c' },
-      { id: 'lymphoid', label: 'Lymphoid Organs', file: 'lymphoid.glb', color: '#27ae60' }
+      { id: 'skeleton',    label: 'Skeletal System',    file: 'skeleton.glb',    color: '#e8dcc4', defaultOn: true  },
+      { id: 'muscles',     label: 'Muscular System',    file: 'muscles.glb',     color: '#c0392b', defaultOn: true  },
+      { id: 'organs',      label: 'Internal Organs',    file: 'organs.glb',      color: '#e67e22', defaultOn: true  },
+      { id: 'nerves',      label: 'Nervous System',     file: 'nerves.glb',      color: '#f6c445', defaultOn: true  },
+      { id: 'circulatory', label: 'Circulatory System', file: 'circulatory.glb', color: '#e74c3c', defaultOn: true  },
+      { id: 'lymphoid',    label: 'Lymphoid Organs',    file: 'lymphoid.glb',    color: '#27ae60', defaultOn: true  }
     ];
 
+    /* ------------------------------------------------------------------ */
+    /*  Scene / renderer / camera                                         */
+    /* ------------------------------------------------------------------ */
     const scene = new THREE.Scene();
     scene.background = null;
-    
-    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
     camera.position.set(0, 0, 5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.1;
     container.appendChild(renderer.domElement);
 
-    // Studio Environment
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    // Studio lighting
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
     dirLight.position.set(2, 3, 4);
     scene.add(dirLight);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    fillLight.position.set(-2, -1, -3);
+    scene.add(fillLight);
 
+    /* ------------------------------------------------------------------ */
+    /*  Controls                                                          */
+    /* ------------------------------------------------------------------ */
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
+    controls.dampingFactor = 0.06;
+    controls.screenSpacePanning = true;
     controls.listenToKeyEvents(window);
-    
-    // FIXED: A goes left, D goes right relative to the camera
     controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
-    controls.keyPanSpeed = 20; // Adjust speed
+    controls.keyPanSpeed = 20;
+    controls.minDistance = 0.01;
+    controls.maxDistance = 100000;
 
+    // Q / E free-look zoom along camera forward
     document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       const moveSpeed = 0.08;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
-      if (e.code === 'KeyE') { camera.position.add(forward.multiplyScalar(moveSpeed)); controls.target.add(forward.multiplyScalar(moveSpeed)); }
-      if (e.code === 'KeyQ') { camera.position.sub(forward.multiplyScalar(moveSpeed)); controls.target.sub(forward.multiplyScalar(moveSpeed)); }
+      if (e.code === 'KeyE') { camera.position.addScaledVector(forward,  moveSpeed); controls.target.addScaledVector(forward,  moveSpeed); }
+      if (e.code === 'KeyQ') { camera.position.addScaledVector(forward, -moveSpeed); controls.target.addScaledVector(forward, -moveSpeed); }
     });
 
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
+    /* ------------------------------------------------------------------ */
+    /*  Resize handling                                                   */
+    /* ------------------------------------------------------------------ */
+    let containerReady = false;
+    let needsFit = false;
+    let unionBox = new THREE.Box3();
 
-    const loadedModels = {};
-    let loadedCount = 0;
+    function sizeRenderer() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (!w || !h) return false;
 
-    systems.forEach(system => {
-      loader.load(`assets/models/${system.file}`, (gltf) => {
-        const model = gltf.scene;
-        
-        model.traverse((child) => {
-          if (child.isMesh) {
-            child.material = new THREE.MeshStandardMaterial({
-              color: new THREE.Color(system.color),
-              roughness: 0.4,
-              metalness: 0.1,
-              transparent: true,
-              opacity: 0.9
-            });
-            child.userData.originalColor = new THREE.Color(system.color);
-          }
-        });
-
-        loadedModels[system.id] = model;
-        scene.add(model);
-
-        loadedCount++;
-        if (loadedCount === systems.length) finishLoading();
-      }, 
-      (xhr) => {
-        if (xhr.total > 0 && loadingText) {
-          const percent = Math.round((xhr.loaded / xhr.total) * 100);
-          loadingText.textContent = `Loading ${system.label}… ${percent}%`;
-        }
-      }, 
-      (error) => {
-        console.warn(`Missing file: ${system.file}`, error);
-        loadedCount++;
-        if (loadedCount === systems.length) finishLoading();
-      });
-    });
-
-    function finishLoading() {
-      document.getElementById('loading').classList.add('hidden');
-      
-      const box = new THREE.Box3();
-      Object.values(loadedModels).forEach(m => box.expandByObject(m));
-      if (box.isEmpty()) return;
-      
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      
-      controls.target.copy(center);
-      camera.position.set(center.x, center.y, center.z + maxDim * 2);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(w, h);          // also updates canvas CSS size
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      containerReady = true;
+      return true;
+    }
+
+    const ro = new ResizeObserver(() => {
+      sizeRenderer();
+      if (needsFit && !unionBox.isEmpty()) {
+        fitCameraToBox(unionBox);
+        needsFit = false;
+      }
+    });
+    ro.observe(container);
+    sizeRenderer();
+
+    /* ------------------------------------------------------------------ */
+    /*  Camera fit helper                                                 */
+    /* ------------------------------------------------------------------ */
+    function fitCameraToBox(box, padding = 1.08) {
+      if (box.isEmpty()) return;
+
+      const size   = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+
+      const vFov = THREE.MathUtils.degToRad(camera.fov);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+
+      const fitHeightDist = (size.y / 2) / Math.tan(vFov / 2);
+      const fitWidthDist  = (size.x / 2) / Math.tan(hFov / 2);
+      const distance      = Math.max(fitHeightDist, fitWidthDist) * padding;
+
+      // Slight 3/4 angle so the model reads as 3D
+      const dir = new THREE.Vector3(0.28, 0.10, 1).normalize();
+      camera.position.copy(center).addScaledVector(dir, distance);
+
+      // Generous near/far so mm-scale and m-scale models both work
+      camera.near = Math.max(distance / 1000, 0.0001);
+      camera.far  = distance * 200;
+      camera.updateProjectionMatrix();
+
+      controls.target.copy(center);
+      controls.minDistance = Math.max(distance * 0.02, 0.001);
+      controls.maxDistance = distance * 20;
       controls.update();
     }
 
-    // Toggles
+    /* ------------------------------------------------------------------ */
+    /*  Loaders                                                           */
+    /* ------------------------------------------------------------------ */
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
+    const loadedModels = {};   // id -> THREE.Group
+    let loadedCount = 0;
+    let anyLoaded = false;
+
+    function tagMesh(mesh, system) {
+      mesh.userData.systemId    = system.id;
+      mesh.userData.systemLabel = system.label;
+    }
+
+    systems.forEach(system => {
+      loader.load(
+        `assets/models/${system.file}`,
+        (gltf) => {
+          const model = gltf.scene;
+
+          model.traverse((child) => {
+            if (!child.isMesh) return;
+            child.material = new THREE.MeshStandardMaterial({
+              color: new THREE.Color(system.color),
+              roughness: 0.45,
+              metalness: 0.08,
+              transparent: true,
+              opacity: 0.94
+            });
+            child.userData.originalEmissive = 0x000000;
+            tagMesh(child, system);
+          });
+
+          model.visible = system.defaultOn !== false;
+          loadedModels[system.id] = model;
+          scene.add(model);
+          anyLoaded = true;
+
+          loadedCount++;
+          if (loadedCount === systems.length) finishLoading();
+        },
+        (xhr) => {
+          if (xhr.total > 0 && loadingText) {
+            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+            loadingText.textContent = `Loading ${system.label}… ${percent}%`;
+          }
+        },
+        (error) => {
+          console.warn(`Missing file: ${system.file}`, error);
+          // disable this system's toggle
+          const cb = toggleContainer.querySelector(`input[data-system="${system.id}"]`);
+          if (cb) {
+            cb.disabled = true;
+            cb.checked = false;
+            const label = cb.closest('.toggle-row')?.querySelector('.toggle-label');
+            if (label && !label.textContent.includes('(missing)')) label.textContent += ' (missing)';
+          }
+          loadedCount++;
+          if (loadedCount === systems.length) finishLoading();
+        }
+      );
+    });
+
+    /* ------------------------------------------------------------------ */
+    /*  Toggles                                                           */
+    /* ------------------------------------------------------------------ */
     systems.forEach(system => {
       const row = document.createElement('div');
       row.className = 'toggle-row';
       row.innerHTML = `
         <span class="toggle-label">
-          <span class="toggle-dot" style="background-color: ${system.color}"></span>
+          <span class="toggle-dot" style="background-color:${system.color}"></span>
           ${system.label}
         </span>
         <label class="toggle-switch">
-          <input type="checkbox" data-system="${system.id}" checked>
+          <input type="checkbox" data-system="${system.id}" ${system.defaultOn !== false ? 'checked' : ''}>
           <span class="slider"></span>
         </label>
       `;
@@ -270,84 +490,256 @@
     });
 
     toggleContainer.addEventListener('change', (e) => {
-      if (e.target.tagName === 'INPUT') {
-        const systemId = e.target.dataset.system;
-        if (loadedModels[systemId]) loadedModels[systemId].visible = e.target.checked;
-      }
+      if (e.target.tagName !== 'INPUT' || e.target.disabled) return;
+      const systemId = e.target.dataset.system;
+      if (loadedModels[systemId]) loadedModels[systemId].visible = e.target.checked;
+      clearHighlight();
+      infoPanel.classList.remove('visible');
+      rebuildPickables();
     });
 
-    // Raycaster
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    let lastHighlighted = null;
+    /* ------------------------------------------------------------------ */
+    /*  Finish loading & fit                                              */
+    /* ------------------------------------------------------------------ */
+    function finishLoading() {
+      document.getElementById('loading').classList.add('hidden');
 
-    renderer.domElement.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return; 
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      
-      const visibleMeshes = [];
-      Object.values(loadedModels).forEach(model => {
-        if (model.visible) {
-          model.traverse(child => { if (child.isMesh) visibleMeshes.push(child); });
-        }
-      });
-
-      const intersects = raycaster.intersectObjects(visibleMeshes, false);
-      
-      if (lastHighlighted) { lastHighlighted.material.emissive.setHex(0x000000); lastHighlighted = null; }
-
-      if (intersects.length > 0) {
-        const clickedMesh = intersects[0].object;
-        lastHighlighted = clickedMesh;
-        clickedMesh.material.emissive.setHex(0x444444);
-        
-        const cleanName = (clickedMesh.name || clickedMesh.parent.name || 'Unknown').replace(/_/g, ' ').toLowerCase();
-        
-        let matchedData = null;
-        for (const [key, data] of Object.entries(mlsData)) {
-          if (cleanName.includes(key)) { matchedData = data; break; }
-        }
-        
-        infoTitle.textContent = cleanName.replace(/\b\w/g, l => l.toUpperCase());
-        
-        if (matchedData) {
-          infoType.textContent = matchedData.type;
-          infoDesc.innerHTML = matchedData.inMls; // Uses innerHTML for the bullet points
-          infoMlsLink.href = matchedData.link;
-          infoMlsLink.textContent = `Study ${matchedData.linkText} →`;
-          infoMlsLink.style.display = 'inline-block';
-        } else {
-          infoType.textContent = 'Anatomical Structure';
-          infoDesc.innerHTML = '<p>Click on a major organ to see its MLS correlation.</p>';
-          infoMlsLink.style.display = 'none';
-        }
-        infoPanel.classList.add('visible');
-      } else {
-        infoPanel.classList.remove('visible');
+      if (!anyLoaded) {
+        loadingText.textContent = 'No anatomical models could be loaded.';
+        return;
       }
+
+      // Compute union box across all visible-or-not models
+      unionBox = new THREE.Box3();
+      Object.values(loadedModels).forEach(m => unionBox.expandByObject(m));
+
+      if (unionBox.isEmpty()) return;
+
+      rebuildPickables();
+
+      // If ResizeObserver already reported a size, fit now. Otherwise
+      // the observer will fit on its first meaningful report.
+      needsFit = true;
+      if (containerReady) {
+        fitCameraToBox(unionBox);
+        needsFit = false;
+      }
+    }
+
+    fitBtn.addEventListener('click', () => {
+      const box = new THREE.Box3();
+      Object.values(loadedModels).forEach(m => { if (m.visible) box.expandByObject(m); });
+      fitCameraToBox(box.isEmpty() ? unionBox : box);
+    });
+
+    /* ------------------------------------------------------------------ */
+    /*  Raycasting / picking                                              */
+    /* ------------------------------------------------------------------ */
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pickables = [];
+    let lastHighlighted = null;
+    let pointerDownAt = null;
+
+    function rebuildPickables() {
+      pickables = [];
+      Object.values(loadedModels).forEach(model => {
+        if (!model.visible) return;
+        model.traverse(c => { if (c.isMesh) pickables.push(c); });
+      });
+    }
+
+    function clearHighlight() {
+      if (lastHighlighted && lastHighlighted.material) {
+        lastHighlighted.material.emissive.setHex(0x000000);
+      }
+      lastHighlighted = null;
+    }
+
+    function highlightMesh(mesh) {
+      clearHighlight();
+      lastHighlighted = mesh;
+      if (mesh.material) mesh.material.emissive.setHex(0x333333);
+    }
+
+    /* --- name normalisation --- */
+    function normalizeKey(rawName) {
+      return String(rawName || '')
+        .replace(/\.\d+$/g, '')
+        .replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '')
+        .replace(/[_\s-]+/g, ' ')
+        .replace(/\b[rl]\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    }
+
+    function prettyName(rawName) {
+      let n = String(rawName || '').replace(/\.\d+$/g, '');
+      n = n.replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '');
+      n = n.replace(/_R\b/g, ' (Right)').replace(/_L\b/g, ' (Left)');
+      n = n.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+      return n.replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    /* --- data lookup with inheritance + fallback --- */
+    function findData(mesh) {
+      const rawKey = mesh.name || mesh.parent?.name || '';
+      const key = normalizeKey(rawKey);
+      const displayName = prettyName(rawKey) || 'Unknown structure';
+
+      if (key) {
+        // 1) exact
+        if (mlsData[key]) return { data: mlsData[key], displayName };
+
+        // 2) whole-word prefix / interior match, longest wins
+        let bestKey = null;
+        for (const k of Object.keys(mlsData)) {
+          if (key === k) continue;
+          if (key.startsWith(k + ' ') || key.endsWith(' ' + k) || key.includes(' ' + k + ' ')) {
+            if (!bestKey || k.length > bestKey.length) bestKey = k;
+          }
+        }
+        if (bestKey) return { data: mlsData[bestKey], displayName };
+
+        // 3) first word
+        const firstWord = key.split(' ')[0];
+        if (mlsData[firstWord]) return { data: mlsData[firstWord], displayName };
+
+        // 4) any word
+        for (const word of key.split(' ')) {
+          if (mlsData[word]) return { data: mlsData[word], displayName };
+        }
+      }
+
+      // 5) system fallback — no click is ever empty
+      const sysId = mesh.userData.systemId;
+      const fb = sysId && systemFallback[sysId];
+      if (fb) {
+        return {
+          data: { ...fb, type: fb.type || (mesh.userData.systemLabel || 'Anatomy') },
+          displayName,
+          isFallback: true
+        };
+      }
+
+      return {
+        data: {
+          type: mesh.userData.systemLabel || 'Anatomical Structure',
+          function: 'This structure belongs to the ' + (mesh.userData.systemLabel || 'anatomy') + ' layer. Rotate the model and toggle systems in the sidebar to explore neighbouring structures.',
+          labTests: ['Correlated lab tests appear for major organs — click a nearby organ to see them.'],
+          clinical: ['Clinical correlation not yet curated for this structure.'],
+          examTip: 'Use the system toggles to isolate organs, then click an organ to read its MLS profile.'
+        },
+        displayName,
+        isFallback: true
+      };
+    }
+
+    /* --- render --- */
+    function renderInfoPanel(displayName, payload) {
+      const { data } = payload;
+      infoTitle.textContent = displayName;
+      infoType.textContent = data.type || 'Anatomical Structure';
+
+      let html = '';
+
+      if (data.function) {
+        html += `<div class="info-block"><h4>Function</h4><p>${escapeHtml(data.function)}</p></div>`;
+      }
+      if (data.labTests?.length) {
+        html += `<div class="info-block"><h4>Laboratory Tests</h4><ul>${data.labTests.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`;
+      }
+      if (data.clinical?.length) {
+        html += `<div class="info-block"><h4>Clinical Correlations</h4><ul>${data.clinical.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul></div>`;
+      }
+      if (data.examTip) {
+        html += `<div class="info-block info-tip"><h4>MTLE Exam Tip</h4><p>${escapeHtml(data.examTip)}</p></div>`;
+      }
+      // legacy inMls support
+      if (data.inMls) {
+        html += `<div class="info-block">${data.inMls}</div>`;
+      }
+      if (!html) {
+        html = `<div class="info-block"><p>No detailed profile yet for this structure.</p></div>`;
+      }
+      infoDesc.innerHTML = html;
+
+      if (data.link) {
+        infoMlsLink.href = data.link;
+        infoMlsLink.textContent = `Study ${data.linkText || 'related course'} →`;
+        infoMlsLink.style.display = 'inline-block';
+      } else {
+        infoMlsLink.style.display = 'none';
+      }
+
+      infoPanel.classList.add('visible');
+
+      // optional analytics hook
+      if (typeof window.track === 'function') {
+        try {
+          window.track('anatomy_structure_viewed', {
+            mesh: displayName,
+            system: data.type || '',
+            curated: !payload.isFallback
+          });
+        } catch (_) { /* noop */ }
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    /* --- pointer handling (drag vs click) --- */
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      pointerDownAt = { x: e.clientX, y: e.clientY };
+    });
+
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      if (e.button !== 0 || !pointerDownAt) return;
+      const dx = e.clientX - pointerDownAt.x;
+      const dy = e.clientY - pointerDownAt.y;
+      pointerDownAt = null;
+      if (Math.hypot(dx, dy) > 5) return;   // treated as a drag
+
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(pickables, false);
+
+      if (!hits.length) {
+        clearHighlight();
+        infoPanel.classList.remove('visible');
+        return;
+      }
+
+      const mesh = hits[0].object;
+      highlightMesh(mesh);
+      const payload = findData(mesh);
+      renderInfoPanel(payload.displayName, payload);
     });
 
     document.getElementById('close-info').addEventListener('click', () => {
       infoPanel.classList.remove('visible');
-      if (lastHighlighted) { lastHighlighted.material.emissive.setHex(0x000000); lastHighlighted = null; }
+      clearHighlight();
     });
 
+    /* ------------------------------------------------------------------ */
+    /*  Render loop                                                       */
+    /* ------------------------------------------------------------------ */
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
       renderer.render(scene, camera);
     }
     animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    });
   </script>
 </body>
 </html>
