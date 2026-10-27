@@ -19,7 +19,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="anatomy-data.js"></script>
-  <script src="organ-data.js"></script> <!-- NEW: Organ data -->
+  <script src="organ-data.js"></script>
   <script src="auth.js"></script>
   
   <style>
@@ -457,7 +457,7 @@
       .system-panel { width: calc(100% - 40px); max-height: 30vh; }
       .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; right: 20px; max-height: 45vh; }
       .organ-header-bar { top: 10px; }
-      .organ-title-badge { display: none; } /* Hide title on mobile to save space */
+      .organ-title-badge { display: none; }
     }
   </style>
 </head>
@@ -646,7 +646,6 @@
     let lastHighlighted = null;
     let pointerDownAt = null;
     let containerReady = false;
-    let needsFit = false;
     let unionBox = new THREE.Box3();
 
     // Systems Config
@@ -728,7 +727,6 @@
     let loadedCount = 0;
     function loadFullBody() {
       loadedCount = 0;
-      anyLoaded = false;
       systems.forEach(system => {
         loader.load(
           `assets/models/${system.file}`,
@@ -747,7 +745,7 @@
             model.visible = system.defaultOn !== false;
             loadedBodyModels[system.id] = model;
             scene.add(model);
-            anyLoaded = true;
+            
             loadedCount++;
             if (loadedCount === systems.length) finishFullBodyLoad();
           },
@@ -792,13 +790,16 @@
       organLatinEl.textContent = organ.latin;
       organIconEl.textContent = organ.icon;
       infoPanel.classList.remove('visible');
-      hotspotsLayer.innerHTML = '';
       
+      hotspotsLayer.innerHTML = '';
+      organHotspots = [];
+      pickables = [];
+
       // Hide body
       Object.values(loadedBodyModels).forEach(m => m.visible = false);
       clearHighlight();
 
-      // Load Organ GLB (assumes files are named e.g. heart.glb in assets/models/organs/)
+      // Load Organ GLB
       loader.load(`assets/models/organs/${organId}.glb`, (gltf) => {
         activeOrganGroup = gltf.scene;
         
@@ -843,7 +844,9 @@
       organHeaderBar.classList.remove('visible');
       systemPanel.classList.remove('hide');
       infoPanel.classList.remove('visible');
+      
       hotspotsLayer.innerHTML = '';
+      organHotspots = [];
       pickables = [];
       
       if (activeOrganGroup) {
@@ -852,11 +855,9 @@
       }
       
       // Restore body visibility
-      Object.values(loadedBodyModels).forEach(m => {
-        const sysId = m.children[0]?.userData.systemId || m.name.replace('.glb','');
-        // Simple check: if the toggle is checked, show it
+      Object.entries(loadedBodyModels).forEach(([sysId, model]) => {
         const toggle = toggleContainer.querySelector(`input[data-system="${sysId}"]`);
-        if (toggle && toggle.checked) m.visible = true;
+        if (toggle) model.visible = toggle.checked;
       });
 
       rebuildFullBodyPickables();
@@ -865,9 +866,6 @@
 
     // --- HOTSPOT LOGIC ---
     function generateHotspots(organ, group) {
-      // We iterate through the organ's parts data. 
-      // If a mesh matches a part name, we create a hotspot at its center.
-      
       group.traverse(child => {
         if (!child.isMesh) return;
         
@@ -885,7 +883,8 @@
           // Calculate center
           const box = new THREE.Box3().setFromObject(child);
           const center = box.getCenter(new THREE.Vector3());
-          
+          group.worldToLocal(center); // Store in local space
+
           // Create HTML hotspot element
           const el = document.createElement('div');
           el.className = 'hotspot';
@@ -912,8 +911,8 @@
       organHotspots.forEach(spot => {
         // Project 3D center to 2D screen
         const vector = spot.center.clone();
-        activeOrganGroup.localToWorld(vector);
-        vector.project(camera);
+        activeOrganGroup.localToWorld(vector); // Local -> World
+        vector.project(camera); // World -> NDC
 
         // Check if behind camera
         if (vector.z > 1) {
@@ -939,7 +938,7 @@
     // --- INFO PANEL LOGIC ---
     function renderOrganInfoPanel(organ) {
       infoTitle.textContent = organ.name;
-      infoType.textContent = organ.system || 'Anatomy';
+      infoType.textContent = 'Organ Focus';
       
       organMeta.style.display = 'grid';
       document.getElementById('meta-location').textContent = organ.location || '-';
@@ -982,7 +981,7 @@
 
       infoTitle.textContent = part.name;
       infoType.textContent = `${organ.name} · Structure`;
-      organMeta.style.display = 'none'; // Hide organ meta for specific parts
+      organMeta.style.display = 'none';
       
       infoDesc.innerHTML = `
         <div class="info-block"><h4>Description</h4><p>${part.desc}</p></div>
@@ -1117,7 +1116,6 @@
 
           if (matchedPartId) {
             renderPartInfo(organ, matchedPartId);
-            // Highlight hotspot
             const spot = organHotspots.find(h => h.partId === matchedPartId);
             if (spot) highlightHotspot(spot.element);
           }
