@@ -12,9 +12,9 @@
   <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: #0f1a26; color: #e8eef5; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    html, body { height: 100%; width: 100%; overflow: hidden; background: #0f1a26; }
+    body { font-family: 'Inter', sans-serif; color: #e8eef5; display: flex; flex-direction: column; }
     
-    /* Header */
     header { z-index: 100; background: rgba(15,26,38,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; height: 70px; flex-shrink: 0; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #8ab4d9; text-decoration: none; }
     .logo span { font-size: 0.75rem; color: #6b8ba3; display: block; text-transform: uppercase; letter-spacing: 0.2em; margin-top: -0.2rem; }
@@ -23,19 +23,17 @@
     .nav-links a:hover { color: #e8eef5; }
     .nav-links a.active { color: #f6c445; }
     
-    /* Main Container */
     .main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
     #canvas-container { flex: 1; width: 100%; height: 100%; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
     
-    /* System Toggles (Left Sidebar) */
-    .system-panel { position: absolute; top: 20px; left: 20px; background: rgba(26,43,61,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; width: 260px; max-height: calc(100% - 40px); overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    /* Left Sidebar */
+    .system-panel { position: absolute; top: 20px; left: 20px; background: rgba(26,43,61,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; width: 280px; max-height: calc(100% - 40px); overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .system-panel h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: #8ab4d9; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
     .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .toggle-row:last-child { border-bottom: none; }
     .toggle-label { font-size: 0.9rem; color: #e8eef5; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
     .toggle-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     
-    /* Toggle Switch CSS */
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5a6b; transition: .4s; border-radius: 22px; }
@@ -43,7 +41,7 @@
     input:checked + .slider { background-color: #8ab4d9; }
     input:checked + .slider:before { transform: translateX(18px); }
     
-    /* Info Panel (Right Side) */
+    /* Right Info Panel */
     .info-panel { position: absolute; top: 20px; right: 20px; background: rgba(26,43,61,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; width: 320px; max-height: calc(100% - 40px); overflow-y: auto; display: none; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .info-panel.visible { display: block; animation: slideIn 0.3s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
@@ -56,22 +54,13 @@
     .info-panel .mls-link:hover { background: #2d4a6b; transform: translateY(-2px); }
     #close-info { float: right; background: none; border: none; color: #8ab4d9; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
     
-    /* Help / Instructions */
     .instructions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(15,26,38,0.8); backdrop-filter: blur(4px); color: #b8c5d1; font-size: 0.85rem; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); pointer-events: none; display: flex; gap: 1rem; align-items: center; }
     .key-badge { background: #2d4a6b; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
 
-    /* Loading */
     #loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1a26; z-index: 50; transition: opacity 0.5s; }
     #loading.hidden { opacity: 0; pointer-events: none; }
     .spinner { width: 40px; height: 40px; border: 4px solid rgba(138,180,217,0.3); border-top-color: #8ab4d9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 768px) {
-      .system-panel { width: calc(100% - 40px); max-height: 30vh; top: 10px; left: 10px; }
-      .info-panel { width: calc(100% - 40px); top: auto; bottom: 60px; left: 10px; max-height: 40vh; }
-      .instructions { display: none; }
-      .nav-links { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -89,28 +78,24 @@
   <main class="main-container">
     <div id="loading">
       <div class="spinner"></div>
-      <p>Loading anatomy models…</p>
+      <p>Loading anatomical systems…</p>
     </div>
     
     <div id="canvas-container"></div>
     
-    <!-- Left Sidebar -->
     <div class="system-panel">
       <h3>Systems & Layers</h3>
       <div id="system-toggles"></div>
     </div>
     
-    <!-- Right Info Panel -->
     <div class="info-panel" id="info-panel">
       <button id="close-info">×</button>
       <h2 id="info-title">Structure Name</h2>
       <span class="type" id="info-type">System</span>
-      
       <div class="mls-correlation">
         <h4>In MLS</h4>
         <p id="info-desc" style="margin-bottom: 0;"></p>
       </div>
-      
       <a href="#" class="mls-link" id="info-mls-link">View related course →</a>
     </div>
 
@@ -130,11 +115,12 @@
     }
   </script>
 
-      <script type="module">
+  <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const container = document.getElementById('canvas-container');
     const infoPanel = document.getElementById('info-panel');
@@ -151,36 +137,50 @@
       'kidney': { type: 'Urinary', inMls: 'Urinalysis and BUN assess renal function.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis' },
       'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis are vital.', link: 'course-microbiology.html', linkText: 'Microbiology' },
       'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
-      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
+      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
+      'spleen': { type: 'Lymphoid', inMls: 'The spleen filters blood and removes old RBCs. Splenectomy leads to Howell-Jolly bodies on a peripheral smear.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
     };
 
+    // These must match the exact filenames you exported from Blender
+    const systems = [
+      { id: 'skeleton', label: 'Skeletal System', file: 'skeleton.glb', color: '#e8dcc4' },
+      { id: 'muscles', label: 'Muscular System', file: 'muscles.glb', color: '#c0392b' },
+      { id: 'organs', label: 'Internal Organs', file: 'organs.glb', color: '#e67e22' },
+      { id: 'nerves', label: 'Nervous System', file: 'nerves.glb', color: '#f6c445' },
+      { id: 'circulatory', label: 'Circulatory System', file: 'circulatory.glb', color: '#e74c3c' },
+      { id: 'lymphoid', label: 'Lymphoid Organs', file: 'lymphoid.glb', color: '#27ae60' }
+    ];
+
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0f1a26');
+    scene.background = null;
     
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    camera.position.set(0, 1.5, 5);
+    camera.position.set(0, 0, 5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 2.0));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 3.0);
+    // Studio Environment for premium reflections
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
     dirLight.position.set(2, 3, 4);
     scene.add(dirLight);
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 2.0);
-    dirLight2.position.set(-2, 1, -3);
-    scene.add(dirLight2);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
+    controls.dampingFactor = 0.05;
     controls.listenToKeyEvents(window);
     controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
+    controls.keyPanSpeed = 20;
 
     document.addEventListener('keydown', (e) => {
-      const moveSpeed = 0.1;
+      const moveSpeed = 0.08;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
       if (e.code === 'KeyE') { camera.position.add(forward.multiplyScalar(moveSpeed)); controls.target.add(forward.multiplyScalar(moveSpeed)); }
@@ -192,58 +192,87 @@
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-    let bodyModel = null;
+    const loadedModels = {};
+    let loadedCount = 0;
 
-    loader.load('assets/models/body.glb', (gltf) => {
-      bodyModel = gltf.scene;
-      
-      bodyModel.traverse((child) => {
-        if (child.isMesh) {
-          child.material.transparent = true;
-          child.material.opacity = 0.95;
+    systems.forEach(system => {
+      loader.load(`assets/models/${system.file}`, (gltf) => {
+        const model = gltf.scene;
+        
+        model.traverse((child) => {
+          if (child.isMesh) {
+            child.material = new THREE.MeshStandardMaterial({
+              color: new THREE.Color(system.color),
+              roughness: 0.4,
+              metalness: 0.1,
+              transparent: true,
+              opacity: 0.9
+            });
+            child.userData.originalColor = new THREE.Color(system.color);
+          }
+        });
+
+        loadedModels[system.id] = model;
+        scene.add(model);
+
+        loadedCount++;
+        if (loadedCount === systems.length) finishLoading();
+      }, 
+      (xhr) => {
+        if (xhr.total > 0 && loadingText) {
+          const percent = Math.round((xhr.loaded / xhr.total) * 100);
+          loadingText.textContent = `Loading ${system.label}… ${percent}%`;
         }
+      }, 
+      (error) => {
+        console.warn(`Missing file: ${system.file}`, error);
+        loadedCount++;
+        if (loadedCount === systems.length) finishLoading();
       });
-      
-      scene.add(bodyModel);
+    });
+
+    function finishLoading() {
       document.getElementById('loading').classList.add('hidden');
       
-      const box = new THREE.Box3().setFromObject(bodyModel);
+      const box = new THREE.Box3();
+      Object.values(loadedModels).forEach(m => box.expandByObject(m));
+      if (box.isEmpty()) return;
+      
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
       const maxDim = Math.max(size.x, size.y, size.z);
-      const distance = maxDim * 2.5; 
       
       controls.target.copy(center);
-      camera.position.set(center.x, center.y, center.z + distance);
+      camera.position.set(center.x, center.y, center.z + maxDim * 2);
       camera.updateProjectionMatrix();
       controls.update();
+    }
 
-    }, 
-    (xhr) => {
-      if (xhr.total > 0 && loadingText) {
-        const percent = Math.round((xhr.loaded / xhr.total) * 100);
-        loadingText.textContent = `Loading anatomy… ${percent}%`;
-      }
-    }, 
-    (error) => {
-      console.error('Error loading body.glb:', error);
-      if (loadingText) loadingText.textContent = 'Failed to load model. Check console (F12).';
-    });
-
-    // Sidebar Setup
-    toggleContainer.innerHTML = `
-      <div class="toggle-row">
-        <span class="toggle-label">Human Body Model</span>
+    // Toggles UI
+    systems.forEach(system => {
+      const row = document.createElement('div');
+      row.className = 'toggle-row';
+      row.innerHTML = `
+        <span class="toggle-label">
+          <span class="toggle-dot" style="background-color: ${system.color}"></span>
+          ${system.label}
+        </span>
         <label class="toggle-switch">
-          <input type="checkbox" checked id="toggle-body">
+          <input type="checkbox" data-system="${system.id}" checked>
           <span class="slider"></span>
         </label>
-      </div>
-    `;
-    document.getElementById('toggle-body').addEventListener('change', (e) => {
-      if (bodyModel) bodyModel.visible = e.target.checked;
+      `;
+      toggleContainer.appendChild(row);
     });
 
+    toggleContainer.addEventListener('change', (e) => {
+      if (e.target.tagName === 'INPUT') {
+        const systemId = e.target.dataset.system;
+        if (loadedModels[systemId]) loadedModels[systemId].visible = e.target.checked;
+      }
+    });
+
+    // Raycaster
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let lastHighlighted = null;
@@ -255,29 +284,30 @@
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
-      if (!bodyModel) return;
       
-      const intersects = raycaster.intersectObjects(bodyModel.children, true);
+      const visibleMeshes = [];
+      Object.values(loadedModels).forEach(model => {
+        if (model.visible) {
+          model.traverse(child => { if (child.isMesh) visibleMeshes.push(child); });
+        }
+      });
+
+      const intersects = raycaster.intersectObjects(visibleMeshes, false);
       
-      if (lastHighlighted) {
-        lastHighlighted.material.emissive.setHex(0x000000);
-        lastHighlighted = null;
-      }
+      if (lastHighlighted) { lastHighlighted.material.emissive.setHex(0x000000); lastHighlighted = null; }
 
       if (intersects.length > 0) {
         const clickedMesh = intersects[0].object;
         lastHighlighted = clickedMesh;
-        clickedMesh.material.emissive.setHex(0x333333);
+        clickedMesh.material.emissive.setHex(0x444444);
         
-        const rawName = clickedMesh.name || clickedMesh.parent.name || 'Unknown';
-        const cleanName = rawName.replace(/_/g, ' ').toLowerCase();
-        
+        const cleanName = (clickedMesh.name || clickedMesh.parent.name || 'Unknown').replace(/_/g, ' ').toLowerCase();
         let matchedData = null;
         for (const [key, data] of Object.entries(mlsData)) {
           if (cleanName.includes(key)) { matchedData = data; break; }
         }
         
-        infoTitle.textContent = rawName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        infoTitle.textContent = cleanName.replace(/\b\w/g, l => l.toUpperCase());
         
         if (matchedData) {
           infoType.textContent = matchedData.type;
