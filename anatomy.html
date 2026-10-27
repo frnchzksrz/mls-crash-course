@@ -19,12 +19,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="anatomy-data.js"></script>
+  <script src="organ-data.js"></script> <!-- NEW: Organ data -->
   <script src="auth.js"></script>
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* FORCE the page to lock to the screen. No scrollbars, no cut-off. */
     html, body {
       height: 100%;
       width: 100%;
@@ -36,20 +36,16 @@
     body {
       position: relative;
       font-family: 'Inter', sans-serif;
-      /* Default Light Mode */
       background: #ffffff;
       color: #1e1e1e;
     }
 
-    /* ---------- Standard Navbar (Absolute Positioned) ---------- */
+    /* ---------- Standard Navbar ---------- */
     header {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 70px;
       z-index: 100;
-      /* Light Mode */
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(30,59,90,0.08);
@@ -112,13 +108,10 @@
     .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
 
-    /* ---------- Main Container (Absolute Positioned) ---------- */
+    /* ---------- Main Container ---------- */
     .main-container {
       position: absolute;
-      top: 70px;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 70px; left: 0; right: 0; bottom: 0;
       overflow: hidden;
     }
 
@@ -130,11 +123,123 @@
     }
     #canvas-container canvas { display: block; }
 
-    /* Sidebar */
-    .system-panel {
+    /* ---------- Top Organ Header (Back Button) ---------- */
+    .organ-header-bar {
       position: absolute;
       top: 20px;
-      left: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      align-items: center;
+      gap: 1rem;
+      z-index: 20;
+    }
+    .organ-header-bar.visible { display: flex; }
+    
+    .back-to-body {
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(30,59,90,0.1);
+      color: #1e3b5a;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+    .back-to-body:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    
+    .organ-title-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1e3b5a;
+      background: rgba(255,255,255,0.6);
+      padding: 6px 20px;
+      border-radius: 30px;
+      backdrop-filter: blur(5px);
+    }
+    .organ-title-badge .icon { font-size: 1.6rem; }
+    .organ-title-badge .latin { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #5c7c9e; display: block; font-style: italic; margin-top: -4px; font-weight: 400;}
+
+    /* ---------- Hotspots ---------- */
+    #hotspots-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+      overflow: hidden;
+    }
+    .hotspot {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      margin-top: -12px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px solid #1e3b5a;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      pointer-events: auto;
+      transform: translateZ(0);
+      transition: transform 0.15s, background 0.15s;
+    }
+    .hotspot::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid rgba(30,59,90,0.3);
+      animation: pulse 2s infinite;
+    }
+    .hotspot:hover {
+      transform: scale(1.2);
+      background: #f6c445;
+      border-color: #fff;
+    }
+    .hotspot.active {
+      background: #f6c445;
+      border-color: #fff;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    
+    .hotspot-label {
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: 12px;
+      background: rgba(15,26,38,0.9);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .hotspot:hover .hotspot-label { opacity: 1; }
+
+    /* ---------- Sidebar (System Panel) ---------- */
+    .system-panel {
+      position: absolute;
+      top: 20px; left: 20px;
       background: rgba(255,255,255,0.95);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(30,59,90,0.1);
@@ -145,8 +250,10 @@
       overflow-y: auto;
       z-index: 10;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      transition: background 0.25s, border-color 0.25s;
+      transition: all 0.3s ease;
     }
+    .system-panel.hide { opacity: 0; pointer-events: none; transform: translateX(-20px); }
+    
     .system-panel h3 {
       font-family: 'Playfair Display', serif;
       font-size: 1rem;
@@ -156,11 +263,10 @@
       letter-spacing: 0.1em;
       border-bottom: 1px solid rgba(30,59,90,0.1);
       padding-bottom: 0.5rem;
-      transition: color 0.25s, border-color 0.25s;
     }
     .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(30,59,90,0.05); }
     .toggle-row:last-child { border-bottom: none; }
-    .toggle-label { font-size: 0.9rem; color: #1e1e1e; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; transition: color 0.25s; }
+    .toggle-label { font-size: 0.9rem; color: #1e1e1e; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
     .toggle-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
     .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -168,7 +274,6 @@
     .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
     input:checked + .slider { background-color: #1e3b5a; }
     input:checked + .slider:before { transform: translateX(18px); }
-    input:disabled + .slider { opacity: 0.35; cursor: not-allowed; }
 
     .panel-actions {
       display: flex;
@@ -176,28 +281,34 @@
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid rgba(30,59,90,0.1);
-      transition: border-color 0.25s;
     }
     .panel-actions button {
       flex: 1;
-      background: #e2e8f0;
-      color: #1e3b5a;
-      border: 1px solid rgba(30,59,90,0.1);
-      border-radius: 8px;
-      padding: 0.5rem 0.6rem;
-      font-family: inherit;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, color 0.25s;
+      background: #e2e8f0; color: #1e3b5a;
+      border: 1px solid rgba(30,59,90,0.1); border-radius: 8px;
+      padding: 0.5rem; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
     }
     .panel-actions button:hover { background: #cbd5e1; }
 
-    /* Info panel */
+    /* Organ Quick Nav */
+    .organ-nav {
+      margin-top: 1.5rem;
+      border-top: 1px solid rgba(30,59,90,0.1);
+      padding-top: 1rem;
+    }
+    .organ-nav h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .organ-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .organ-btn {
+      background: transparent; border: 1px solid rgba(30,59,90,0.1); border-radius: 8px;
+      padding: 0.5rem; font-family: inherit; font-size: 0.8rem; color: #1e3b5a;
+      cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.15s;
+    }
+    .organ-btn:hover { background: #f0f4f8; }
+
+    /* ---------- Info Panel ---------- */
     .info-panel {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 20px; right: 20px;
       background: rgba(255,255,255,0.98);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(30,59,90,0.1);
@@ -209,17 +320,22 @@
       display: none;
       z-index: 10;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      transition: background 0.25s, border-color 0.25s;
+      transition: all 0.25s ease;
     }
     .info-panel.visible { display: block; animation: slideIn 0.25s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-    .info-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #d4a017; margin-bottom: 0.2rem; padding-right: 2rem; transition: color 0.25s; }
-    .info-panel .type { font-size: 0.75rem; color: #5c7c9e; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; transition: color 0.25s; }
+    .info-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #d4a017; margin-bottom: 0.2rem; padding-right: 2rem; }
+    .info-panel .type { font-size: 0.75rem; color: #5c7c9e; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; }
+    
+    .organ-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .meta-item { background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(30,59,90,0.05); }
+    .meta-label { font-size: 0.65rem; text-transform: uppercase; color: #8b8b8b; font-weight: 600; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem; }
+    .meta-value { font-size: 0.85rem; font-weight: 600; color: #1e3b5a; }
 
-    .info-block { background: rgba(30,59,90,0.04); border-left: 3px solid #1e3b5a; padding: 0.85rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.9rem; transition: background 0.25s, border-color 0.25s; }
-    .info-block h4 { font-size: 0.75rem; color: #1e3b5a; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.25s; }
-    .info-block p, .info-block li { font-size: 0.85rem; color: #2c3e50; line-height: 1.55; transition: color 0.25s; }
+    .info-block { background: rgba(30,59,90,0.04); border-left: 3px solid #1e3b5a; padding: 0.85rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.9rem; }
+    .info-block h4 { font-size: 0.75rem; color: #1e3b5a; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .info-block p, .info-block li { font-size: 0.85rem; color: #2c3e50; line-height: 1.55; }
     .info-block ul { padding-left: 1.1rem; margin: 0; }
     .info-block li { margin-bottom: 0.35rem; }
     .info-block li:last-child { margin-bottom: 0; }
@@ -229,43 +345,28 @@
 
     .info-panel .mls-link { display: inline-block; background: #1e3b5a; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s, transform 0.2s; margin-top: 0.25rem; }
     .info-panel .mls-link:hover { background: #162d45; transform: translateY(-2px); }
-    #close-info { float: right; background: none; border: none; color: #5c7c9e; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; transition: color 0.25s; }
+    #close-info { float: right; background: none; border: none; color: #5c7c9e; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
 
-    /* Instructions */
-    .instructions {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255,255,255,0.9);
-      backdrop-filter: blur(4px);
-      color: #5c7c9e;
-      font-size: 0.85rem;
-      padding: 8px 16px;
-      border-radius: 30px;
-      border: 1px solid rgba(30,59,90,0.1);
-      pointer-events: none;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      transition: background 0.25s, color 0.25s, border-color 0.25s;
+    /* Structure List (For Organ View) */
+    .structure-list { margin-top: 1.5rem; border-top: 1px solid rgba(30,59,90,0.1); padding-top: 1rem; }
+    .structure-list h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .structure-item {
+      display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(30,59,90,0.05); cursor: pointer;
     }
-    .key-badge { background: #e2e8f0; color: #1e3b5a; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; transition: background 0.25s, color 0.25s; }
+    .structure-item:hover .struct-name { color: #d4a017; }
+    .struct-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .struct-name { font-size: 0.9rem; font-weight: 600; color: #1e3b5a; transition: color 0.15s; }
+    .struct-desc { font-size: 0.75rem; color: #8b8b8b; line-height: 1.4; margin-top: 2px; }
 
     /* Loading */
     #loading {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      color: #1e3b5a;
-      z-index: 50;
-      transition: opacity 0.5s, background 0.25s, color 0.25s;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #ffffff; color: #1e3b5a; z-index: 50; transition: opacity 0.5s, background 0.25s, color 0.25s;
     }
     #loading.hidden { opacity: 0; pointer-events: none; }
-    .spinner { width: 40px; height: 40px; border: 4px solid rgba(30,59,90,0.3); border-top-color: #1e3b5a; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; transition: border-color 0.25s; }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(30,59,90,0.3); border-top-color: #1e3b5a; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ---------- DARK MODE OVERRIDES ---------- */
@@ -307,9 +408,19 @@
     html[data-theme="dark"] .panel-actions button { background: #1e3b5a; color: #e8eef5; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .panel-actions button:hover { background: #2d4a6b; }
 
+    html[data-theme="dark"] .organ-nav { border-top-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .organ-nav h4 { color: #8ab4d9; }
+    html[data-theme="dark"] .organ-btn { border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
+    html[data-theme="dark"] .organ-btn:hover { background: #23374b; }
+
     html[data-theme="dark"] .info-panel { background: rgba(26,43,61,0.95); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     html[data-theme="dark"] .info-panel h2 { color: #f6c445; }
     html[data-theme="dark"] .info-panel .type { color: #8ab4d9; }
+    
+    html[data-theme="dark"] .meta-item { background: #162536; border-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .meta-label { color: #6b8ba3; }
+    html[data-theme="dark"] .meta-value { color: #e8eef5; }
+
     html[data-theme="dark"] .info-block { background: rgba(138,180,217,0.08); border-left-color: #8ab4d9; }
     html[data-theme="dark"] .info-block h4 { color: #8ab4d9; }
     html[data-theme="dark"] .info-block p, html[data-theme="dark"] .info-block li { color: #e8eef5; }
@@ -317,9 +428,22 @@
     html[data-theme="dark"] .info-block.info-tip h4 { color: #f6c445; }
     html[data-theme="dark"] .info-block.info-tip p { color: #f9e6b5; }
     html[data-theme="dark"] #close-info { color: #8ab4d9; }
+    
+    html[data-theme="dark"] .structure-list { border-top-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .structure-list h4 { color: #8ab4d9; }
+    html[data-theme="dark"] .structure-item { border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .struct-name { color: #e8eef5; }
+    html[data-theme="dark"] .structure-item:hover .struct-name { color: #f6c445; }
+    html[data-theme="dark"] .struct-desc { color: #8b8b8b; }
 
-    html[data-theme="dark"] .instructions { background: rgba(15,26,38,0.8); color: #b8c5d1; border-color: rgba(255,255,255,0.1); }
-    html[data-theme="dark"] .key-badge { background: #2d4a6b; color: #fff; }
+    html[data-theme="dark"] .back-to-body { background: rgba(26,43,61,0.9); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
+    html[data-theme="dark"] .back-to-body:hover { background: #23374b; color: #fff; }
+    html[data-theme="dark"] .organ-title-badge { background: rgba(26,43,61,0.6); color: #8ab4d9; }
+    html[data-theme="dark"] .organ-title-badge .latin { color: #6b8ba3; }
+
+    html[data-theme="dark"] .hotspot { background: rgba(26,43,61,0.9); border-color: #8ab4d9; }
+    html[data-theme="dark"] .hotspot:hover, html[data-theme="dark"] .hotspot.active { background: #f6c445; border-color: #fff; }
+    html[data-theme="dark"] .hotspot::after { border-color: rgba(138,180,217,0.3); }
 
     html[data-theme="dark"] #loading { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] .spinner { border-color: rgba(138,180,217,0.3); border-top-color: #8ab4d9; }
@@ -330,9 +454,10 @@
       .nav-links a { font-size: 0.85rem; }
     }
     @media (max-width: 768px) {
-      .instructions { display: none; }
       .system-panel { width: calc(100% - 40px); max-height: 30vh; }
       .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; right: 20px; max-height: 45vh; }
+      .organ-header-bar { top: 10px; }
+      .organ-title-badge { display: none; } /* Hide title on mobile to save space */
     }
   </style>
 </head>
@@ -374,31 +499,64 @@
 
   <main class="main-container">
     <div id="canvas-container"></div>
+    <div id="hotspots-layer"></div>
 
-    <div id="loading">
-      <div class="spinner"></div>
-      <p>Loading anatomical systems…</p>
+    <!-- Organ Mode UI -->
+    <div class="organ-header-bar" id="organ-header-bar">
+      <button class="back-to-body" id="back-btn">← Back to the body</button>
+      <div class="organ-title-badge" id="organ-title-badge">
+        <span class="icon" id="organ-icon">🫀</span>
+        <div>
+          <div id="organ-name">Heart</div>
+          <div class="latin" id="organ-latin">Cor</div>
+        </div>
+      </div>
     </div>
 
-    <aside class="system-panel">
+    <!-- General Mode Sidebar -->
+    <aside class="system-panel" id="system-panel">
       <h3>Systems &amp; Layers</h3>
       <div id="system-toggles"></div>
       <div class="panel-actions">
         <button id="fit-btn" type="button">Fit view</button>
       </div>
+      
+      <div class="organ-nav">
+        <h4>Explore Specific Organs</h4>
+        <div class="organ-btns" id="organ-nav-btns">
+          <!-- Filled via JS -->
+        </div>
+      </div>
     </aside>
 
+    <!-- Info Panel (Shared) -->
     <aside class="info-panel" id="info-panel">
       <button id="close-info" aria-label="Close">×</button>
       <h2 id="info-title">Structure Name</h2>
       <span class="type" id="info-type">System</span>
+      
+      <!-- Organ-specific meta (hidden by default) -->
+      <div class="organ-meta" id="organ-meta" style="display:none;">
+        <div class="meta-item"><span class="meta-label">Location</span><span class="meta-value" id="meta-location">-</span></div>
+        <div class="meta-item"><span class="meta-label">Size</span><span class="meta-value" id="meta-size">-</span></div>
+        <div class="meta-item"><span class="meta-label">Weight</span><span class="meta-value" id="meta-weight">-</span></div>
+        <div class="meta-item"><span class="meta-label">Tissue</span><span class="meta-value" id="meta-tissue">-</span></div>
+      </div>
+
       <div id="info-desc"></div>
+      
+      <!-- Organ structure list (hidden by default) -->
+      <div class="structure-list" id="structure-list" style="display:none;">
+        <h4>Structures</h4>
+        <div id="structure-items"></div>
+      </div>
+
       <a href="#" class="mls-link" id="info-mls-link">View related course →</a>
     </aside>
 
-    <div class="instructions">
-      <span><span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> to Pan</span>
-      <span><span class="key-badge">Q</span><span class="key-badge">E</span> to Zoom</span>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p>Loading 3D models…</p>
     </div>
   </main>
 
@@ -418,7 +576,9 @@
     import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+    // DOM Elements
     const container     = document.getElementById('canvas-container');
+    const hotspotsLayer = document.getElementById('hotspots-layer');
     const infoPanel     = document.getElementById('info-panel');
     const infoTitle     = document.getElementById('info-title');
     const infoType      = document.getElementById('info-type');
@@ -427,10 +587,69 @@
     const toggleContainer = document.getElementById('system-toggles');
     const loadingText   = document.querySelector('#loading p');
     const fitBtn        = document.getElementById('fit-btn');
+    const systemPanel   = document.getElementById('system-panel');
+    const organNavBtns  = document.getElementById('organ-nav-btns');
+    
+    // Organ UI Elements
+    const organHeaderBar = document.getElementById('organ-header-bar');
+    const backBtn        = document.getElementById('back-btn');
+    const organNameEl    = document.getElementById('organ-name');
+    const organLatinEl   = document.getElementById('organ-latin');
+    const organIconEl    = document.getElementById('organ-icon');
+    const organMeta      = document.getElementById('organ-meta');
+    const structureList  = document.getElementById('structure-list');
+    const structureItems = document.getElementById('structure-items');
 
-    const mlsData       = window.MLS_ANATOMY_DATA     || {};
+    // Data
+    const mlsData        = window.MLS_ANATOMY_DATA     || {};
     const systemFallback = window.MLS_SYSTEM_FALLBACKS || {};
+    const organData      = window.ORGAN_DATA           || {};
 
+    // Scene Setup
+    const scene = new THREE.Scene();
+    scene.background = null;
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
+    camera.position.set(0, 0, 5);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    container.appendChild(renderer.domElement);
+
+    // Lighting
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    dirLight.position.set(2, 3, 4);
+    scene.add(dirLight);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    fillLight.position.set(-2, -1, -3);
+    scene.add(fillLight);
+
+    // Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.screenSpacePanning = true;
+    controls.listenToKeyEvents(window);
+    controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
+    controls.keyPanSpeed = 20;
+
+    // State
+    let mode = 'full-body'; // 'full-body' or 'organ'
+    let activeOrganId = null;
+    let loadedBodyModels = {};
+    let activeOrganGroup = null;
+    let organHotspots = []; // { partId, mesh, element, labelEl }
+    let pickables = [];
+    let lastHighlighted = null;
+    let pointerDownAt = null;
+    let containerReady = false;
+    let needsFit = false;
+    let unionBox = new THREE.Box3();
+
+    // Systems Config
     const systems = [
       { id: 'skeleton',    label: 'Skeletal System',    file: 'skeleton.glb',    color: '#e8dcc4', defaultOn: true  },
       { id: 'muscles',     label: 'Muscular System',    file: 'muscles.glb',     color: '#c0392b', defaultOn: true  },
@@ -440,57 +659,17 @@
       { id: 'lymphoid',    label: 'Lymphoid Organs',    file: 'lymphoid.glb',    color: '#27ae60', defaultOn: true  }
     ];
 
-    const scene = new THREE.Scene();
-    scene.background = null;
+    // Loaders
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
 
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 2000);
-    camera.position.set(0, 0, 5);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
-    container.appendChild(renderer.domElement);
-
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    dirLight.position.set(2, 3, 4);
-    scene.add(dirLight);
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    fillLight.position.set(-2, -1, -3);
-    scene.add(fillLight);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
-    controls.screenSpacePanning = true;
-    controls.listenToKeyEvents(window);
-    controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
-    controls.keyPanSpeed = 20;
-    controls.minDistance = 0.01;
-    controls.maxDistance = 100000;
-
-    document.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      const moveSpeed = 0.08;
-      const forward = new THREE.Vector3();
-      camera.getWorldDirection(forward);
-      if (e.code === 'KeyE') { camera.position.addScaledVector(forward,  moveSpeed); controls.target.addScaledVector(forward,  moveSpeed); }
-      if (e.code === 'KeyQ') { camera.position.addScaledVector(forward, -moveSpeed); controls.target.addScaledVector(forward, -moveSpeed); }
-    });
-
-    let containerReady = false;
-    let needsFit = false;
-    let unionBox = new THREE.Box3();
-
+    // --- INIT & LOADING ---
     function sizeRenderer() {
       const w = container.clientWidth;
       const h = container.clientHeight;
-      if (!w || !h) return false;
-
+      if (!w || !h) return;
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(w, h, false);
       renderer.domElement.style.width = '100%';
@@ -498,360 +677,492 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       containerReady = true;
-      return true;
     }
-
-    const ro = new ResizeObserver(() => {
-      sizeRenderer();
-      if (needsFit && !unionBox.isEmpty()) {
-        fitCameraToBox(unionBox);
-        needsFit = false;
-      }
-    });
-    ro.observe(container);
+    new ResizeObserver(sizeRenderer).observe(container);
     sizeRenderer();
 
-    function fitCameraToBox(box, padding = 1.15) {
+    function fitCameraToBox(box, padding = 1.25) {
       if (box.isEmpty()) return;
-
-      const size   = box.getSize(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
-
       const vFov = THREE.MathUtils.degToRad(camera.fov);
       const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-
       const fitHeightDist = (size.y / 2) / Math.tan(vFov / 2);
       const fitWidthDist  = (size.x / 2) / Math.tan(hFov / 2);
       const distance      = Math.max(fitHeightDist, fitWidthDist) * padding;
-
+      
       const dir = new THREE.Vector3(0.25, 0.10, 1).normalize();
       camera.position.copy(center).addScaledVector(dir, distance);
-
       camera.near = Math.max(distance / 1000, 0.0001);
       camera.far  = distance * 200;
       camera.updateProjectionMatrix();
-
+      
       controls.target.copy(center);
       controls.minDistance = Math.max(distance * 0.02, 0.001);
       controls.maxDistance = distance * 20;
       controls.update();
     }
 
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
-
-    const loadedModels = {};
-    let loadedCount = 0;
-    let anyLoaded = false;
-
-    function tagMesh(mesh, system) {
-      mesh.userData.systemId    = system.id;
-      mesh.userData.systemLabel = system.label;
-    }
-
-    systems.forEach(system => {
-      loader.load(
-        `assets/models/${system.file}`,
-        (gltf) => {
-          const model = gltf.scene;
-
-          model.traverse((child) => {
-            if (!child.isMesh) return;
-            child.material = new THREE.MeshStandardMaterial({
-              color: new THREE.Color(system.color),
-              roughness: 0.45,
-              metalness: 0.08,
-              transparent: true,
-              opacity: 0.94
-            });
-            child.userData.originalEmissive = 0x000000;
-            tagMesh(child, system);
-          });
-
-          model.visible = system.defaultOn !== false;
-          loadedModels[system.id] = model;
-          scene.add(model);
-          anyLoaded = true;
-
-          loadedCount++;
-          if (loadedCount === systems.length) finishLoading();
-        },
-        (xhr) => {
-          if (xhr.total > 0 && loadingText) {
-            const percent = Math.round((xhr.loaded / xhr.total) * 100);
-            loadingText.textContent = `Loading ${system.label}… ${percent}%`;
-          }
-        },
-        (error) => {
-          console.warn(`Missing file: ${system.file}`, error);
-          const cb = toggleContainer.querySelector(`input[data-system="${system.id}"]`);
-          if (cb) {
-            cb.disabled = true;
-            cb.checked = false;
-            const label = cb.closest('.toggle-row')?.querySelector('.toggle-label');
-            if (label && !label.textContent.includes('(missing)')) label.textContent += ' (missing)';
-          }
-          loadedCount++;
-          if (loadedCount === systems.length) finishLoading();
-        }
-      );
-    });
-
+    // --- BUILD UI ---
     systems.forEach(system => {
       const row = document.createElement('div');
       row.className = 'toggle-row';
       row.innerHTML = `
-        <span class="toggle-label">
-          <span class="toggle-dot" style="background-color:${system.color}"></span>
-          ${system.label}
-        </span>
-        <label class="toggle-switch">
-          <input type="checkbox" data-system="${system.id}" ${system.defaultOn !== false ? 'checked' : ''}>
-          <span class="slider"></span>
-        </label>
+        <span class="toggle-label"><span class="toggle-dot" style="background-color:${system.color}"></span>${system.label}</span>
+        <label class="toggle-switch"><input type="checkbox" data-system="${system.id}" checked><span class="slider"></span></label>
       `;
       toggleContainer.appendChild(row);
     });
 
-    toggleContainer.addEventListener('change', (e) => {
-      if (e.target.tagName !== 'INPUT' || e.target.disabled) return;
-      const systemId = e.target.dataset.system;
-      if (loadedModels[systemId]) loadedModels[systemId].visible = e.target.checked;
-      clearHighlight();
-      infoPanel.classList.remove('visible');
-      rebuildPickables();
+    // Populate Organ Quick Nav
+    Object.keys(organData).forEach(id => {
+      const organ = organData[id];
+      const btn = document.createElement('button');
+      btn.className = 'organ-btn';
+      btn.innerHTML = `<span>${organ.icon}</span> ${organ.name}`;
+      btn.onclick = () => loadOrgan(id);
+      organNavBtns.appendChild(btn);
     });
 
-    function finishLoading() {
+    // --- FULL BODY MODE ---
+    let loadedCount = 0;
+    function loadFullBody() {
+      loadedCount = 0;
+      anyLoaded = false;
+      systems.forEach(system => {
+        loader.load(
+          `assets/models/${system.file}`,
+          (gltf) => {
+            const model = gltf.scene;
+            model.traverse((child) => {
+              if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({
+                  color: new THREE.Color(system.color),
+                  roughness: 0.45, metalness: 0.08, transparent: true, opacity: 0.94
+                });
+                child.userData.systemId = system.id;
+                child.userData.systemLabel = system.label;
+              }
+            });
+            model.visible = system.defaultOn !== false;
+            loadedBodyModels[system.id] = model;
+            scene.add(model);
+            anyLoaded = true;
+            loadedCount++;
+            if (loadedCount === systems.length) finishFullBodyLoad();
+          },
+          (xhr) => { if (xhr.total > 0 && loadingText) loadingText.textContent = `Loading ${system.label}… ${Math.round((xhr.loaded/xhr.total)*100)}%`; },
+          (error) => { loadedCount++; if (loadedCount === systems.length) finishFullBodyLoad(); }
+        );
+      });
+    }
+
+    function finishFullBodyLoad() {
       document.getElementById('loading').classList.add('hidden');
-
-      if (!anyLoaded) {
-        loadingText.textContent = 'No anatomical models could be loaded.';
-        return;
-      }
-
       unionBox = new THREE.Box3();
-      Object.values(loadedModels).forEach(m => {
+      Object.values(loadedBodyModels).forEach(m => {
         m.updateMatrixWorld(true);
         unionBox.expandByObject(m);
       });
-
-      if (unionBox.isEmpty()) return;
-
-      rebuildPickables();
-
-      needsFit = true;
-      if (containerReady) {
-        fitCameraToBox(unionBox);
-        needsFit = false;
-      }
+      rebuildFullBodyPickables();
+      if (containerReady) fitCameraToBox(unionBox);
     }
 
-    fitBtn.addEventListener('click', () => {
-      const box = new THREE.Box3();
-      Object.values(loadedModels).forEach(m => { if (m.visible) box.expandByObject(m); });
-      fitCameraToBox(box.isEmpty() ? unionBox : box);
-    });
-
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    let pickables = [];
-    let lastHighlighted = null;
-    let pointerDownAt = null;
-
-    function rebuildPickables() {
+    function rebuildFullBodyPickables() {
       pickables = [];
-      Object.values(loadedModels).forEach(model => {
-        if (!model.visible) return;
-        model.traverse(c => { if (c.isMesh) pickables.push(c); });
+      Object.values(loadedBodyModels).forEach(model => {
+        if (model.visible) model.traverse(c => { if (c.isMesh) pickables.push(c); });
       });
     }
 
-    function clearHighlight() {
-      if (lastHighlighted && lastHighlighted.material) {
-        lastHighlighted.material.emissive.setHex(0x000000);
-      }
-      lastHighlighted = null;
-    }
+    // --- ORGAN MODE ---
+    function loadOrgan(organId) {
+      const organ = organData[organId];
+      if (!organ) return;
 
-    function highlightMesh(mesh) {
+      mode = 'organ';
+      activeOrganId = organId;
+      document.getElementById('loading').classList.remove('hidden');
+      loadingText.textContent = `Loading ${organ.name}…`;
+
+      // UI Updates
+      systemPanel.classList.add('hide');
+      organHeaderBar.classList.add('visible');
+      organNameEl.textContent = organ.name;
+      organLatinEl.textContent = organ.latin;
+      organIconEl.textContent = organ.icon;
+      infoPanel.classList.remove('visible');
+      hotspotsLayer.innerHTML = '';
+      
+      // Hide body
+      Object.values(loadedBodyModels).forEach(m => m.visible = false);
       clearHighlight();
-      lastHighlighted = mesh;
-      if (mesh.material) mesh.material.emissive.setHex(0x333333);
+
+      // Load Organ GLB (assumes files are named e.g. heart.glb in assets/models/organs/)
+      loader.load(`assets/models/organs/${organId}.glb`, (gltf) => {
+        activeOrganGroup = gltf.scene;
+        
+        // Apply material
+        activeOrganGroup.traverse(child => {
+          if (child.isMesh) {
+            if (!child.material) {
+              child.material = new THREE.MeshStandardMaterial({ color: organ.color, roughness: 0.3, metalness: 0.1 });
+            }
+            child.userData.organId = organId;
+            pickables.push(child);
+          }
+        });
+
+        scene.add(activeOrganGroup);
+        document.getElementById('loading').classList.add('hidden');
+        
+        // Fit camera
+        activeOrganGroup.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(activeOrganGroup);
+        fitCameraToBox(box);
+
+        // Generate Hotspots
+        generateHotspots(organ, activeOrganGroup);
+        
+        // Show Organ Info Panel
+        renderOrganInfoPanel(organ);
+      }, 
+      undefined, 
+      (error) => {
+        console.warn(`Organ model missing: ${organId}.glb. Showing fallback view.`);
+        document.getElementById('loading').classList.add('hidden');
+        // Fallback: Just show the info panel even if 3D model is missing
+        renderOrganInfoPanel(organ);
+        alert(`Note: 3D model for ${organ.name} (assets/models/organs/${organId}.glb) is not found. Showing text info only.`);
+      });
     }
 
-    function normalizeKey(rawName) {
-      return String(rawName || '')
-        .replace(/\.\d+$/g, '')
-        .replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '')
-        .replace(/[_\s-]+/g, ' ')
-        .replace(/\b[rl]\b/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase();
+    function exitOrganMode() {
+      mode = 'full-body';
+      activeOrganId = null;
+      organHeaderBar.classList.remove('visible');
+      systemPanel.classList.remove('hide');
+      infoPanel.classList.remove('visible');
+      hotspotsLayer.innerHTML = '';
+      pickables = [];
+      
+      if (activeOrganGroup) {
+        scene.remove(activeOrganGroup);
+        activeOrganGroup = null;
+      }
+      
+      // Restore body visibility
+      Object.values(loadedBodyModels).forEach(m => {
+        const sysId = m.children[0]?.userData.systemId || m.name.replace('.glb','');
+        // Simple check: if the toggle is checked, show it
+        const toggle = toggleContainer.querySelector(`input[data-system="${sysId}"]`);
+        if (toggle && toggle.checked) m.visible = true;
+      });
+
+      rebuildFullBodyPickables();
+      fitCameraToBox(unionBox);
     }
 
-    function prettyName(rawName) {
-      let n = String(rawName || '').replace(/\.\d+$/g, ''); 
-      n = n.replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, ''); 
+    // --- HOTSPOT LOGIC ---
+    function generateHotspots(organ, group) {
+      // We iterate through the organ's parts data. 
+      // If a mesh matches a part name, we create a hotspot at its center.
       
-      // Convert underscores and dashes to spaces for clean formatting
-      n = n.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
-      
-      // Replace trailing R/L. Matches " R", "_R", "-R", and also handles "R" glued to the word like "Latar"
-      n = n.replace(/[-_\s]*R$/i, ' - Right');
-      n = n.replace(/[-_\s]*L$/i, ' - Left');
-      n = n.replace(/([a-zA-Z])R$/i, '$1 - Right');
-      n = n.replace(/([a-zA-Z])L$/i, '$1 - Left');
-      
-      return n.replace(/\b\w/g, c => c.toUpperCase());
+      group.traverse(child => {
+        if (!child.isMesh) return;
+        
+        const meshName = (child.name || '').toLowerCase().replace(/_/g, ' ');
+        
+        // Find matching part
+        let matchedPartId = null;
+        Object.keys(organ.parts).forEach(partId => {
+          if (meshName.includes(partId)) matchedPartId = partId;
+        });
+
+        if (matchedPartId) {
+          const part = organ.parts[matchedPartId];
+          
+          // Calculate center
+          const box = new THREE.Box3().setFromObject(child);
+          const center = box.getCenter(new THREE.Vector3());
+          
+          // Create HTML hotspot element
+          const el = document.createElement('div');
+          el.className = 'hotspot';
+          el.innerHTML = `<div class="hotspot-label">${part.name}</div>`;
+          hotspotsLayer.appendChild(el);
+          
+          // Click handler for hotspot
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            highlightHotspot(el);
+            renderPartInfo(organ, matchedPartId);
+          });
+
+          organHotspots.push({ partId: matchedPartId, mesh: child, element: el, center: center });
+        }
+      });
     }
 
-    function findData(mesh) {
+    function updateHotspots() {
+      if (mode !== 'organ' || !activeOrganGroup) return;
+      
+      const rect = container.getBoundingClientRect();
+      
+      organHotspots.forEach(spot => {
+        // Project 3D center to 2D screen
+        const vector = spot.center.clone();
+        activeOrganGroup.localToWorld(vector);
+        vector.project(camera);
+
+        // Check if behind camera
+        if (vector.z > 1) {
+          spot.element.style.display = 'none';
+          return;
+        }
+
+        spot.element.style.display = 'block';
+        
+        const x = (vector.x * 0.5 + 0.5) * rect.width;
+        const y = (-(vector.y * 0.5) + 0.5) * rect.height;
+        
+        spot.element.style.left = `${x}px`;
+        spot.element.style.top = `${y}px`;
+      });
+    }
+
+    function highlightHotspot(el) {
+      document.querySelectorAll('.hotspot').forEach(h => h.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // --- INFO PANEL LOGIC ---
+    function renderOrganInfoPanel(organ) {
+      infoTitle.textContent = organ.name;
+      infoType.textContent = organ.system || 'Anatomy';
+      
+      organMeta.style.display = 'grid';
+      document.getElementById('meta-location').textContent = organ.location || '-';
+      document.getElementById('meta-size').textContent = organ.size || '-';
+      document.getElementById('meta-weight').textContent = organ.weight || '-';
+      document.getElementById('meta-tissue').textContent = organ.tissue || '-';
+
+      infoDesc.innerHTML = `
+        <div class="info-block"><h4>Description</h4><p>${organ.description}</p></div>
+        <div class="info-block"><h4>Function</h4><p>${organ.function}</p></div>
+        <div class="info-block info-tip"><h4>Did you know?</h4><p>${organ.note}</p></div>
+      `;
+
+      // Render structure list
+      structureList.style.display = 'block';
+      structureItems.innerHTML = Object.entries(organ.parts).map(([id, part]) => `
+        <div class="structure-item" data-part-id="${id}">
+          <div class="struct-dot" style="background:${organ.color}"></div>
+          <div>
+            <div class="struct-name">${part.name}</div>
+            <div class="struct-desc">${part.desc}</div>
+          </div>
+        </div>
+      `).join('');
+
+      // Add click handlers for structure list
+      structureItems.querySelectorAll('.structure-item').forEach(item => {
+        item.addEventListener('click', () => {
+          renderPartInfo(organ, item.dataset.partId);
+        });
+      });
+
+      infoMlsLink.style.display = 'none';
+      infoPanel.classList.add('visible');
+    }
+
+    function renderPartInfo(organ, partId) {
+      const part = organ.parts[partId];
+      if (!part) return;
+
+      infoTitle.textContent = part.name;
+      infoType.textContent = `${organ.name} · Structure`;
+      organMeta.style.display = 'none'; // Hide organ meta for specific parts
+      
+      infoDesc.innerHTML = `
+        <div class="info-block"><h4>Description</h4><p>${part.desc}</p></div>
+        <div class="info-block info-tip"><h4>In MLS</h4><p>${part.mls}</p></div>
+      `;
+      infoMlsLink.style.display = 'none';
+    }
+
+    function renderFullBodyInfo(mesh) {
       const rawKey = mesh.name || mesh.parent?.name || '';
       const key = normalizeKey(rawKey);
       const displayName = prettyName(rawKey) || 'Unknown structure';
+      
+      let data = null;
+      let isFallback = false;
 
       if (key) {
-        if (mlsData[key]) return { data: mlsData[key], displayName };
-
-        let bestKey = null;
-        for (const k of Object.keys(mlsData)) {
-          if (key === k) continue;
-          if (key.startsWith(k + ' ') || key.endsWith(' ' + k) || key.includes(' ' + k + ' ')) {
-            if (!bestKey || k.length > bestKey.length) bestKey = k;
+        if (mlsData[key]) data = mlsData[key];
+        else {
+          let bestKey = null;
+          for (const k of Object.keys(mlsData)) {
+            if (key === k) continue;
+            if (key.startsWith(k + ' ') || key.endsWith(' ' + k) || key.includes(' ' + k + ' ')) {
+              if (!bestKey || k.length > bestKey.length) bestKey = k;
+            }
+          }
+          if (bestKey) data = mlsData[bestKey];
+          else {
+            const firstWord = key.split(' ')[0];
+            if (mlsData[firstWord]) data = mlsData[firstWord];
+            else {
+              for (const word of key.split(' ')) {
+                if (mlsData[word]) { data = mlsData[word]; break; }
+              }
+            }
           }
         }
-        if (bestKey) return { data: mlsData[bestKey], displayName };
+      }
 
-        const firstWord = key.split(' ')[0];
-        if (mlsData[firstWord]) return { data: mlsData[firstWord], displayName };
-
-        for (const word of key.split(' ')) {
-          if (mlsData[word]) return { data: mlsData[word], displayName };
+      if (!data) {
+        const sysId = mesh.userData.systemId;
+        const fb = sysId && systemFallback[sysId];
+        if (fb) { data = { ...fb, type: fb.type || mesh.userData.systemLabel }; isFallback = true; }
+        else {
+          data = { type: mesh.userData.systemLabel || 'Structure', function: '...', labTests: [], clinical: [], examTip: '...' };
+          isFallback = true;
         }
       }
 
-      const sysId = mesh.userData.systemId;
-      const fb = sysId && systemFallback[sysId];
-      if (fb) {
-        return {
-          data: { ...fb, type: fb.type || (mesh.userData.systemLabel || 'Anatomy') },
-          displayName,
-          isFallback: true
-        };
-      }
-
-      return {
-        data: {
-          type: mesh.userData.systemLabel || 'Anatomical Structure',
-          function: 'This structure belongs to the ' + (mesh.userData.systemLabel || 'anatomy') + ' layer. Rotate the model and toggle systems in the sidebar to explore neighbouring structures.',
-          labTests: ['Correlated lab tests appear for major organs — click a nearby organ to see them.'],
-          clinical: ['Clinical correlation not yet curated for this structure.'],
-          examTip: 'Use the system toggles to isolate organs, then click an organ to read its MLS profile.'
-        },
-        displayName,
-        isFallback: true
-      };
-    }
-
-    function renderInfoPanel(displayName, payload) {
-      const { data } = payload;
       infoTitle.textContent = displayName;
       infoType.textContent = data.type || 'Anatomical Structure';
+      organMeta.style.display = 'none';
+      structureList.style.display = 'none';
 
       let html = '';
-
-      if (data.function) {
-        html += `<div class="info-block"><h4>Function</h4><p>${escapeHtml(data.function)}</p></div>`;
-      }
-      if (data.labTests?.length) {
-        html += `<div class="info-block"><h4>Laboratory Tests</h4><ul>${data.labTests.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`;
-      }
-      if (data.clinical?.length) {
-        html += `<div class="info-block"><h4>Clinical Correlations</h4><ul>${data.clinical.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul></div>`;
-      }
-      if (data.examTip) {
-        html += `<div class="info-block info-tip"><h4>MTLE Exam Tip</h4><p>${escapeHtml(data.examTip)}</p></div>`;
-      }
-      if (data.inMls) {
-        html += `<div class="info-block">${data.inMls}</div>`;
-      }
-      if (!html) {
-        html = `<div class="info-block"><p>No detailed profile yet for this structure.</p></div>`;
-      }
+      if (data.function) html += `<div class="info-block"><h4>Function</h4><p>${escapeHtml(data.function)}</p></div>`;
+      if (data.labTests?.length) html += `<div class="info-block"><h4>Laboratory Tests</h4><ul>${data.labTests.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul></div>`;
+      if (data.clinical?.length) html += `<div class="info-block"><h4>Clinical Correlations</h4><ul>${data.clinical.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul></div>`;
+      if (data.examTip) html += `<div class="info-block info-tip"><h4>MTLE Exam Tip</h4><p>${escapeHtml(data.examTip)}</p></div>`;
+      
       infoDesc.innerHTML = html;
-
-      if (data.link) {
-        infoMlsLink.href = data.link;
-        infoMlsLink.textContent = `Study ${data.linkText || 'related course'} →`;
-        infoMlsLink.style.display = 'inline-block';
-      } else {
-        infoMlsLink.style.display = 'none';
-      }
-
+      infoMlsLink.style.display = 'none';
       infoPanel.classList.add('visible');
+    }
 
-      if (typeof window.track === 'function') {
-        try {
-          window.track('anatomy_structure_viewed', {
-            mesh: displayName,
-            system: data.type || '',
-            curated: !payload.isFallback
-          });
-        } catch (_) { /* noop */ }
+    // --- HELPERS ---
+    function normalizeKey(rawName) {
+      return String(rawName || '').replace(/\.\d+$/g, '').replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '').replace(/[_\s-]+/g, ' ').replace(/\b[rl]\b/gi, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+    function prettyName(rawName) {
+      let n = String(rawName || '').replace(/\.\d+$/g, '').replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '').replace(/_/g, ' ').trim();
+      n = n.replace(/[-_\s]*R$/i, ' - Right').replace(/[-_\s]*L$/i, ' - Left').replace(/([a-zA-Z])R$/i, '$1 - Right').replace(/([a-zA-Z])L$/i, '$1 - Left');
+      return n.replace(/\b\w/g, c => c.toUpperCase());
+    }
+    function clearHighlight() {
+      if (lastHighlighted && lastHighlighted.material) lastHighlighted.material.emissive.setHex(0x000000);
+      lastHighlighted = null;
+    }
+    function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    // --- EVENTS ---
+    backBtn.addEventListener('click', exitOrganMode);
+    document.getElementById('close-info').addEventListener('click', () => infoPanel.classList.remove('visible'));
+    
+    toggleContainer.addEventListener('change', (e) => {
+      if (e.target.tagName !== 'INPUT') return;
+      const sysId = e.target.dataset.system;
+      if (loadedBodyModels[sysId]) {
+        loadedBodyModels[sysId].visible = e.target.checked;
+        clearHighlight();
+        rebuildFullBodyPickables();
       }
-    }
+    });
 
-    function escapeHtml(s) {
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
+    fitBtn.addEventListener('click', () => {
+      if (mode === 'full-body') fitCameraToBox(unionBox);
+      else if (activeOrganGroup) fitCameraToBox(new THREE.Box3().setFromObject(activeOrganGroup));
+    });
+
+    // Raycasting
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
 
     renderer.domElement.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
-      pointerDownAt = { x: e.clientX, y: e.clientY };
+      if (e.button === 0) pointerDownAt = { x: e.clientX, y: e.clientY };
     });
 
     renderer.domElement.addEventListener('pointerup', (e) => {
       if (e.button !== 0 || !pointerDownAt) return;
-      const dx = e.clientX - pointerDownAt.x;
-      const dy = e.clientY - pointerDownAt.y;
+      if (Math.hypot(e.clientX - pointerDownAt.x, e.clientY - pointerDownAt.y) > 5) return;
       pointerDownAt = null;
-      if (Math.hypot(dx, dy) > 5) return;
 
       const rect = renderer.domElement.getBoundingClientRect();
       pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(pickables, false);
+      
+      // In organ mode, check if we clicked the organ mesh
+      if (mode === 'organ') {
+        const hits = raycaster.intersectObjects(pickables, false);
+        if (hits.length > 0) {
+          // Find if this mesh corresponds to a part
+          const hitMesh = hits[0].object;
+          const hitName = (hitMesh.name || '').toLowerCase().replace(/_/g, ' ');
+          const organ = organData[activeOrganId];
+          
+          let matchedPartId = null;
+          Object.keys(organ.parts).forEach(partId => {
+            if (hitName.includes(partId)) matchedPartId = partId;
+          });
 
-      if (!hits.length) {
-        clearHighlight();
-        infoPanel.classList.remove('visible');
-        return;
+          if (matchedPartId) {
+            renderPartInfo(organ, matchedPartId);
+            // Highlight hotspot
+            const spot = organHotspots.find(h => h.partId === matchedPartId);
+            if (spot) highlightHotspot(spot.element);
+          }
+        }
+      } 
+      // In full body mode, check for organ clicks first, then standard anatomy
+      else {
+        const hits = raycaster.intersectObjects(pickables, false);
+        if (hits.length > 0) {
+          const mesh = hits[0].object;
+          const name = mesh.name.toLowerCase();
+          
+          // Check if we clicked a major organ that has a detailed view
+          for (const organId of Object.keys(organData)) {
+            // Simple heuristic: if the mesh name contains the organ ID (e.g. 'heart', 'liver')
+            if (name.includes(organId)) {
+              loadOrgan(organId);
+              return;
+            }
+          }
+          
+          // Otherwise, show normal info
+          if (lastHighlighted) clearHighlight();
+          lastHighlighted = mesh;
+          if (mesh.material) mesh.material.emissive.setHex(0x333333);
+          renderFullBodyInfo(mesh);
+        } else {
+          infoPanel.classList.remove('visible');
+          clearHighlight();
+        }
       }
-
-      const mesh = hits[0].object;
-      highlightMesh(mesh);
-      const payload = findData(mesh);
-      renderInfoPanel(payload.displayName, payload);
     });
 
-    document.getElementById('close-info').addEventListener('click', () => {
-      infoPanel.classList.remove('visible');
-      clearHighlight();
-    });
-
+    // --- ANIMATION LOOP ---
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
+      updateHotspots();
       renderer.render(scene, camera);
     }
+
+    // Start
+    loadFullBody();
     animate();
+
   </script>
 </body>
 </html>
