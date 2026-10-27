@@ -130,7 +130,7 @@
     }
   </script>
 
-  <script type="module">
+      <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -143,225 +143,121 @@
     const infoDesc = document.getElementById('info-desc');
     const infoMlsLink = document.getElementById('info-mls-link');
     const toggleContainer = document.getElementById('system-toggles');
+    const loadingText = document.querySelector('#loading p');
 
-    // --- Custom MLS Data Mapping ---
     const mlsData = {
-      'heart': { type: 'Cardiovascular', inMls: 'Cardiac markers like Troponin I and CK-MB are measured here. Blood typing and crossmatching are vital for cardiac surgeries.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'liver': { type: 'Digestive', inMls: 'Liver Function Tests (ALT, AST, ALP, Bilirubin) are core to Clinical Chemistry. The liver also produces clotting factors evaluated in Coagulation testing.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'kidney': { type: 'Urinary', inMls: 'Urinalysis, creatinine clearance, and BUN assess renal function. The kidney also produces erythropoietin, stimulating RBC production.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis & Body Fluids' },
-      'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis and fungal infections are vital. Lung tissue can also be affected by systemic fungal diseases.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis, subarachnoid hemorrhage, and demyelinating diseases.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids (CSF)' },
-      'bone': { type: 'Skeletal', inMls: 'The bone marrow is the site of hematopoiesis. Bone marrow aspirates and biopsies diagnose leukemias, lymphomas, and anemias.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
-      'muscle': { type: 'Muscular', inMls: 'Elevated Creatine Kinase (CK) and Aldolase indicate skeletal muscle damage (e.g., rhabdomyolysis, muscular dystrophy).', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'stomach': { type: 'Digestive', inMls: 'Gastric biopsies are tested for Helicobacter pylori using the rapid urease test.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'pancreas': { type: 'Digestive', inMls: 'Elevated serum amylase and lipase are key indicators of acute pancreatitis.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' }
+      'heart': { type: 'Cardiovascular', inMls: 'Cardiac markers like Troponin I and CK-MB are measured here. Blood typing is vital.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'liver': { type: 'Digestive', inMls: 'Liver Function Tests (ALT, AST, Bilirubin) are core.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'kidney': { type: 'Urinary', inMls: 'Urinalysis and BUN assess renal function.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis' },
+      'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis are vital.', link: 'course-microbiology.html', linkText: 'Microbiology' },
+      'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
+      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
     };
 
-    // --- Systems Definition ---
-    const systems = [
-      { id: 'body-surface', label: 'Body Surface (Skin)', file: 'body-surface.glb', color: '#f5d0c5', isSkin: true },
-      { id: 'skeletal', label: 'Skeletal System', file: 'skeletal.glb', color: '#e8dcc4' },
-      { id: 'muscular', label: 'Muscular System', file: 'muscular.glb', color: '#c0392b' },
-      { id: 'cardiovascular', label: 'Cardiovascular', file: 'cardiovascular.glb', color: '#e74c3c' },
-      { id: 'nervous', label: 'Nervous System', file: 'nervous.glb', color: '#f6c445' },
-      { id: 'respiratory', label: 'Respiratory System', file: 'respiratory.glb', color: '#3498db' },
-      { id: 'digestive', label: 'Digestive System', file: 'digestive.glb', color: '#e67e22' },
-      { id: 'urinary', label: 'Urinary System', file: 'urinary.glb', color: '#9b59b6' },
-      { id: 'lymphatic', label: 'Lymphatic System', file: 'lymphatic.glb', color: '#27ae60' }
-    ];
-
-    // --- Three.js Setup ---
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#0f1a26');
     
     const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-    // Start position - will be adjusted by fitCameraToAll
-    camera.position.set(0, 1.5, 4);
+    camera.position.set(0, 1.5, 5);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    // Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    scene.add(new THREE.AmbientLight(0xffffff, 2.0));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 3.0);
     dirLight.position.set(2, 3, 4);
     scene.add(dirLight);
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 1);
+    const dirLight2 = new THREE.DirectionalLight(0xffffff, 2.0);
     dirLight2.position.set(-2, 1, -3);
     scene.add(dirLight2);
 
-    // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.minDistance = 0.5;
-    controls.maxDistance = 15;
-    
-    // Keyboard controls (WASD for panning, Q/E for zoom)
     controls.listenToKeyEvents(window);
-    controls.keys = {
-      LEFT: 'KeyA',
-      UP: 'KeyW',
-      RIGHT: 'KeyD',
-      BOTTOM: 'KeyS'
-    };
-    controls.keyPanSpeed = 20; // Adjust speed of WASD panning
+    controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
 
-    // Custom Keydown for Q/E (Forward/Backward)
     document.addEventListener('keydown', (e) => {
-      const moveSpeed = 0.08;
+      const moveSpeed = 0.1;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
-      if (e.code === 'KeyE') {
-        camera.position.add(forward.multiplyScalar(moveSpeed));
-        controls.target.add(forward.multiplyScalar(moveSpeed));
-      }
-      if (e.code === 'KeyQ') {
-        camera.position.sub(forward.multiplyScalar(moveSpeed));
-        controls.target.sub(forward.multiplyScalar(moveSpeed));
-      }
+      if (e.code === 'KeyE') { camera.position.add(forward.multiplyScalar(moveSpeed)); controls.target.add(forward.multiplyScalar(moveSpeed)); }
+      if (e.code === 'KeyQ') { camera.position.sub(forward.multiplyScalar(moveSpeed)); controls.target.sub(forward.multiplyScalar(moveSpeed)); }
     });
 
-    // Loaders
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-    const systemModels = {};
-    let loadedCount = 0;
+    let bodyModel = null;
 
-    // --- Load All Systems ---
-    systems.forEach(system => {
-      // Note: Files are assumed to be in assets/models/
-      loader.load(`assets/models/${system.file}`, (gltf) => {
-        const model = gltf.scene;
-        
-        model.traverse((child) => {
-          if (child.isMesh) {
-            if (system.isSkin) {
-              // Skin is opaque
-              child.material = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(system.color),
-                roughness: 0.8,
-                metalness: 0.0,
-                transparent: false,
-                opacity: 1.0
-              });
-            } else {
-              // Inner systems are slightly transparent
-              child.material = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(system.color),
-                roughness: 0.4,
-                metalness: 0.1,
-                transparent: true,
-                opacity: 0.85 
-              });
-            }
-            child.userData.originalColor = new THREE.Color(system.color);
-            child.userData.systemId = system.id;
-          }
-        });
-
-        systemModels[system.id] = model;
-        scene.add(model);
-
-        loadedCount++;
-        if (loadedCount === systems.length) {
-          document.getElementById('loading').classList.add('hidden');
-          fitCameraToAll();
-        }
-      }, undefined, (error) => {
-        console.warn(`Could not load ${system.file}:`, error);
-        loadedCount++;
-        if (loadedCount === systems.length) {
-          document.getElementById('loading').classList.add('hidden');
-          fitCameraToAll();
+    loader.load('assets/models/body.glb', (gltf) => {
+      bodyModel = gltf.scene;
+      
+      bodyModel.traverse((child) => {
+        if (child.isMesh) {
+          child.material.transparent = true;
+          child.material.opacity = 0.95;
         }
       });
-    });
-
-    // --- Camera Fitting ---
-    function fitCameraToAll() {
-      const box = new THREE.Box3();
-      Object.values(systemModels).forEach(model => box.expandByObject(model));
       
-      if (box.isEmpty()) return;
-
+      scene.add(bodyModel);
+      document.getElementById('loading').classList.add('hidden');
+      
+      const box = new THREE.Box3().setFromObject(bodyModel);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
-      const maxSize = Math.max(size.x, size.y, size.z);
-      const fitHeightDistance = maxSize / (2 * Math.atan(Math.PI * camera.fov / 360));
-      const fitWidthDistance = fitHeightDistance / camera.aspect;
-      const distance = 1.2 * Math.max(fitHeightDistance, fitWidthDistance);
-      
-      const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const distance = maxDim * 2.5; 
       
       controls.target.copy(center);
-      camera.position.copy(center.clone().add(direction.multiplyScalar(distance)));
-      camera.near = distance / 100;
-      camera.far = distance * 100;
+      camera.position.set(center.x, center.y, center.z + distance);
       camera.updateProjectionMatrix();
       controls.update();
-    }
 
-    // --- UI Toggles ---
-    systems.forEach(system => {
-      const row = document.createElement('div');
-      row.className = 'toggle-row';
-      const dotColor = system.isSkin ? '#f5d0c5' : system.color;
-      
-      row.innerHTML = `
-        <span class="toggle-label">
-          <span class="toggle-dot" style="background-color: ${dotColor}"></span>
-          ${system.label}
-        </span>
+    }, 
+    (xhr) => {
+      if (xhr.total > 0 && loadingText) {
+        const percent = Math.round((xhr.loaded / xhr.total) * 100);
+        loadingText.textContent = `Loading anatomy… ${percent}%`;
+      }
+    }, 
+    (error) => {
+      console.error('Error loading body.glb:', error);
+      if (loadingText) loadingText.textContent = 'Failed to load model. Check console (F12).';
+    });
+
+    // Sidebar Setup
+    toggleContainer.innerHTML = `
+      <div class="toggle-row">
+        <span class="toggle-label">Human Body Model</span>
         <label class="toggle-switch">
-          <input type="checkbox" data-system="${system.id}" checked>
+          <input type="checkbox" checked id="toggle-body">
           <span class="slider"></span>
         </label>
-      `;
-      toggleContainer.appendChild(row);
+      </div>
+    `;
+    document.getElementById('toggle-body').addEventListener('change', (e) => {
+      if (bodyModel) bodyModel.visible = e.target.checked;
     });
 
-    toggleContainer.addEventListener('change', (e) => {
-      if (e.target.tagName === 'INPUT') {
-        const systemId = e.target.dataset.system;
-        if (systemModels[systemId]) {
-          systemModels[systemId].visible = e.target.checked;
-        }
-      }
-    });
-
-    // --- Raycaster for Clicking ---
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let lastHighlighted = null;
 
     renderer.domElement.addEventListener('pointerdown', (event) => {
-      // Ignore clicks if the user is dragging (OrbitControls)
       if (event.button !== 0) return; 
-
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
       raycaster.setFromCamera(mouse, camera);
+      if (!bodyModel) return;
       
-      const visibleMeshes = [];
-      Object.values(systemModels).forEach(model => {
-        if (model.visible) {
-          model.traverse(child => {
-            if (child.isMesh) visibleMeshes.push(child);
-          });
-        }
-      });
-
-      const intersects = raycaster.intersectObjects(visibleMeshes, false);
+      const intersects = raycaster.intersectObjects(bodyModel.children, true);
       
       if (lastHighlighted) {
         lastHighlighted.material.emissive.setHex(0x000000);
@@ -370,20 +266,15 @@
 
       if (intersects.length > 0) {
         const clickedMesh = intersects[0].object;
-        
         lastHighlighted = clickedMesh;
-        clickedMesh.material.emissive.setHex(0x333333); // Highlight
+        clickedMesh.material.emissive.setHex(0x333333);
         
         const rawName = clickedMesh.name || clickedMesh.parent.name || 'Unknown';
         const cleanName = rawName.replace(/_/g, ' ').toLowerCase();
         
-        // Find MLS data
         let matchedData = null;
         for (const [key, data] of Object.entries(mlsData)) {
-          if (cleanName.includes(key)) {
-            matchedData = data;
-            break;
-          }
+          if (cleanName.includes(key)) { matchedData = data; break; }
         }
         
         infoTitle.textContent = rawName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -396,10 +287,9 @@
           infoMlsLink.style.display = 'inline-block';
         } else {
           infoType.textContent = 'Anatomical Structure';
-          infoDesc.textContent = 'Click on a major organ (heart, kidney, brain) to see its Medical Laboratory Science correlation.';
+          infoDesc.textContent = 'Click on a major organ to see its MLS correlation.';
           infoMlsLink.style.display = 'none';
         }
-        
         infoPanel.classList.add('visible');
       } else {
         infoPanel.classList.remove('visible');
@@ -408,13 +298,9 @@
 
     document.getElementById('close-info').addEventListener('click', () => {
       infoPanel.classList.remove('visible');
-      if (lastHighlighted) {
-        lastHighlighted.material.emissive.setHex(0x000000);
-        lastHighlighted = null;
-      }
+      if (lastHighlighted) { lastHighlighted.material.emissive.setHex(0x000000); lastHighlighted = null; }
     });
 
-    // --- Animation Loop ---
     function animate() {
       requestAnimationFrame(animate);
       controls.update();
@@ -422,7 +308,6 @@
     }
     animate();
 
-    // --- Resize Handler ---
     window.addEventListener('resize', () => {
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
