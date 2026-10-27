@@ -30,19 +30,23 @@
       width: 100%;
       overflow: hidden;
       background: #0f1a26;
+      margin: 0;
+      padding: 0;
     }
     
     body {
-      position: fixed;
-      inset: 0;
+      position: relative;
       font-family: 'Inter', sans-serif;
       color: #e8eef5;
-      display: flex;
-      flex-direction: column;
     }
 
-    /* ---------- Standard Navbar (Adapted for Dark Mode) ---------- */
+    /* ---------- Standard Navbar (Absolute Positioned) ---------- */
     header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
       z-index: 100;
       background: rgba(15,26,38,0.92);
       backdrop-filter: blur(12px);
@@ -51,10 +55,6 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 1rem;
-      height: 70px;
-      flex-shrink: 0;
     }
     
     .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
@@ -109,11 +109,13 @@
     .search-result-item .title { font-weight: 600; color: #8ab4d9; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
 
-    /* ---------- Main Container ---------- */
+    /* ---------- Main Container (Absolute Positioned) ---------- */
     .main-container {
-      flex: 1 1 auto;
-      min-height: 0;
-      position: relative;
+      position: absolute;
+      top: 70px;
+      left: 0;
+      right: 0;
+      bottom: 0;
       overflow: hidden;
     }
 
@@ -627,9 +629,13 @@
     }
 
     function prettyName(rawName) {
-      let n = String(rawName || '').replace(/\.\d+$/g, '');
-      n = n.replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, '');
-      n = n.replace(/_R\b/g, ' (Right)').replace(/_L\b/g, ' (Left)');
+      let n = String(rawName || '').replace(/\.\d+$/g, ''); 
+      n = n.replace(/^(Bone|Muscle|Organ|Artery|Vein|Nerve|Ligament|Skin|Vessel|Gland)[_\s-]*/i, ''); 
+      
+      // Replace right/left indicators with a dash
+      n = n.replace(/[_\s\-\.]+R\b/gi, ' - Right');
+      n = n.replace(/[_\s\-\.]+L\b/gi, ' - Left');
+      
       n = n.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
       return n.replace(/\b\w/g, c => c.toUpperCase());
     }
