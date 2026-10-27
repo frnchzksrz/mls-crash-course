@@ -23,8 +23,11 @@
     .nav-links a:hover { color: #e8eef5; }
     .nav-links a.active { color: #f6c445; }
     
-    .main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
-    #canvas-container { flex: 1; width: 100%; height: 100%; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
+    /* The main container takes up all remaining height below the header */
+    .main-container { flex: 1; position: relative; width: 100%; }
+    
+    /* Absolute positioning guarantees it fills the main container perfectly */
+    #canvas-container { position: absolute; inset: 0; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
     
     /* Left Sidebar */
     .system-panel { position: absolute; top: 20px; left: 20px; background: rgba(26,43,61,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; width: 280px; max-height: calc(100% - 40px); overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -61,6 +64,13 @@
     #loading.hidden { opacity: 0; pointer-events: none; }
     .spinner { width: 40px; height: 40px; border: 4px solid rgba(138,180,217,0.3); border-top-color: #8ab4d9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .system-panel { width: calc(100% - 40px); max-height: 30vh; top: 10px; left: 10px; }
+      .info-panel { width: calc(100% - 40px); top: auto; bottom: 60px; left: 10px; max-height: 40vh; }
+      .instructions { display: none; }
+      .nav-links { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -131,17 +141,26 @@
     const toggleContainer = document.getElementById('system-toggles');
     const loadingText = document.querySelector('#loading p');
 
+    // Expanded MLS Data mapping
     const mlsData = {
-      'heart': { type: 'Cardiovascular', inMls: 'Cardiac markers like Troponin I and CK-MB are measured here. Blood typing is vital.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'liver': { type: 'Digestive', inMls: 'Liver Function Tests (ALT, AST, Bilirubin) are core.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'kidney': { type: 'Urinary', inMls: 'Urinalysis and BUN assess renal function.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis' },
-      'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis are vital.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
-      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
-      'spleen': { type: 'Lymphoid', inMls: 'The spleen filters blood and removes old RBCs. Splenectomy leads to Howell-Jolly bodies on a peripheral smear.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
+      'heart': { type: 'Cardiovascular', inMls: 'Cardiac markers like Troponin I and CK-MB are measured here. Blood typing is vital for cardiac surgeries.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'liver': { type: 'Digestive', inMls: 'Liver Function Tests (ALT, AST, ALP, Bilirubin) are core. The liver produces clotting factors evaluated in Coagulation.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'kidney': { type: 'Urinary', inMls: 'Urinalysis, creatinine clearance, and BUN assess renal function. The kidney produces erythropoietin.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis' },
+      'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis and fungal infections are vital.', link: 'course-microbiology.html', linkText: 'Microbiology' },
+      'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis and subarachnoid hemorrhage.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
+      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis. Aspirates diagnose leukemias and anemias.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
+      'rib': { type: 'Skeletal', inMls: 'Bone marrow aspirates are often taken from the posterior iliac crest, but ribs contain active marrow.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
+      'skull': { type: 'Skeletal', inMls: 'The skull protects the brain. Cranial bones are assessed in skeletal surveys and forensic pathology.', link: 'course-histopathology.html', linkText: 'Histopathology' },
+      'vertebra': { type: 'Skeletal', inMls: 'Lumbar puncture (spinal tap) is performed between the L3-L4 or L4-L5 vertebrae to collect CSF.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
+      'muscle': { type: 'Muscular', inMls: 'Elevated Creatine Kinase (CK) and Aldolase indicate skeletal muscle damage.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'stomach': { type: 'Digestive', inMls: 'Gastric biopsies are tested for Helicobacter pylori using the rapid urease test.', link: 'course-microbiology.html', linkText: 'Microbiology' },
+      'intestine': { type: 'Digestive', inMls: 'Stool cultures and O&P (Ova and Parasite) exams assess intestinal infections.', link: 'course-microbiology.html', linkText: 'Microbiology' },
+      'pancreas': { type: 'Digestive', inMls: 'Elevated serum amylase and lipase are key indicators of acute pancreatitis.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'spleen': { type: 'Lymphoid', inMls: 'The spleen filters old RBCs. Splenectomy leads to Howell-Jolly bodies on a peripheral smear.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
+      'artery': { type: 'Cardiovascular', inMls: 'Arterial blood gases (ABG) are collected to evaluate oxygenation and acid-base balance.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
+      'vein': { type: 'Cardiovascular', inMls: 'Venipuncture is the standard method for collecting venous blood for laboratory testing.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
     };
 
-    // These must match the exact filenames you exported from Blender
     const systems = [
       { id: 'skeleton', label: 'Skeletal System', file: 'skeleton.glb', color: '#e8dcc4' },
       { id: 'muscles', label: 'Muscular System', file: 'muscles.glb', color: '#c0392b' },
@@ -164,7 +183,6 @@
     renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    // Studio Environment for premium reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -175,16 +193,52 @@
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.listenToKeyEvents(window);
-    controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
-    controls.keyPanSpeed = 20;
+    controls.maxDistance = 10;
+    controls.minDistance = 0.5;
 
-    document.addEventListener('keydown', (e) => {
-      const moveSpeed = 0.08;
+    // --- Custom WASD + QE Movement ---
+    window.addEventListener('keydown', (e) => {
+      // Prevent page scrolling when using keys
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE'].includes(e.code)) {
+        e.preventDefault();
+      }
+
+      const moveSpeed = 0.15;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
-      if (e.code === 'KeyE') { camera.position.add(forward.multiplyScalar(moveSpeed)); controls.target.add(forward.multiplyScalar(moveSpeed)); }
-      if (e.code === 'KeyQ') { camera.position.sub(forward.multiplyScalar(moveSpeed)); controls.target.sub(forward.multiplyScalar(moveSpeed)); }
+
+      // Q/E for forward/backward depth movement
+      if (e.code === 'KeyE') {
+        camera.position.add(forward.clone().multiplyScalar(moveSpeed));
+        controls.target.add(forward.clone().multiplyScalar(moveSpeed));
+      }
+      if (e.code === 'KeyQ') {
+        camera.position.sub(forward.clone().multiplyScalar(moveSpeed));
+        controls.target.sub(forward.clone().multiplyScalar(moveSpeed));
+      }
+
+      // WASD for panning left/right/up/down relative to view
+      const right = new THREE.Vector3();
+      right.crossVectors(camera.up, forward).normalize();
+      const up = new THREE.Vector3();
+      up.crossVectors(forward, right).normalize();
+
+      if (e.code === 'KeyW') { // Pan Up
+        camera.position.add(up.clone().multiplyScalar(moveSpeed));
+        controls.target.add(up.clone().multiplyScalar(moveSpeed));
+      }
+      if (e.code === 'KeyS') { // Pan Down
+        camera.position.sub(up.clone().multiplyScalar(moveSpeed));
+        controls.target.sub(up.clone().multiplyScalar(moveSpeed));
+      }
+      if (e.code === 'KeyA') { // Pan Left
+        camera.position.sub(right.clone().multiplyScalar(moveSpeed));
+        controls.target.sub(right.clone().multiplyScalar(moveSpeed));
+      }
+      if (e.code === 'KeyD') { // Pan Right
+        camera.position.add(right.clone().multiplyScalar(moveSpeed));
+        controls.target.add(right.clone().multiplyScalar(moveSpeed));
+      }
     });
 
     const dracoLoader = new DRACOLoader();
@@ -248,7 +302,6 @@
       controls.update();
     }
 
-    // Toggles UI
     systems.forEach(system => {
       const row = document.createElement('div');
       row.className = 'toggle-row';
@@ -272,7 +325,6 @@
       }
     });
 
-    // Raycaster
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let lastHighlighted = null;
@@ -302,6 +354,7 @@
         clickedMesh.material.emissive.setHex(0x444444);
         
         const cleanName = (clickedMesh.name || clickedMesh.parent.name || 'Unknown').replace(/_/g, ' ').toLowerCase();
+        
         let matchedData = null;
         for (const [key, data] of Object.entries(mlsData)) {
           if (cleanName.includes(key)) { matchedData = data; break; }
@@ -317,7 +370,7 @@
           infoMlsLink.style.display = 'inline-block';
         } else {
           infoType.textContent = 'Anatomical Structure';
-          infoDesc.textContent = 'Click on a major organ to see its MLS correlation.';
+          infoDesc.textContent = 'Click on a major organ or bone structure to see its Medical Laboratory Science correlation.';
           infoMlsLink.style.display = 'none';
         }
         infoPanel.classList.add('visible');
