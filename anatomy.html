@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="anatomy-data.js"></script> <!-- Load the data file -->
   <script src="auth.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -23,11 +24,8 @@
     .nav-links a:hover { color: #e8eef5; }
     .nav-links a.active { color: #f6c445; }
     
-    /* The main container takes up all remaining height below the header */
-    .main-container { flex: 1; position: relative; width: 100%; }
-    
-    /* Absolute positioning guarantees it fills the main container perfectly */
-    #canvas-container { position: absolute; inset: 0; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
+    .main-container { flex: 1; display: flex; position: relative; overflow: hidden; }
+    #canvas-container { flex: 1; width: 100%; height: 100%; background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
     
     /* Left Sidebar */
     .system-panel { position: absolute; top: 20px; left: 20px; background: rgba(26,43,61,0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; width: 280px; max-height: calc(100% - 40px); overflow-y: auto; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -45,31 +43,34 @@
     input:checked + .slider:before { transform: translateX(18px); }
     
     /* Right Info Panel */
-    .info-panel { position: absolute; top: 20px; right: 20px; background: rgba(26,43,61,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; width: 320px; max-height: calc(100% - 40px); overflow-y: auto; display: none; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .info-panel { position: absolute; top: 20px; right: 20px; background: rgba(26,43,61,0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; width: 340px; max-height: calc(100% - 40px); overflow-y: auto; display: none; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     .info-panel.visible { display: block; animation: slideIn 0.3s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     .info-panel h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: #f6c445; margin-bottom: 0.2rem; }
     .info-panel .type { font-size: 0.75rem; color: #8ab4d9; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; display: block; }
-    .info-panel .mls-correlation { background: rgba(138,180,217,0.1); border-left: 3px solid #8ab4d9; padding: 0.8rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
-    .info-panel .mls-correlation h4 { font-size: 0.8rem; color: #8ab4d9; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .info-panel p { font-size: 0.9rem; color: #e8eef5; line-height: 1.5; margin-bottom: 1rem; }
+    .info-panel .mls-correlation { background: rgba(138,180,217,0.1); border-left: 3px solid #8ab4d9; padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1rem; }
+    .info-panel .mls-correlation h4 { font-size: 0.8rem; color: #8ab4d9; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-panel .mls-correlation ul { padding-left: 1.2rem; margin: 0; }
+    .info-panel .mls-correlation li { font-size: 0.85rem; color: #e8eef5; line-height: 1.5; margin-bottom: 0.6rem; }
+    .info-panel .mls-correlation li:last-child { margin-bottom: 0; }
+    .info-panel .mls-correlation strong { color: #f6c445; }
     .info-panel .mls-link { display: inline-block; background: #1e3b5a; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s, transform 0.2s; }
     .info-panel .mls-link:hover { background: #2d4a6b; transform: translateY(-2px); }
     #close-info { float: right; background: none; border: none; color: #8ab4d9; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
     
-    .instructions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(15,26,38,0.8); backdrop-filter: blur(4px); color: #b8c5d1; font-size: 0.85rem; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); pointer-events: none; display: flex; gap: 1rem; align-items: center; }
+    /* Moved instructions to bottom-left to avoid overlapping the model */
+    .instructions { position: absolute; bottom: 20px; left: 20px; background: rgba(15,26,38,0.8); backdrop-filter: blur(4px); color: #b8c5d1; font-size: 0.85rem; padding: 8px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); pointer-events: none; display: flex; gap: 1rem; align-items: center; }
     .key-badge { background: #2d4a6b; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; }
 
     #loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f1a26; z-index: 50; transition: opacity 0.5s; }
     #loading.hidden { opacity: 0; pointer-events: none; }
     .spinner { width: 40px; height: 40px; border: 4px solid rgba(138,180,217,0.3); border-top-color: #8ab4d9; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
+    
     @media (max-width: 768px) {
-      .system-panel { width: calc(100% - 40px); max-height: 30vh; top: 10px; left: 10px; }
-      .info-panel { width: calc(100% - 40px); top: auto; bottom: 60px; left: 10px; max-height: 40vh; }
       .instructions { display: none; }
-      .nav-links { display: none; }
+      .system-panel { width: calc(100% - 40px); max-height: 25vh; }
+      .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; max-height: 40vh; }
     }
   </style>
 </head>
@@ -102,9 +103,9 @@
       <button id="close-info">×</button>
       <h2 id="info-title">Structure Name</h2>
       <span class="type" id="info-type">System</span>
-      <div class="mls-correlation">
+      <div class="mls-correlation" id="info-correlation-box">
         <h4>In MLS</h4>
-        <p id="info-desc" style="margin-bottom: 0;"></p>
+        <div id="info-desc"></div>
       </div>
       <a href="#" class="mls-link" id="info-mls-link">View related course →</a>
     </div>
@@ -112,7 +113,6 @@
     <div class="instructions">
       <span><span class="key-badge">W</span><span class="key-badge">A</span><span class="key-badge">S</span><span class="key-badge">D</span> to Pan</span>
       <span><span class="key-badge">Q</span><span class="key-badge">E</span> to Zoom</span>
-      <span>🖱️ Left-click to rotate</span>
     </div>
   </main>
 
@@ -141,25 +141,8 @@
     const toggleContainer = document.getElementById('system-toggles');
     const loadingText = document.querySelector('#loading p');
 
-    // Expanded MLS Data mapping
-    const mlsData = {
-      'heart': { type: 'Cardiovascular', inMls: 'Cardiac markers like Troponin I and CK-MB are measured here. Blood typing is vital for cardiac surgeries.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'liver': { type: 'Digestive', inMls: 'Liver Function Tests (ALT, AST, ALP, Bilirubin) are core. The liver produces clotting factors evaluated in Coagulation.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'kidney': { type: 'Urinary', inMls: 'Urinalysis, creatinine clearance, and BUN assess renal function. The kidney produces erythropoietin.', link: 'course-analysis-of-urine.html', linkText: 'Urinalysis' },
-      'lung': { type: 'Respiratory', inMls: 'Sputum cultures for Mycobacterium tuberculosis and fungal infections are vital.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'brain': { type: 'Nervous', inMls: 'Cerebrospinal fluid (CSF) is analyzed to diagnose meningitis and subarachnoid hemorrhage.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
-      'bone': { type: 'Skeletal', inMls: 'Bone marrow is the site of hematopoiesis. Aspirates diagnose leukemias and anemias.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
-      'rib': { type: 'Skeletal', inMls: 'Bone marrow aspirates are often taken from the posterior iliac crest, but ribs contain active marrow.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
-      'skull': { type: 'Skeletal', inMls: 'The skull protects the brain. Cranial bones are assessed in skeletal surveys and forensic pathology.', link: 'course-histopathology.html', linkText: 'Histopathology' },
-      'vertebra': { type: 'Skeletal', inMls: 'Lumbar puncture (spinal tap) is performed between the L3-L4 or L4-L5 vertebrae to collect CSF.', link: 'course-analysis-of-urine.html', linkText: 'Body Fluids' },
-      'muscle': { type: 'Muscular', inMls: 'Elevated Creatine Kinase (CK) and Aldolase indicate skeletal muscle damage.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'stomach': { type: 'Digestive', inMls: 'Gastric biopsies are tested for Helicobacter pylori using the rapid urease test.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'intestine': { type: 'Digestive', inMls: 'Stool cultures and O&P (Ova and Parasite) exams assess intestinal infections.', link: 'course-microbiology.html', linkText: 'Microbiology' },
-      'pancreas': { type: 'Digestive', inMls: 'Elevated serum amylase and lipase are key indicators of acute pancreatitis.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'spleen': { type: 'Lymphoid', inMls: 'The spleen filters old RBCs. Splenectomy leads to Howell-Jolly bodies on a peripheral smear.', link: 'course-clinical-hematology.html', linkText: 'Hematology' },
-      'artery': { type: 'Cardiovascular', inMls: 'Arterial blood gases (ABG) are collected to evaluate oxygenation and acid-base balance.', link: 'course-clinical-chemistry.html', linkText: 'Clinical Chemistry' },
-      'vein': { type: 'Cardiovascular', inMls: 'Venipuncture is the standard method for collecting venous blood for laboratory testing.', link: 'course-clinical-hematology.html', linkText: 'Hematology' }
-    };
+    // Use the data from anatomy-data.js
+    const mlsData = window.MLS_ANATOMY_DATA;
 
     const systems = [
       { id: 'skeleton', label: 'Skeletal System', file: 'skeleton.glb', color: '#e8dcc4' },
@@ -183,6 +166,7 @@
     renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
+    // Studio Environment
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -193,52 +177,18 @@
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.maxDistance = 10;
-    controls.minDistance = 0.5;
+    controls.listenToKeyEvents(window);
+    
+    // FIXED: A goes left, D goes right relative to the camera
+    controls.keys = { LEFT: 'KeyA', UP: 'KeyW', RIGHT: 'KeyD', BOTTOM: 'KeyS' };
+    controls.keyPanSpeed = 20; // Adjust speed
 
-    // --- Custom WASD + QE Movement ---
-    window.addEventListener('keydown', (e) => {
-      // Prevent page scrolling when using keys
-      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE'].includes(e.code)) {
-        e.preventDefault();
-      }
-
-      const moveSpeed = 0.15;
+    document.addEventListener('keydown', (e) => {
+      const moveSpeed = 0.08;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
-
-      // Q/E for forward/backward depth movement
-      if (e.code === 'KeyE') {
-        camera.position.add(forward.clone().multiplyScalar(moveSpeed));
-        controls.target.add(forward.clone().multiplyScalar(moveSpeed));
-      }
-      if (e.code === 'KeyQ') {
-        camera.position.sub(forward.clone().multiplyScalar(moveSpeed));
-        controls.target.sub(forward.clone().multiplyScalar(moveSpeed));
-      }
-
-      // WASD for panning left/right/up/down relative to view
-      const right = new THREE.Vector3();
-      right.crossVectors(camera.up, forward).normalize();
-      const up = new THREE.Vector3();
-      up.crossVectors(forward, right).normalize();
-
-      if (e.code === 'KeyW') { // Pan Up
-        camera.position.add(up.clone().multiplyScalar(moveSpeed));
-        controls.target.add(up.clone().multiplyScalar(moveSpeed));
-      }
-      if (e.code === 'KeyS') { // Pan Down
-        camera.position.sub(up.clone().multiplyScalar(moveSpeed));
-        controls.target.sub(up.clone().multiplyScalar(moveSpeed));
-      }
-      if (e.code === 'KeyA') { // Pan Left
-        camera.position.sub(right.clone().multiplyScalar(moveSpeed));
-        controls.target.sub(right.clone().multiplyScalar(moveSpeed));
-      }
-      if (e.code === 'KeyD') { // Pan Right
-        camera.position.add(right.clone().multiplyScalar(moveSpeed));
-        controls.target.add(right.clone().multiplyScalar(moveSpeed));
-      }
+      if (e.code === 'KeyE') { camera.position.add(forward.multiplyScalar(moveSpeed)); controls.target.add(forward.multiplyScalar(moveSpeed)); }
+      if (e.code === 'KeyQ') { camera.position.sub(forward.multiplyScalar(moveSpeed)); controls.target.sub(forward.multiplyScalar(moveSpeed)); }
     });
 
     const dracoLoader = new DRACOLoader();
@@ -302,6 +252,7 @@
       controls.update();
     }
 
+    // Toggles
     systems.forEach(system => {
       const row = document.createElement('div');
       row.className = 'toggle-row';
@@ -325,6 +276,7 @@
       }
     });
 
+    // Raycaster
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let lastHighlighted = null;
@@ -364,13 +316,13 @@
         
         if (matchedData) {
           infoType.textContent = matchedData.type;
-          infoDesc.textContent = matchedData.inMls;
+          infoDesc.innerHTML = matchedData.inMls; // Uses innerHTML for the bullet points
           infoMlsLink.href = matchedData.link;
           infoMlsLink.textContent = `Study ${matchedData.linkText} →`;
           infoMlsLink.style.display = 'inline-block';
         } else {
           infoType.textContent = 'Anatomical Structure';
-          infoDesc.textContent = 'Click on a major organ or bone structure to see its Medical Laboratory Science correlation.';
+          infoDesc.innerHTML = '<p>Click on a major organ to see its MLS correlation.</p>';
           infoMlsLink.style.display = 'none';
         }
         infoPanel.classList.add('visible');
