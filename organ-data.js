@@ -1,7 +1,7 @@
 // organ-data.js
 window.ORGAN_DATA = {
   heart: {
-    name: 'Heart', latin: 'Cor', icon: '🫀', color: '#e74c3c',
+    name: 'Heart', latin: 'Cor', icon: '❤️', color: '#e74c3c',
     tagline: 'The relentless pump that never rests.',
     description: 'A four-chambered muscular pump that generates the pressure gradient driving pulmonary and systemic circulation.',
     function: 'Blood circulation, oxygen and nutrient delivery',
@@ -48,7 +48,7 @@ window.ORGAN_DATA = {
     }
   },
   lungs: {
-    name: 'Lungs', latin: 'Pulmones', icon: '🫁', color: '#3498db',
+    name: 'Lungs', latin: 'Pulmones', icon: '🌬️', color: '#3498db',
     tagline: 'The gateway for gas exchange.',
     description: 'Pair of spongy, air-filled organs located on either side of the chest.',
     function: 'Gas exchange, acid-base balance',
@@ -67,7 +67,7 @@ window.ORGAN_DATA = {
     }
   },
   liver: {
-    name: 'Liver', latin: 'Hepar', icon: '🫀', color: '#8e44ad',
+    name: 'Liver', latin: 'Hepar', icon: '🥩', color: '#8e44ad',
     tagline: 'The body’s chemical factory.',
     description: 'A large, meaty organ that sits on the right side of the belly.',
     function: 'Metabolism, detoxification, bile production, synthesis of clotting factors and albumin',
@@ -85,7 +85,7 @@ window.ORGAN_DATA = {
     }
   },
   kidneys: {
-    name: 'Kidneys', latin: 'Renes', icon: '🫘', color: '#e67e22',
+    name: 'Kidneys', latin: 'Renes', icon: '🍒', color: '#e67e22',
     tagline: 'The master filters of the blood.',
     description: 'Bean-shaped organs that filter blood and produce urine.',
     function: 'Filtration, fluid balance, blood pressure regulation, erythropoietin production',
@@ -103,7 +103,7 @@ window.ORGAN_DATA = {
     }
   },
   stomach: {
-    name: 'Stomach', latin: 'Gaster', icon: '🫃', color: '#f39c12',
+    name: 'Stomach', latin: 'Gaster', icon: '🍲', color: '#f39c12',
     tagline: 'The acidic digestion chamber.',
     description: 'Muscular organ that breaks down food using acid and enzymes.',
     function: 'Digestion, intrinsic factor secretion, acid production',
