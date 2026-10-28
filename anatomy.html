@@ -6,7 +6,6 @@
   <title>3D Anatomy Atlas · MLS Crash Course</title>
   <meta name="description" content="Interactive 3D Anatomy Atlas with MLS clinical correlations.">
   
-  <!-- Favicon / Logo Tags -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="shortcut icon" href="assets/icons/icon-192.png">
@@ -171,71 +170,6 @@
     .organ-title-badge .icon { font-size: 1.6rem; }
     .organ-title-badge .latin { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #5c7c9e; display: block; font-style: italic; margin-top: -4px; font-weight: 400;}
 
-    /* ---------- Hotspots ---------- */
-    #hotspots-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 15;
-      overflow: hidden;
-    }
-    .hotspot {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      margin-left: -12px;
-      margin-top: -12px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.9);
-      border: 3px solid #1e3b5a;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      cursor: pointer;
-      pointer-events: auto;
-      transform: translateZ(0);
-      transition: transform 0.15s, background 0.15s;
-    }
-    .hotspot::after {
-      content: '';
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 2px solid rgba(30,59,90,0.3);
-      animation: pulse 2s infinite;
-    }
-    .hotspot:hover {
-      transform: scale(1.2);
-      background: #f6c445;
-      border-color: #fff;
-    }
-    .hotspot.active {
-      background: #f6c445;
-      border-color: #fff;
-    }
-    @keyframes pulse {
-      0% { transform: scale(0.8); opacity: 1; }
-      100% { transform: scale(1.6); opacity: 0; }
-    }
-    
-    .hotspot-label {
-      position: absolute;
-      left: 100%;
-      top: 50%;
-      transform: translateY(-50%);
-      margin-left: 12px;
-      background: rgba(15,26,38,0.9);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .hotspot:hover .hotspot-label { opacity: 1; }
-
     /* ---------- Sidebar (System Panel) ---------- */
     .system-panel {
       position: absolute;
@@ -343,21 +277,27 @@
     .info-block.info-tip h4 { color: #b5860b; }
     .info-block.info-tip p { color: #6b4c05; font-style: italic; }
 
-    .info-panel .mls-link { display: inline-block; background: #1e3b5a; color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s, transform 0.2s; margin-top: 0.25rem; }
-    .info-panel .mls-link:hover { background: #162d45; transform: translateY(-2px); }
-    #close-info { float: right; background: none; border: none; color: #5c7c9e; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
-
-    /* Structure List (For Organ View) */
-    .structure-list { margin-top: 1.5rem; border-top: 1px solid rgba(30,59,90,0.1); padding-top: 1rem; }
-    .structure-list h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
-    .structure-item {
-      display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0;
-      border-bottom: 1px solid rgba(30,59,90,0.05); cursor: pointer;
+    /* Cooler Organ Hero */
+    .organ-hero {
+      padding: 1rem;
+      border-left: 4px solid;
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 1rem;
     }
-    .structure-item:hover .struct-name { color: #d4a017; }
-    .struct-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-    .struct-name { font-size: 0.9rem; font-weight: 600; color: #1e3b5a; transition: color 0.15s; }
-    .struct-desc { font-size: 0.75rem; color: #8b8b8b; line-height: 1.4; margin-top: 2px; }
+    .hero-tagline {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-style: italic;
+      margin-bottom: 0.4rem;
+    }
+    .hero-desc {
+      font-size: 0.9rem;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    #close-info { float: right; background: none; border: none; color: #5c7c9e; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
 
     /* Loading */
     #loading {
@@ -429,21 +369,12 @@
     html[data-theme="dark"] .info-block.info-tip p { color: #f9e6b5; }
     html[data-theme="dark"] #close-info { color: #8ab4d9; }
     
-    html[data-theme="dark"] .structure-list { border-top-color: rgba(255,255,255,0.1); }
-    html[data-theme="dark"] .structure-list h4 { color: #8ab4d9; }
-    html[data-theme="dark"] .structure-item { border-bottom-color: rgba(255,255,255,0.05); }
-    html[data-theme="dark"] .struct-name { color: #e8eef5; }
-    html[data-theme="dark"] .structure-item:hover .struct-name { color: #f6c445; }
-    html[data-theme="dark"] .struct-desc { color: #8b8b8b; }
+    html[data-theme="dark"] .hero-desc { color: #b8c5d1; }
 
     html[data-theme="dark"] .back-to-body { background: rgba(26,43,61,0.9); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
     html[data-theme="dark"] .back-to-body:hover { background: #23374b; color: #fff; }
     html[data-theme="dark"] .organ-title-badge { background: rgba(26,43,61,0.6); color: #8ab4d9; }
     html[data-theme="dark"] .organ-title-badge .latin { color: #6b8ba3; }
-
-    html[data-theme="dark"] .hotspot { background: rgba(26,43,61,0.9); border-color: #8ab4d9; }
-    html[data-theme="dark"] .hotspot:hover, html[data-theme="dark"] .hotspot.active { background: #f6c445; border-color: #fff; }
-    html[data-theme="dark"] .hotspot::after { border-color: rgba(138,180,217,0.3); }
 
     html[data-theme="dark"] #loading { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] .spinner { border-color: rgba(138,180,217,0.3); border-top-color: #8ab4d9; }
@@ -499,7 +430,6 @@
 
   <main class="main-container">
     <div id="canvas-container"></div>
-    <div id="hotspots-layer"></div>
 
     <!-- Organ Mode UI -->
     <div class="organ-header-bar" id="organ-header-bar">
@@ -545,13 +475,7 @@
 
       <div id="info-desc"></div>
       
-      <!-- Organ structure list (hidden by default) -->
-      <div class="structure-list" id="structure-list" style="display:none;">
-        <h4>Structures</h4>
-        <div id="structure-items"></div>
-      </div>
-
-      <a href="#" class="mls-link" id="info-mls-link">View related course →</a>
+      <a href="#" class="mls-link" id="info-mls-link" style="display:none;">View related course →</a>
     </aside>
 
     <div id="loading">
@@ -578,7 +502,6 @@
 
     // DOM Elements
     const container     = document.getElementById('canvas-container');
-    const hotspotsLayer = document.getElementById('hotspots-layer');
     const infoPanel     = document.getElementById('info-panel');
     const infoTitle     = document.getElementById('info-title');
     const infoType      = document.getElementById('info-type');
@@ -597,8 +520,6 @@
     const organLatinEl   = document.getElementById('organ-latin');
     const organIconEl    = document.getElementById('organ-icon');
     const organMeta      = document.getElementById('organ-meta');
-    const structureList  = document.getElementById('structure-list');
-    const structureItems = document.getElementById('structure-items');
 
     // Data
     const mlsData        = window.MLS_ANATOMY_DATA     || {};
@@ -637,16 +558,25 @@
     controls.keyPanSpeed = 20;
 
     // State
-    let mode = 'full-body'; // 'full-body' or 'organ'
+    let mode = 'full-body';
     let activeOrganId = null;
     let loadedBodyModels = {};
     let activeOrganGroup = null;
-    let organHotspots = []; // { partId, mesh, element, labelEl }
+    let activeOrganWrapper = null;
     let pickables = [];
     let lastHighlighted = null;
     let pointerDownAt = null;
     let containerReady = false;
     let unionBox = new THREE.Box3();
+
+    // Hover / Floating State
+    const clock = new THREE.Clock();
+    let isInteracting = false;
+    let interactionTimeout = null;
+    let hoverTime = 0;
+    let baseY = 0;
+    let currentAmplitude = 0;
+    let targetAmplitude = 0.15;
 
     // Systems Config
     const systems = [
@@ -663,6 +593,20 @@
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
+
+    // --- INTERACTION EVENTS FOR HOVER ---
+    controls.addEventListener('start', () => {
+      isInteracting = true;
+      if (interactionTimeout) clearTimeout(interactionTimeout);
+    });
+
+    controls.addEventListener('end', () => {
+      interactionTimeout = setTimeout(() => {
+        isInteracting = false;
+        hoverTime = 0; 
+        baseY = activeOrganWrapper ? activeOrganWrapper.position.y : 0;
+      }, 2000);
+    });
 
     // --- INIT & LOADING ---
     function sizeRenderer() {
@@ -791,8 +735,6 @@
       organIconEl.textContent = organ.icon;
       infoPanel.classList.remove('visible');
       
-      hotspotsLayer.innerHTML = '';
-      organHotspots = [];
       pickables = [];
 
       // Hide body
@@ -803,36 +745,40 @@
       loader.load(`assets/models/organs/${organId}.glb`, (gltf) => {
         activeOrganGroup = gltf.scene;
         
-        // Apply material
+        const box = new THREE.Box3().setFromObject(activeOrganGroup);
+        const center = box.getCenter(new THREE.Vector3());
+        activeOrganGroup.position.sub(center);
+
+        activeOrganWrapper = new THREE.Group();
+        activeOrganWrapper.add(activeOrganGroup);
+        scene.add(activeOrganWrapper);
+
+        const size = box.getSize(new THREE.Vector3());
+        targetAmplitude = Math.max(size.x, size.y, size.z) * 0.05;
+        baseY = 0;
+        currentAmplitude = 0;
+        hoverTime = 0;
+
         activeOrganGroup.traverse(child => {
           if (child.isMesh) {
             if (!child.material) {
               child.material = new THREE.MeshStandardMaterial({ color: organ.color, roughness: 0.3, metalness: 0.1 });
             }
-            child.userData.organId = organId;
             pickables.push(child);
           }
         });
 
-        scene.add(activeOrganGroup);
         document.getElementById('loading').classList.add('hidden');
         
-        // Fit camera
-        activeOrganGroup.updateMatrixWorld(true);
-        const box = new THREE.Box3().setFromObject(activeOrganGroup);
-        fitCameraToBox(box);
+        const wrapperBox = new THREE.Box3().setFromCenterAndSize(new THREE.Vector3(0,0,0), size);
+        fitCameraToBox(wrapperBox);
 
-        // Generate Hotspots
-        generateHotspots(organ, activeOrganGroup);
-        
-        // Show Organ Info Panel
         renderOrganInfoPanel(organ);
       }, 
       undefined, 
       (error) => {
         console.warn(`Organ model missing: ${organId}.glb. Showing fallback view.`);
         document.getElementById('loading').classList.add('hidden');
-        // Fallback: Just show the info panel even if 3D model is missing
         renderOrganInfoPanel(organ);
         alert(`Note: 3D model for ${organ.name} (assets/models/organs/${organId}.glb) is not found. Showing text info only.`);
       });
@@ -845,12 +791,11 @@
       systemPanel.classList.remove('hide');
       infoPanel.classList.remove('visible');
       
-      hotspotsLayer.innerHTML = '';
-      organHotspots = [];
       pickables = [];
       
-      if (activeOrganGroup) {
-        scene.remove(activeOrganGroup);
+      if (activeOrganWrapper) {
+        scene.remove(activeOrganWrapper);
+        activeOrganWrapper = null;
         activeOrganGroup = null;
       }
       
@@ -864,77 +809,6 @@
       fitCameraToBox(unionBox);
     }
 
-    // --- HOTSPOT LOGIC ---
-    function generateHotspots(organ, group) {
-      group.traverse(child => {
-        if (!child.isMesh) return;
-        
-        const meshName = (child.name || '').toLowerCase().replace(/_/g, ' ');
-        
-        // Find matching part
-        let matchedPartId = null;
-        Object.keys(organ.parts).forEach(partId => {
-          if (meshName.includes(partId)) matchedPartId = partId;
-        });
-
-        if (matchedPartId) {
-          const part = organ.parts[matchedPartId];
-          
-          // Calculate center
-          const box = new THREE.Box3().setFromObject(child);
-          const center = box.getCenter(new THREE.Vector3());
-          group.worldToLocal(center); // Store in local space
-
-          // Create HTML hotspot element
-          const el = document.createElement('div');
-          el.className = 'hotspot';
-          el.innerHTML = `<div class="hotspot-label">${part.name}</div>`;
-          hotspotsLayer.appendChild(el);
-          
-          // Click handler for hotspot
-          el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            highlightHotspot(el);
-            renderPartInfo(organ, matchedPartId);
-          });
-
-          organHotspots.push({ partId: matchedPartId, mesh: child, element: el, center: center });
-        }
-      });
-    }
-
-    function updateHotspots() {
-      if (mode !== 'organ' || !activeOrganGroup) return;
-      
-      const rect = container.getBoundingClientRect();
-      
-      organHotspots.forEach(spot => {
-        // Project 3D center to 2D screen
-        const vector = spot.center.clone();
-        activeOrganGroup.localToWorld(vector); // Local -> World
-        vector.project(camera); // World -> NDC
-
-        // Check if behind camera
-        if (vector.z > 1) {
-          spot.element.style.display = 'none';
-          return;
-        }
-
-        spot.element.style.display = 'block';
-        
-        const x = (vector.x * 0.5 + 0.5) * rect.width;
-        const y = (-(vector.y * 0.5) + 0.5) * rect.height;
-        
-        spot.element.style.left = `${x}px`;
-        spot.element.style.top = `${y}px`;
-      });
-    }
-
-    function highlightHotspot(el) {
-      document.querySelectorAll('.hotspot').forEach(h => h.classList.remove('active'));
-      el.classList.add('active');
-    }
-
     // --- INFO PANEL LOGIC ---
     function renderOrganInfoPanel(organ) {
       infoTitle.textContent = organ.name;
@@ -946,48 +820,37 @@
       document.getElementById('meta-weight').textContent = organ.weight || '-';
       document.getElementById('meta-tissue').textContent = organ.tissue || '-';
 
-      infoDesc.innerHTML = `
-        <div class="info-block"><h4>Description</h4><p>${organ.description}</p></div>
-        <div class="info-block"><h4>Function</h4><p>${organ.function}</p></div>
-        <div class="info-block info-tip"><h4>Did you know?</h4><p>${organ.note}</p></div>
-      `;
-
-      // Render structure list
-      structureList.style.display = 'block';
-      structureItems.innerHTML = Object.entries(organ.parts).map(([id, part]) => `
-        <div class="structure-item" data-part-id="${id}">
-          <div class="struct-dot" style="background:${organ.color}"></div>
-          <div>
-            <div class="struct-name">${part.name}</div>
-            <div class="struct-desc">${part.desc}</div>
-          </div>
+      let html = `
+        <div class="organ-hero" style="border-left-color: ${organ.color}; background: linear-gradient(90deg, ${organ.color}11, transparent);">
+          <div class="hero-tagline" style="color: ${organ.color};">${organ.tagline}</div>
+          <p class="hero-desc">${organ.description}</p>
         </div>
-      `).join('');
-
-      // Add click handlers for structure list
-      structureItems.querySelectorAll('.structure-item').forEach(item => {
-        item.addEventListener('click', () => {
-          renderPartInfo(organ, item.dataset.partId);
-        });
-      });
-
-      infoMlsLink.style.display = 'none';
-      infoPanel.classList.add('visible');
-    }
-
-    function renderPartInfo(organ, partId) {
-      const part = organ.parts[partId];
-      if (!part) return;
-
-      infoTitle.textContent = part.name;
-      infoType.textContent = `${organ.name} · Structure`;
-      organMeta.style.display = 'none';
-      
-      infoDesc.innerHTML = `
-        <div class="info-block"><h4>Description</h4><p>${part.desc}</p></div>
-        <div class="info-block info-tip"><h4>In MLS</h4><p>${part.mls}</p></div>
       `;
-      infoMlsLink.style.display = 'none';
+
+      if (organ.quickFacts && organ.quickFacts.length) {
+        html += `
+          <div class="info-block" style="margin-top: 1rem;">
+            <h4>⚡ Quick Facts</h4>
+            <ul class="fact-list">${organ.quickFacts.map(f => `<li>${f}</li>`).join('')}</ul>
+          </div>
+        `;
+      }
+
+      if (organ.clinicalPearls && organ.clinicalPearls.length) {
+        html += `
+          <div class="info-block info-tip">
+            <h4>🩺 MTLE Clinical Pearls</h4>
+            <ul class="pearl-list">${organ.clinicalPearls.map(p => `<li>${p}</li>`).join('')}</ul>
+          </div>
+        `;
+      }
+
+      if (organ.note) {
+        html += `<div class="info-block"><h4>💡 Did you know?</h4><p>${organ.note}</p></div>`;
+      }
+
+      infoDesc.innerHTML = html;
+      infoPanel.classList.add('visible');
     }
 
     function renderFullBodyInfo(mesh) {
@@ -996,7 +859,6 @@
       const displayName = prettyName(rawKey) || 'Unknown structure';
       
       let data = null;
-      let isFallback = false;
 
       if (key) {
         if (mlsData[key]) data = mlsData[key];
@@ -1024,17 +886,15 @@
       if (!data) {
         const sysId = mesh.userData.systemId;
         const fb = sysId && systemFallback[sysId];
-        if (fb) { data = { ...fb, type: fb.type || mesh.userData.systemLabel }; isFallback = true; }
+        if (fb) { data = { ...fb, type: fb.type || mesh.userData.systemLabel }; }
         else {
           data = { type: mesh.userData.systemLabel || 'Structure', function: '...', labTests: [], clinical: [], examTip: '...' };
-          isFallback = true;
         }
       }
 
       infoTitle.textContent = displayName;
       infoType.textContent = data.type || 'Anatomical Structure';
       organMeta.style.display = 'none';
-      structureList.style.display = 'none';
 
       let html = '';
       if (data.function) html += `<div class="info-block"><h4>Function</h4><p>${escapeHtml(data.function)}</p></div>`;
@@ -1043,7 +903,6 @@
       if (data.examTip) html += `<div class="info-block info-tip"><h4>MTLE Exam Tip</h4><p>${escapeHtml(data.examTip)}</p></div>`;
       
       infoDesc.innerHTML = html;
-      infoMlsLink.style.display = 'none';
       infoPanel.classList.add('visible');
     }
 
@@ -1078,7 +937,10 @@
 
     fitBtn.addEventListener('click', () => {
       if (mode === 'full-body') fitCameraToBox(unionBox);
-      else if (activeOrganGroup) fitCameraToBox(new THREE.Box3().setFromObject(activeOrganGroup));
+      else if (activeOrganWrapper) {
+        const box = new THREE.Box3().setFromObject(activeOrganWrapper);
+        fitCameraToBox(box);
+      }
     });
 
     // Raycasting
@@ -1100,44 +962,19 @@
 
       raycaster.setFromCamera(pointer, camera);
       
-      // In organ mode, check if we clicked the organ mesh
-      if (mode === 'organ') {
-        const hits = raycaster.intersectObjects(pickables, false);
-        if (hits.length > 0) {
-          // Find if this mesh corresponds to a part
-          const hitMesh = hits[0].object;
-          const hitName = (hitMesh.name || '').toLowerCase().replace(/_/g, ' ');
-          const organ = organData[activeOrganId];
-          
-          let matchedPartId = null;
-          Object.keys(organ.parts).forEach(partId => {
-            if (hitName.includes(partId)) matchedPartId = partId;
-          });
-
-          if (matchedPartId) {
-            renderPartInfo(organ, matchedPartId);
-            const spot = organHotspots.find(h => h.partId === matchedPartId);
-            if (spot) highlightHotspot(spot.element);
-          }
-        }
-      } 
-      // In full body mode, check for organ clicks first, then standard anatomy
-      else {
+      if (mode === 'full-body') {
         const hits = raycaster.intersectObjects(pickables, false);
         if (hits.length > 0) {
           const mesh = hits[0].object;
           const name = mesh.name.toLowerCase();
           
-          // Check if we clicked a major organ that has a detailed view
           for (const organId of Object.keys(organData)) {
-            // Simple heuristic: if the mesh name contains the organ ID (e.g. 'heart', 'liver')
             if (name.includes(organId)) {
               loadOrgan(organId);
               return;
             }
           }
           
-          // Otherwise, show normal info
           if (lastHighlighted) clearHighlight();
           lastHighlighted = mesh;
           if (mesh.material) mesh.material.emissive.setHex(0x333333);
@@ -1152,8 +989,23 @@
     // --- ANIMATION LOOP ---
     function animate() {
       requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      
+      if (mode === 'organ' && activeOrganWrapper) {
+        if (isInteracting) {
+          currentAmplitude += (0 - currentAmplitude) * 0.1; 
+        } else {
+          currentAmplitude += (targetAmplitude - currentAmplitude) * 0.05;
+          if (currentAmplitude > 0.001) {
+            hoverTime += delta;
+            activeOrganWrapper.position.y = baseY + Math.sin(hoverTime * 2) * currentAmplitude;
+          } else {
+            activeOrganWrapper.position.y = baseY;
+          }
+        }
+      }
+      
       controls.update();
-      updateHotspots();
       renderer.render(scene, camera);
     }
 
