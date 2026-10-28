@@ -167,7 +167,7 @@
       border-radius: 30px;
       backdrop-filter: blur(5px);
     }
-    .organ-title-badge .icon { font-size: 1.6rem; }
+    .organ-title-badge .icon { font-size: 1.6rem; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; }
     .organ-title-badge .latin { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #5c7c9e; display: block; font-style: italic; margin-top: -4px; font-weight: 400;}
 
     /* ---------- Sidebar (System Panel) ---------- */
@@ -231,13 +231,41 @@
       padding-top: 1rem;
     }
     .organ-nav h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
-    .organ-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .organ-btn {
-      background: transparent; border: 1px solid rgba(30,59,90,0.1); border-radius: 8px;
-      padding: 0.5rem; font-family: inherit; font-size: 0.8rem; color: #1e3b5a;
-      cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: background 0.15s;
+    
+    /* NEW: Scrollable single-column list */
+    .organ-btns { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.4rem; 
+      max-height: 250px; /* Adjust this to fit your sidebar */
+      overflow-y: auto;
+      padding-right: 6px; /* Space for scrollbar */
     }
-    .organ-btn:hover { background: #f0f4f8; }
+    
+    /* Custom Scrollbar for the list */
+    .organ-btns::-webkit-scrollbar { width: 6px; }
+    .organ-btns::-webkit-scrollbar-track { background: transparent; }
+    .organ-btns::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
+    .organ-btn {
+      background: rgba(255,255,255,0.5); border: 1px solid rgba(30,59,90,0.1); border-radius: 8px;
+      padding: 0.6rem 0.8rem; font-family: inherit; font-size: 0.85rem; color: #1e3b5a;
+      cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: all 0.15s;
+      text-align: left; width: 100%;
+    }
+    .organ-btn:hover { 
+      background: #f0f4f8; 
+      border-color: #1e3b5a; 
+      transform: translateX(4px); 
+    }
+    
+    /* Ensure emojis render properly */
+    .organ-btn .icon { 
+      font-size: 1.1rem; 
+      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; 
+      width: 24px; 
+      text-align: center;
+    }
 
     /* Parts list in the left sidebar during organ mode */
     .organ-parts-panel {
@@ -371,8 +399,9 @@
 
     html[data-theme="dark"] .organ-nav { border-top-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .organ-nav h4 { color: #8ab4d9; }
-    html[data-theme="dark"] .organ-btn { border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
-    html[data-theme="dark"] .organ-btn:hover { background: #23374b; }
+    html[data-theme="dark"] .organ-btns::-webkit-scrollbar-thumb { background: #4a5a6b; }
+    html[data-theme="dark"] .organ-btn { background: rgba(26,43,61,0.5); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
+    html[data-theme="dark"] .organ-btn:hover { background: #23374b; border-color: #8ab4d9; color: #fff; }
 
     html[data-theme="dark"] .organ-parts-panel { border-top-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .organ-parts-panel h4 { color: #8ab4d9; }
@@ -699,12 +728,21 @@
       toggleContainer.appendChild(row);
     });
 
-    // Populate Organ Quick Nav
+    // Populate Organ Quick Nav (New scrollable list format)
     Object.keys(organData).forEach(id => {
       const organ = organData[id];
       const btn = document.createElement('button');
       btn.className = 'organ-btn';
-      btn.innerHTML = `<span>${organ.icon}</span> ${organ.name}`;
+      
+      // Fallback icons in case emojis fail to render
+      const fallbackIcons = {
+        heart: '❤️', brain: '🧠', lungs: '🫁', liver: '🥩', kidneys: '🫘',
+        stomach: '🥣', pancreas: '🥑', spleen: '🟣', thyroid: '🦋', thymus: '🛡️',
+        'female reproductive system': '♀️', bladder: '💧'
+      };
+      
+      const icon = organ.icon || fallbackIcons[id] || '🫀';
+      btn.innerHTML = `<span class="icon">${icon}</span> <span class="name">${organ.name}</span>`;
       btn.onclick = () => loadOrgan(id);
       organNavBtns.appendChild(btn);
     });
@@ -775,7 +813,14 @@
       organHeaderBar.classList.add('visible');
       organNameEl.textContent = organ.name;
       organLatinEl.textContent = organ.latin;
-      organIconEl.textContent = organ.icon;
+      
+      const fallbackIcons = {
+        heart: '❤️', brain: '🧠', lungs: '🫁', liver: '🥩', kidneys: '🫘',
+        stomach: '🥣', pancreas: '🥑', spleen: '🟣', thyroid: '🦋', thymus: '🛡️',
+        'female reproductive system': '♀️', bladder: '💧'
+      };
+      organIconEl.textContent = organ.icon || fallbackIcons[organId] || '🫀';
+      
       infoPanel.classList.remove('visible');
       
       pickables = [];
