@@ -122,6 +122,29 @@
     }
     #canvas-container canvas { display: block; }
 
+    /* ---------- Slicer Controls ---------- */
+    .slicer-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.95);
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(30,59,90,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      display: none;
+      align-items: center;
+      gap: 15px;
+      z-index: 20;
+    }
+    .slicer-container.visible { display: flex; }
+    .slicer-container input[type="range"] {
+      width: 150px;
+      accent-color: #1e3b5a;
+    }
+    .slicer-container span { font-size: 0.8rem; font-weight: 600; color: #5c7c9e; text-transform: uppercase; letter-spacing: 0.05em; }
+
     /* ---------- Top Organ Header (Back Button) ---------- */
     .organ-header-bar {
       position: absolute;
@@ -223,6 +246,8 @@
       padding: 0.5rem; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
     }
     .panel-actions button:hover { background: #cbd5e1; }
+    .panel-actions button.quiz-btn { background: #f6c445; color: #4a3403; border-color: #d4a017; }
+    .panel-actions button.quiz-btn:hover { background: #d4a017; }
 
     /* Organ Quick Nav */
     .organ-nav {
@@ -324,6 +349,14 @@
     .info-block.info-tip h4 { color: #b5860b; }
     .info-block.info-tip p { color: #6b4c05; font-style: italic; }
 
+    /* Pathology Toggle */
+    .pathology-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(30,59,90,0.2);
+    }
+    .pathology-toggle-row span { font-size: 0.8rem; font-weight: 600; color: #c0392b; text-transform: uppercase; }
+    .pathology-toggle-row input { accent-color: #c0392b; width: 18px; height: 18px; cursor: pointer; }
+
     /* Cooler Organ Hero */
     .organ-hero {
       padding: 1rem;
@@ -345,6 +378,28 @@
     }
 
     #close-info { float: right; background: none; border: none; color: #5c7c9e; font-size: 1.5rem; cursor: pointer; padding: 0 5px; line-height: 1; }
+
+    /* ---------- Quiz Overlay ---------- */
+    #quiz-overlay {
+      position: absolute;
+      top: 80px; left: 50%;
+      transform: translateX(-50%);
+      width: 90%; max-width: 600px;
+      background: #1e3b5a;
+      color: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      z-index: 30;
+      display: none;
+      text-align: center;
+    }
+    #quiz-overlay.visible { display: block; animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+    #quiz-overlay h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: #f6c445; margin-bottom: 0.5rem; }
+    #quiz-overlay p { font-size: 1rem; line-height: 1.5; }
+    #quiz-overlay .score { margin-top: 1rem; font-size: 0.9rem; color: #8ab4d9; }
+    #quiz-overlay button { margin-top: 1rem; background: #f6c445; color: #4a3403; border: none; padding: 8px 20px; border-radius: 20px; font-weight: 700; cursor: pointer; font-family: inherit; }
 
     /* Loading */
     #loading {
@@ -385,6 +440,10 @@
 
     html[data-theme="dark"] #canvas-container { background: radial-gradient(circle at center, #162536 0%, #0f1a26 100%); }
 
+    html[data-theme="dark"] .slicer-container { background: rgba(26,43,61,0.95); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    html[data-theme="dark"] .slicer-container span { color: #8ab4d9; }
+    html[data-theme="dark"] .slicer-container input[type="range"] { accent-color: #8ab4d9; }
+
     html[data-theme="dark"] .system-panel { background: rgba(26,43,61,0.85); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     html[data-theme="dark"] .system-panel h3 { color: #8ab4d9; border-bottom-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .toggle-row { border-bottom-color: rgba(255,255,255,0.05); }
@@ -394,6 +453,8 @@
     html[data-theme="dark"] .panel-actions { border-top-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .panel-actions button { background: #1e3b5a; color: #e8eef5; border-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .panel-actions button:hover { background: #2d4a6b; }
+    html[data-theme="dark"] .panel-actions button.quiz-btn { background: #f6c445; color: #4a3403; }
+    html[data-theme="dark"] .panel-actions button.quiz-btn:hover { background: #d4a017; }
 
     html[data-theme="dark"] .organ-nav { border-top-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .organ-nav h4 { color: #8ab4d9; }
@@ -426,6 +487,7 @@
     html[data-theme="dark"] #close-info { color: #8ab4d9; }
     
     html[data-theme="dark"] .hero-desc { color: #b8c5d1; }
+    html[data-theme="dark"] .pathology-toggle-row { border-top-color: rgba(255,255,255,0.2); }
 
     html[data-theme="dark"] .back-to-body { background: rgba(26,43,61,0.9); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
     html[data-theme="dark"] .back-to-body:hover { background: #23374b; color: #fff; }
@@ -434,6 +496,7 @@
 
     html[data-theme="dark"] #loading { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] .spinner { border-color: rgba(138,180,217,0.3); border-top-color: #8ab4d9; }
+    html[data-theme="dark"] #quiz-overlay { background: #1a2b3d; border: 1px solid rgba(255,255,255,0.1); }
 
     @media (max-width: 900px) {
       .search-container:hover .search-input, .search-container:focus-within .search-input { width: 140px; }
@@ -445,6 +508,7 @@
       .info-panel { width: calc(100% - 40px); top: auto; bottom: 20px; left: 20px; right: 20px; max-height: 45vh; }
       .organ-header-bar { top: 10px; }
       .organ-title-badge { display: none; }
+      .slicer-container { bottom: auto; top: 80px; }
     }
   </style>
 </head>
@@ -487,6 +551,14 @@
   <main class="main-container">
     <div id="canvas-container"></div>
 
+    <!-- Quiz Overlay -->
+    <div id="quiz-overlay">
+      <h3>Spot Diagnosis</h3>
+      <p id="quiz-prompt">Click the correct organ in the 3D model.</p>
+      <div class="score" id="quiz-score">Score: 0 / 0</div>
+      <button id="quiz-next-btn" style="display:none;">Next Case →</button>
+    </div>
+
     <!-- Organ Mode UI -->
     <div class="organ-header-bar" id="organ-header-bar">
       <button class="back-to-body" id="back-btn">← Back to the body</button>
@@ -499,13 +571,21 @@
       </div>
     </div>
 
+    <!-- Slicer Control -->
+    <div class="slicer-container" id="slicer-container">
+      <span>Slice:</span>
+      <input type="range" id="slice-slider" min="0" max="100" value="0">
+    </div>
+
     <!-- Sidebar (Shows Systems in Body Mode, Parts in Organ Mode) -->
     <aside class="system-panel" id="system-panel">
       <div id="body-mode-panel">
         <h3>Systems &amp; Layers</h3>
         <div id="system-toggles"></div>
-        <div class="panel-actions">
+        
+        <div class="panel-actions" style="flex-direction: column;">
           <button id="fit-btn" type="button">Fit view</button>
+          <button id="start-quiz-btn" type="button" class="quiz-btn">🩺 Start Clinical Quiz</button>
         </div>
         
         <div class="organ-nav">
@@ -537,6 +617,12 @@
       </div>
 
       <div id="info-desc"></div>
+
+      <!-- Pathology Toggle -->
+      <div class="pathology-toggle-row" id="pathology-row" style="display:none;">
+        <span>🦠 Show Pathology</span>
+        <input type="checkbox" id="pathology-toggle">
+      </div>
       
       <a href="#" class="mls-link" id="info-mls-link" style="display:none;">View related course →</a>
     </aside>
@@ -576,6 +662,19 @@
     const systemPanel   = document.getElementById('system-panel');
     const organNavBtns  = document.getElementById('organ-nav-btns');
     
+    // Slicer & Pathology Elements
+    const slicerContainer = document.getElementById('slicer-container');
+    const sliceSlider = document.getElementById('slice-slider');
+    const pathologyRow = document.getElementById('pathology-row');
+    const pathologyToggle = document.getElementById('pathology-toggle');
+
+    // Quiz Elements
+    const startQuizBtn = document.getElementById('start-quiz-btn');
+    const quizOverlay = document.getElementById('quiz-overlay');
+    const quizPrompt = document.getElementById('quiz-prompt');
+    const quizScore = document.getElementById('quiz-score');
+    const quizNextBtn = document.getElementById('quiz-next-btn');
+
     // Organ UI Elements
     const organHeaderBar = document.getElementById('organ-header-bar');
     const backBtn        = document.getElementById('back-btn');
@@ -588,12 +687,26 @@
     const bodyModePanel   = document.getElementById('body-mode-panel');
     const organPartsPanel = document.getElementById('organ-parts-panel');
     const organPartsList  = document.getElementById('organ-parts-list');
-    const partsPanelTitle = document.getElementById('parts-panel-title');
 
     // Data
     const mlsData        = window.MLS_ANATOMY_DATA     || {};
     const systemFallback = window.MLS_SYSTEM_FALLBACKS || {};
     const organData      = window.ORGAN_DATA           || {};
+
+    // Quiz Data
+    const quizQuestions = [
+      { prompt: "Patient presents with jaundice, elevated ALT/AST, and prolonged PT/INR.", target: "liver" },
+      { prompt: "Patient presents with polyuria, polydipsia, and elevated HbA1c.", target: "pancreas" },
+      { prompt: "Patient has an elevated PSA, urinary retention, and is suspected of having BPH.", target: "bladder" },
+      { prompt: "Patient has severe flank pain, hematuria, and a CT scan shows a 5mm stone.", target: "kidneys" },
+      { prompt: "Patient has a cough, night sweats, and a sputum AFB smear positive for acid-fast bacilli.", target: "lungs" },
+      { prompt: "Patient presents with crushing chest pain and an elevated Troponin I.", target: "heart" },
+      { prompt: "Patient has fatigue, weight gain, cold intolerance, and an elevated TSH with low free T4.", target: "thyroid" },
+      { prompt: "Patient presents with an enlarged, painless lymph node in the neck. Biopsy shows Hodgkin lymphoma.", target: "spleen" } 
+    ];
+    let quizActive = false;
+    let currentQuizIndex = -1;
+    let quizScoreVal = 0;
 
     // Scene Setup
     const scene = new THREE.Scene();
@@ -605,7 +718,11 @@
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
+    renderer.localClippingEnabled = true; // Enable slicing
     container.appendChild(renderer.domElement);
+
+    // Clipping Plane for Slicer
+    const slicePlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 100); // Slices top-down
 
     // Lighting
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -627,7 +744,7 @@
     controls.keyPanSpeed = 20;
 
     // State
-    let mode = 'full-body';
+    let mode = 'full-body'; // 'full-body', 'organ', or 'quiz'
     let activeOrganId = null;
     let loadedBodyModels = {};
     let activeOrganGroup = null;
@@ -726,23 +843,105 @@
       toggleContainer.appendChild(row);
     });
 
-    // Populate Organ Quick Nav (Safe widely-supported emojis)
+    // Populate Organ Quick Nav
     const safeIcons = {
       heart: '❤️', brain: '🧠', lungs: '🌬️', liver: '🥩', kidneys: '🍒',
       stomach: '🍲', pancreas: '🥑', spleen: '🔴', thyroid: '🦋', thymus: '🛡️',
-      'female-reproductive-system': '♀', bladder: '💧'
+      'female-reproductive-system': '🤰', bladder: '💧'
     };
 
     Object.keys(organData).forEach(id => {
       const organ = organData[id];
       const btn = document.createElement('button');
       btn.className = 'organ-btn';
-      
       const icon = safeIcons[id] || '🫀';
       btn.innerHTML = `<span class="icon">${icon}</span> <span class="name">${organ.name}</span>`;
       btn.onclick = () => loadOrgan(id);
       organNavBtns.appendChild(btn);
     });
+
+    // Slicer Event
+    sliceSlider.addEventListener('input', (e) => {
+      if (!activeOrganGroup) return;
+      const box = new THREE.Box3().setFromObject(activeOrganGroup);
+      const size = box.getSize(new THREE.Vector3());
+      const minY = box.min.y;
+      const maxY = box.max.y;
+      
+      // Convert slider value (0-100) to a plane constant
+      const val = parseFloat(e.target.value) / 100;
+      const planeY = maxY - (size.y * val);
+      
+      slicePlane.constant = planeY;
+    });
+
+    // Pathology Toggle Event
+    pathologyToggle.addEventListener('change', (e) => {
+      if (!activeOrganGroup) return;
+      const isDiseased = e.target.checked;
+      
+      activeOrganGroup.traverse(child => {
+        if (child.isMesh) {
+          if (isDiseased) {
+            // Apply "Pathology" look (dark, rough, necrotic)
+            child.material.color.setHex(0x3a2a1a); 
+            child.material.roughness = 0.9;
+            child.material.metalness = 0.0;
+          } else {
+            // Restore original look
+            const organ = organData[activeOrganId];
+            child.material.color.set(organ.color);
+            child.material.roughness = 0.3;
+            child.material.metalness = 0.1;
+          }
+        }
+      });
+    });
+
+    // --- QUIZ LOGIC ---
+    startQuizBtn.addEventListener('click', () => {
+      mode = 'quiz';
+      quizActive = true;
+      quizScoreVal = 0;
+      currentQuizIndex = -1;
+      
+      systemPanel.classList.add('hide');
+      infoPanel.classList.remove('visible');
+      quizOverlay.classList.add('visible');
+      
+      // Hide all organs initially so user has to find the right one
+      Object.values(loadedBodyModels).forEach(m => m.visible = false);
+      rebuildFullBodyPickables();
+      
+      nextQuizQuestion();
+    });
+
+    function nextQuizQuestion() {
+      currentQuizIndex++;
+      if (currentQuizIndex >= quizQuestions.length) {
+        // End of quiz
+        quizPrompt.textContent = "Quiz Complete! Great job, Doc.";
+        quizScore.textContent = `Final Score: ${quizScoreVal} / ${quizQuestions.length}`;
+        quizNextBtn.textContent = "Restart Quiz";
+        quizNextBtn.style.display = "inline-block";
+        quizNextBtn.onclick = () => startQuizBtn.click();
+        return;
+      }
+
+      const q = quizQuestions[currentQuizIndex];
+      quizPrompt.textContent = q.prompt;
+      quizScore.textContent = `Score: ${quizScoreVal} / ${quizQuestions.length}`;
+      quizNextBtn.style.display = "none";
+
+      // Reveal all body systems for the user to click
+      Object.entries(loadedBodyModels).forEach(([sysId, model]) => {
+        const toggle = toggleContainer.querySelector(`input[data-system="${sysId}"]`);
+        if (toggle) model.visible = toggle.checked;
+      });
+      rebuildFullBodyPickables();
+    }
+
+    quizNextBtn.addEventListener('click', nextQuizQuestion);
 
     // --- FULL BODY MODE ---
     let loadedCount = 0;
@@ -757,7 +956,8 @@
               if (child.isMesh) {
                 child.material = new THREE.MeshStandardMaterial({
                   color: new THREE.Color(system.color),
-                  roughness: 0.45, metalness: 0.08, transparent: true, opacity: 0.94
+                  roughness: 0.45, metalness: 0.08, transparent: true, opacity: 0.94,
+                  side: THREE.DoubleSide // Required for Slicer
                 });
                 child.userData.systemId = system.id;
                 child.userData.systemLabel = system.label;
@@ -808,12 +1008,16 @@
       bodyModePanel.style.display = 'none';
       organPartsPanel.classList.add('visible');
       organHeaderBar.classList.add('visible');
+      slicerContainer.classList.add('visible');
       organNameEl.textContent = organ.name;
       organLatinEl.textContent = organ.latin;
-      
       organIconEl.textContent = safeIcons[organId] || '🫀';
       
       infoPanel.classList.remove('visible');
+      pathologyRow.style.display = 'flex';
+      pathologyToggle.checked = false;
+      sliceSlider.value = 0;
+      slicePlane.constant = 1000; // Reset slice
       
       pickables = [];
 
@@ -844,6 +1048,8 @@
             if (!child.material) {
               child.material = new THREE.MeshStandardMaterial({ color: organ.color, roughness: 0.3, metalness: 0.1 });
             }
+            child.material.side = THREE.DoubleSide; // Required to see inside when sliced
+            child.material.clippingPlanes = [slicePlane]; // Apply slicer
             pickables.push(child);
           }
         });
@@ -868,6 +1074,8 @@
       mode = 'full-body';
       activeOrganId = null;
       organHeaderBar.classList.remove('visible');
+      slicerContainer.classList.remove('visible');
+      pathologyRow.style.display = 'none';
       bodyModePanel.style.display = 'block';
       organPartsPanel.classList.remove('visible');
       infoPanel.classList.remove('visible');
@@ -935,10 +1143,8 @@
         </div>
       `).join('');
 
-      // Clear active state initially
       organPartsList.querySelectorAll('.part-list-item').forEach(i => i.classList.remove('active'));
 
-      // Add click listeners
       organPartsList.querySelectorAll('.part-list-item').forEach(item => {
         item.addEventListener('click', () => {
           organPartsList.querySelectorAll('.part-list-item').forEach(i => i.classList.remove('active'));
@@ -1052,7 +1258,7 @@
     });
 
     fitBtn.addEventListener('click', () => {
-      if (mode === 'full-body') fitCameraToBox(unionBox);
+      if (mode === 'full-body' || mode === 'quiz') fitCameraToBox(unionBox);
       else if (activeOrganWrapper) {
         const box = new THREE.Box3().setFromObject(activeOrganWrapper);
         fitCameraToBox(box);
@@ -1078,12 +1284,34 @@
 
       raycaster.setFromCamera(pointer, camera);
       
-      if (mode === 'full-body') {
+      if (mode === 'full-body' || mode === 'quiz') {
         const hits = raycaster.intersectObjects(pickables, false);
         if (hits.length > 0) {
           const mesh = hits[0].object;
           const name = mesh.name.toLowerCase();
           
+          if (mode === 'quiz') {
+            const q = quizQuestions[currentQuizIndex];
+            if (name.includes(q.target)) {
+              // Correct!
+              quizScoreVal++;
+              quizPrompt.textContent = "✅ Correct! " + q.target.charAt(0).toUpperCase() + q.target.slice(1) + " is the answer.";
+              quizNextBtn.style.display = "inline-block";
+              // Highlight green
+              Object.values(loadedBodyModels).forEach(m => {
+                m.traverse(c => { if(c.isMesh && c.name.toLowerCase().includes(q.target)) c.material.emissive.setHex(0x00ff00); });
+              });
+            } else {
+              // Wrong!
+              quizPrompt.textContent = "❌ Incorrect. Try again!";
+              // Highlight red
+              mesh.material.emissive.setHex(0xff0000);
+              setTimeout(() => mesh.material.emissive.setHex(0x000000), 1000);
+            }
+            return;
+          }
+
+          // Normal body mode logic
           for (const organId of Object.keys(organData)) {
             if (name.includes(organId)) {
               loadOrgan(organId);
@@ -1096,8 +1324,10 @@
           if (mesh.material) mesh.material.emissive.setHex(0x333333);
           renderFullBodyInfo(mesh);
         } else {
-          infoPanel.classList.remove('visible');
-          clearHighlight();
+          if (mode === 'full-body') {
+            infoPanel.classList.remove('visible');
+            clearHighlight();
+          }
         }
       }
     });
