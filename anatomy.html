@@ -239,6 +239,27 @@
     }
     .organ-btn:hover { background: #f0f4f8; }
 
+    /* Parts list in the left sidebar during organ mode */
+    .organ-parts-panel {
+      display: none;
+      margin-top: 1rem;
+      border-top: 1px solid rgba(30,59,90,0.1);
+      padding-top: 1rem;
+    }
+    .organ-parts-panel.visible { display: block; }
+    .organ-parts-panel h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .part-list-item {
+      padding: 0.5rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid rgba(30,59,90,0.03);
+    }
+    .part-list-item:hover { background: #f0f4f8; }
+    .part-list-item.active { background: #e2e8f0; border-left: 3px solid #d4a017; }
+    .part-list-item .part-name { font-size: 0.85rem; font-weight: 600; color: #1e3b5a; }
+    .part-list-item .part-desc { font-size: 0.72rem; color: #8b8b8b; margin-top: 2px; line-height: 1.3; }
+
     /* ---------- Info Panel ---------- */
     .info-panel {
       position: absolute;
@@ -353,6 +374,14 @@
     html[data-theme="dark"] .organ-btn { border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
     html[data-theme="dark"] .organ-btn:hover { background: #23374b; }
 
+    html[data-theme="dark"] .organ-parts-panel { border-top-color: rgba(255,255,255,0.1); }
+    html[data-theme="dark"] .organ-parts-panel h4 { color: #8ab4d9; }
+    html[data-theme="dark"] .part-list-item { border-bottom-color: rgba(255,255,255,0.05); }
+    html[data-theme="dark"] .part-list-item:hover { background: #23374b; }
+    html[data-theme="dark"] .part-list-item.active { background: #2d4a6b; border-left-color: #f6c445; }
+    html[data-theme="dark"] .part-list-item .part-name { color: #e8eef5; }
+    html[data-theme="dark"] .part-list-item .part-desc { color: #8b8b8b; }
+
     html[data-theme="dark"] .info-panel { background: rgba(26,43,61,0.95); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
     html[data-theme="dark"] .info-panel h2 { color: #f6c445; }
     html[data-theme="dark"] .info-panel .type { color: #8ab4d9; }
@@ -443,29 +472,36 @@
       </div>
     </div>
 
-    <!-- General Mode Sidebar -->
+    <!-- Sidebar (Shows Systems in Body Mode, Parts in Organ Mode) -->
     <aside class="system-panel" id="system-panel">
-      <h3>Systems &amp; Layers</h3>
-      <div id="system-toggles"></div>
-      <div class="panel-actions">
-        <button id="fit-btn" type="button">Fit view</button>
-      </div>
-      
-      <div class="organ-nav">
-        <h4>Explore Specific Organs</h4>
-        <div class="organ-btns" id="organ-nav-btns">
-          <!-- Filled via JS -->
+      <div id="body-mode-panel">
+        <h3>Systems &amp; Layers</h3>
+        <div id="system-toggles"></div>
+        <div class="panel-actions">
+          <button id="fit-btn" type="button">Fit view</button>
         </div>
+        
+        <div class="organ-nav">
+          <h4>Explore Specific Organs</h4>
+          <div class="organ-btns" id="organ-nav-btns">
+            <!-- Filled via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="organ-parts-panel" id="organ-parts-panel">
+        <h4 id="parts-panel-title">Structures in this Organ</h4>
+        <div id="organ-parts-list"></div>
       </div>
     </aside>
 
-    <!-- Info Panel (Shared) -->
+    <!-- Info Panel -->
     <aside class="info-panel" id="info-panel">
       <button id="close-info" aria-label="Close">×</button>
       <h2 id="info-title">Structure Name</h2>
       <span class="type" id="info-type">System</span>
       
-      <!-- Organ-specific meta (hidden by default) -->
+      <!-- Organ-specific meta -->
       <div class="organ-meta" id="organ-meta" style="display:none;">
         <div class="meta-item"><span class="meta-label">Location</span><span class="meta-value" id="meta-location">-</span></div>
         <div class="meta-item"><span class="meta-label">Size</span><span class="meta-value" id="meta-size">-</span></div>
@@ -520,6 +556,12 @@
     const organLatinEl   = document.getElementById('organ-latin');
     const organIconEl    = document.getElementById('organ-icon');
     const organMeta      = document.getElementById('organ-meta');
+    
+    // Parts Panel Elements
+    const bodyModePanel   = document.getElementById('body-mode-panel');
+    const organPartsPanel = document.getElementById('organ-parts-panel');
+    const organPartsList  = document.getElementById('organ-parts-list');
+    const partsPanelTitle = document.getElementById('parts-panel-title');
 
     // Data
     const mlsData        = window.MLS_ANATOMY_DATA     || {};
@@ -728,7 +770,8 @@
       loadingText.textContent = `Loading ${organ.name}…`;
 
       // UI Updates
-      systemPanel.classList.add('hide');
+      bodyModePanel.style.display = 'none';
+      organPartsPanel.classList.add('visible');
       organHeaderBar.classList.add('visible');
       organNameEl.textContent = organ.name;
       organLatinEl.textContent = organ.latin;
@@ -788,7 +831,8 @@
       mode = 'full-body';
       activeOrganId = null;
       organHeaderBar.classList.remove('visible');
-      systemPanel.classList.remove('hide');
+      bodyModePanel.style.display = 'block';
+      organPartsPanel.classList.remove('visible');
       infoPanel.classList.remove('visible');
       
       pickables = [];
@@ -809,7 +853,7 @@
       fitCameraToBox(unionBox);
     }
 
-    // --- INFO PANEL LOGIC ---
+    // --- INFO PANEL & PARTS LIST LOGIC ---
     function renderOrganInfoPanel(organ) {
       infoTitle.textContent = organ.name;
       infoType.textContent = 'Organ Focus';
@@ -828,21 +872,11 @@
       `;
 
       if (organ.quickFacts && organ.quickFacts.length) {
-        html += `
-          <div class="info-block" style="margin-top: 1rem;">
-            <h4>⚡ Quick Facts</h4>
-            <ul class="fact-list">${organ.quickFacts.map(f => `<li>${f}</li>`).join('')}</ul>
-          </div>
-        `;
+        html += `<div class="info-block" style="margin-top: 1rem;"><h4>⚡ Quick Facts</h4><ul>${organ.quickFacts.map(f => `<li>${f}</li>`).join('')}</ul></div>`;
       }
 
       if (organ.clinicalPearls && organ.clinicalPearls.length) {
-        html += `
-          <div class="info-block info-tip">
-            <h4>🩺 MTLE Clinical Pearls</h4>
-            <ul class="pearl-list">${organ.clinicalPearls.map(p => `<li>${p}</li>`).join('')}</ul>
-          </div>
-        `;
+        html += `<div class="info-block info-tip"><h4>🩺 MTLE Clinical Pearls</h4><ul>${organ.clinicalPearls.map(p => `<li>${p}</li>`).join('')}</ul></div>`;
       }
 
       if (organ.note) {
@@ -850,6 +884,51 @@
       }
 
       infoDesc.innerHTML = html;
+      infoPanel.classList.add('visible');
+
+      // Populate the left parts list
+      renderPartsList(organ);
+    }
+
+    function renderPartsList(organ) {
+      organPartsList.innerHTML = Object.entries(organ.parts).map(([id, part]) => `
+        <div class="part-list-item" data-part-id="${id}">
+          <div class="part-name">${part.name}</div>
+          <div class="part-desc">${part.desc}</div>
+        </div>
+      `).join('');
+
+      // Clear active state initially
+      organPartsList.querySelectorAll('.part-list-item').forEach(i => i.classList.remove('active'));
+
+      // Add click listeners
+      organPartsList.querySelectorAll('.part-list-item').forEach(item => {
+        item.addEventListener('click', () => {
+          organPartsList.querySelectorAll('.part-list-item').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          renderPartInfo(organ, item.dataset.partId);
+        });
+      });
+    }
+
+    function renderPartInfo(organ, partId) {
+      const part = organ.parts[partId];
+      if (!part) return;
+
+      infoTitle.textContent = part.name;
+      infoType.textContent = `${organ.name} · Structure`;
+      organMeta.style.display = 'none';
+
+      infoDesc.innerHTML = `
+        <div class="info-block">
+          <h4>Overview</h4>
+          <p>${part.desc}</p>
+        </div>
+        <div class="info-block info-tip">
+          <h4>🩺 MTLE Clinical Correlation</h4>
+          <p>${part.mls}</p>
+        </div>
+      `;
       infoPanel.classList.add('visible');
     }
 
