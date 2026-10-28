@@ -167,7 +167,7 @@
       border-radius: 30px;
       backdrop-filter: blur(5px);
     }
-    .organ-title-badge .icon { font-size: 1.6rem; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif; }
+    .organ-title-badge .icon { display: flex; align-items: center; justify-content: center; color: #1e3b5a; }
     .organ-title-badge .latin { font-family: 'Inter', sans-serif; font-size: 0.8rem; color: #5c7c9e; display: block; font-style: italic; margin-top: -4px; font-weight: 400;}
 
     /* ---------- Sidebar (System Panel) ---------- */
@@ -232,17 +232,16 @@
     }
     .organ-nav h4 { font-size: 0.75rem; text-transform: uppercase; color: #5c7c9e; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
     
-    /* NEW: Scrollable single-column list */
+    /* Scrollable single-column list */
     .organ-btns { 
       display: flex; 
       flex-direction: column; 
       gap: 0.4rem; 
-      max-height: 250px; /* Adjust this to fit your sidebar */
+      max-height: 250px; 
       overflow-y: auto;
-      padding-right: 6px; /* Space for scrollbar */
+      padding-right: 6px; 
     }
     
-    /* Custom Scrollbar for the list */
     .organ-btns::-webkit-scrollbar { width: 6px; }
     .organ-btns::-webkit-scrollbar-track { background: transparent; }
     .organ-btns::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -259,12 +258,9 @@
       transform: translateX(4px); 
     }
     
-    /* Ensure emojis render properly */
     .organ-btn .icon { 
-      font-size: 1.1rem; 
-      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; 
-      width: 24px; 
-      text-align: center;
+      display: flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; color: #1e3b5a;
     }
 
     /* Parts list in the left sidebar during organ mode */
@@ -402,6 +398,7 @@
     html[data-theme="dark"] .organ-btns::-webkit-scrollbar-thumb { background: #4a5a6b; }
     html[data-theme="dark"] .organ-btn { background: rgba(26,43,61,0.5); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
     html[data-theme="dark"] .organ-btn:hover { background: #23374b; border-color: #8ab4d9; color: #fff; }
+    html[data-theme="dark"] .organ-btn .icon { color: #8ab4d9; }
 
     html[data-theme="dark"] .organ-parts-panel { border-top-color: rgba(255,255,255,0.1); }
     html[data-theme="dark"] .organ-parts-panel h4 { color: #8ab4d9; }
@@ -432,6 +429,7 @@
     html[data-theme="dark"] .back-to-body { background: rgba(26,43,61,0.9); border-color: rgba(255,255,255,0.1); color: #b8c5d1; }
     html[data-theme="dark"] .back-to-body:hover { background: #23374b; color: #fff; }
     html[data-theme="dark"] .organ-title-badge { background: rgba(26,43,61,0.6); color: #8ab4d9; }
+    html[data-theme="dark"] .organ-title-badge .icon { color: #8ab4d9; }
     html[data-theme="dark"] .organ-title-badge .latin { color: #6b8ba3; }
 
     html[data-theme="dark"] #loading { background: #0f1a26; color: #e8eef5; }
@@ -493,7 +491,7 @@
     <div class="organ-header-bar" id="organ-header-bar">
       <button class="back-to-body" id="back-btn">← Back to the body</button>
       <div class="organ-title-badge" id="organ-title-badge">
-        <span class="icon" id="organ-icon">🫀</span>
+        <span class="icon" id="organ-icon"></span>
         <div>
           <div id="organ-name">Heart</div>
           <div class="latin" id="organ-latin">Cor</div>
@@ -596,6 +594,25 @@
     const mlsData        = window.MLS_ANATOMY_DATA     || {};
     const systemFallback = window.MLS_SYSTEM_FALLBACKS || {};
     const organData      = window.ORGAN_DATA           || {};
+
+    // --- SVG ICONS (Guaranteed to render on all devices) ---
+    function getOrganIcon(id, size = '20px') {
+      const svgs = {
+        heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`,
+        brain: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M12 2a3 3 0 0 0-3 3v1a2 2 0 0 0-2 2v2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2v2a3 3 0 0 0 3 3h1a1 1 0 0 0 1-1v-2a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v2a1 1 0 0 0 1 1h1a3 3 0 0 0 3-3v-2a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2V8a2 2 0 0 0-2-2V5a3 3 0 0 0-3-3Z"/></svg>`,
+        lungs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M12 2v10"/><path d="M8 12a4 4 0 0 0-4 4v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a4 4 0 0 0-4-4Z"/><path d="M16 12a4 4 0 0 1 4 4v4a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-4a4 4 0 0 1 4-4Z"/></svg>`,
+        liver: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M4 14s2-8 8-8 8 8 8 8-2 4-8 4-8-4-8-4Z"/></svg>`,
+        kidneys: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M9 18a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5h1v16Z"/><path d="M15 18a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5h-1v16Z"/></svg>`,
+        stomach: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M7 4v6a6 6 0 0 0 6 6h0a6 6 0 0 1 6 6v2"/><path d="M7 4h6"/></svg>`,
+        pancreas: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M4 12a8 8 0 0 1 16 0c0 4-4 6-8 6s-8-2-8-6Z"/></svg>`,
+        spleen: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>`,
+        thyroid: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M12 8c-2.5 0-4.5 2-4.5 4.5S9.5 17 12 17s4.5-2 4.5-4.5S14.5 8 12 8Z"/><path d="M12 2v6"/></svg>`,
+        thymus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>`,
+        'female-reproductive-system': `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><circle cx="12" cy="9" r="6"/><path d="M12 15v8M9 19h6"/></svg>`,
+        bladder: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><path d="M12 2v6M8 8h8l2 6a6 6 0 0 1-12 0Z"/></svg>`
+      };
+      return svgs[id] || `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:${size};height:${size};"><circle cx="12" cy="12" r="10"/></svg>`;
+    }
 
     // Scene Setup
     const scene = new THREE.Scene();
@@ -728,21 +745,12 @@
       toggleContainer.appendChild(row);
     });
 
-    // Populate Organ Quick Nav (New scrollable list format)
+    // Populate Organ Quick Nav (Using SVGs for perfect rendering)
     Object.keys(organData).forEach(id => {
       const organ = organData[id];
       const btn = document.createElement('button');
       btn.className = 'organ-btn';
-      
-      // Fallback icons in case emojis fail to render
-      const fallbackIcons = {
-        heart: '❤️', brain: '🧠', lungs: '🫁', liver: '🥩', kidneys: '🫘',
-        stomach: '🥣', pancreas: '🥑', spleen: '🟣', thyroid: '🦋', thymus: '🛡️',
-        'female reproductive system': '♀️', bladder: '💧'
-      };
-      
-      const icon = organ.icon || fallbackIcons[id] || '🫀';
-      btn.innerHTML = `<span class="icon">${icon}</span> <span class="name">${organ.name}</span>`;
+      btn.innerHTML = `<span class="icon">${getOrganIcon(id)}</span> <span class="name">${organ.name}</span>`;
       btn.onclick = () => loadOrgan(id);
       organNavBtns.appendChild(btn);
     });
@@ -814,12 +822,8 @@
       organNameEl.textContent = organ.name;
       organLatinEl.textContent = organ.latin;
       
-      const fallbackIcons = {
-        heart: '❤️', brain: '🧠', lungs: '🫁', liver: '🥩', kidneys: '🫘',
-        stomach: '🥣', pancreas: '🥑', spleen: '🟣', thyroid: '🦋', thymus: '🛡️',
-        'female reproductive system': '♀️', bladder: '💧'
-      };
-      organIconEl.textContent = organ.icon || fallbackIcons[organId] || '🫀';
+      // Set SVG icon in header
+      organIconEl.innerHTML = getOrganIcon(organId, '24px');
       
       infoPanel.classList.remove('visible');
       
