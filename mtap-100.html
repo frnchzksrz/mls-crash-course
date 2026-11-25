@@ -22,7 +22,6 @@
     @keyframes sparkle { 0% { opacity: 0; transform: rotate(45deg) scale(0.6); } 20% { opacity: 0.2; } 50% { opacity: 0.5; transform: rotate(45deg) scale(1); } 80% { opacity: 0.2; } 100% { opacity: 0; transform: rotate(45deg) scale(0.6); } }
     html[data-theme="dark"] .diamond { background: #8ab4d9; }
 
-    /* ---------- HEADER ---------- */
     header { position: relative; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(30,59,90,0.08); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; transition: background 0.25s, border-color 0.25s; }
     .logo-wrapper { display: flex; align-items: center; gap: 0.5rem; }
     .logo { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #1e3b5a; letter-spacing: -0.5px; text-decoration: none; line-height: 1.1; }
@@ -66,11 +65,9 @@
     .search-result-item .title { font-weight: 600; color: #1e3b5a; font-size: 0.95rem; }
     .search-result-item .meta { font-size: 0.8rem; color: #8b8b8b; }
 
-    /* ---------- MAIN ---------- */
     main { position: relative; z-index: 2; transition: margin-right 0.25s ease; }
     .container { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 3rem; }
 
-    /* ---------- SUBJECT SELECTION ---------- */
     .mtap-hero { text-align: center; margin-bottom: 2rem; }
     .mtap-hero .eyebrow { font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: #c0392b; font-weight: 800; margin-bottom: 0.65rem; display: inline-flex; align-items: center; gap: 0.4rem; }
     .mtap-hero .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #c0392b; }
@@ -88,7 +85,6 @@
     .subject-badge.in-progress { color: #92400e; background: #fef3c7; }
     .subject-badge.complete { color: #155724; background: #d4edda; }
 
-    /* ---------- QUIZ VIEW ---------- */
     #view-quiz { display: none; }
     .quiz-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .quiz-back-btn { padding: 8px 18px; background: #fff; border: 1px solid rgba(30,59,90,0.15); border-radius: 20px; color: #1e3b5a; font-size: 0.9rem; font-family: inherit; cursor: pointer; transition: background 0.2s; }
@@ -102,7 +98,6 @@
     .quiz-progress-wrap { height: 10px; background: #e8eef4; border-radius: 999px; overflow: hidden; margin-bottom: 1.25rem; }
     .quiz-progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #1e3b5a, #2d4a6b); border-radius: 999px; transition: width 0.3s ease; }
 
-    /* completion banner */
     .complete-banner { display: none; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 1px solid #27ae60; border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
     .complete-banner.show { display: block; }
     .complete-banner-inner { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -115,7 +110,6 @@
     .complete-actions .primary { background: #1e3b5a; color: #fff; }
     .complete-actions .secondary { background: transparent; color: #1e3b5a; border: 1.5px solid #1e3b5a; }
 
-    /* question card */
     .quiz-card { background: #fff; border: 1px solid rgba(30,59,90,0.1); border-radius: 20px; padding: 2rem; max-width: 760px; margin: 0 auto 1.5rem; box-shadow: 0 10px 30px rgba(30,59,90,0.04); }
     .quiz-q-num { display: inline-block; font-size: 0.78rem; font-weight: 700; color: #f6c445; background: #1e3b5a; padding: 4px 12px; border-radius: 20px; margin-bottom: 1rem; letter-spacing: 0.04em; }
     .quiz-question { font-size: 1.18rem; font-weight: 500; color: #1e1e1e; margin-bottom: 1.5rem; line-height: 1.5; }
@@ -128,14 +122,7 @@
     .quiz-choice.correct .choice-letter { background: #28a745; color: #fff; }
     .quiz-choice.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
     .quiz-choice.wrong .choice-letter { background: #dc3545; color: #fff; }
-    .quiz-choice.chosen::after {
-      content: "Your pick";
-      position: absolute;
-      top: 8px; right: 10px;
-      font-size: 0.65rem; font-weight: 700;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      opacity: 0.65;
-    }
+    .quiz-choice.chosen::after { content: "Your pick"; position: absolute; top: 8px; right: 10px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; }
 
     .quiz-explanation { margin-top: 1rem; padding: 1rem 1.15rem; background: #f0f4f8; border-left: 4px solid #1e3b5a; border-radius: 8px; color: #2c3e50; font-size: 0.95rem; line-height: 1.55; display: none; }
     .quiz-explanation.show { display: block; }
@@ -150,7 +137,6 @@
     .quiz-controls .primary:hover:not(:disabled) { background: #152b42; }
     .quiz-controls .primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* navigator */
     .nav-toggle-wrap { text-align: center; margin-bottom: 1.25rem; }
     .nav-toggle-btn { padding: 8px 22px; border-radius: 30px; border: 1.5px solid #1e3b5a; background: transparent; color: #1e3b5a; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     .nav-toggle-btn:hover { background: #1e3b5a; color: #fff; }
@@ -169,9 +155,7 @@
     .nav-bubble.wrong { background: #c0392b; color: #fff; border-color: #c0392b; }
     .nav-bubble.current { box-shadow: 0 0 0 3px rgba(30,59,90,0.25); }
 
-    /* ---------- MODALS ---------- */
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,26,38,0.55); backdrop-filter: blur(4px); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-    .modal-overlay[style*="display: none"] { display: none; }
     .modal-card { background: #fff; border-radius: 22px; padding: 2rem 1.75rem; max-width: 460px; width: 100%; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.25); }
     .modal-icon { font-size: 2.6rem; margin-bottom: 0.5rem; line-height: 1; }
     .modal-card h3 { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: #1e3b5a; margin-bottom: 0.5rem; }
@@ -182,13 +166,10 @@
     .modal-actions .primary:hover { background: #152b42; }
     .modal-actions .secondary { background: transparent; color: #1e3b5a; border: 1.5px solid #1e3b5a; }
     .modal-actions .secondary:hover { background: #1e3b5a; color: #fff; }
-    .modal-actions .danger { background: transparent; color: #c0392b; border: 1.5px solid #c0392b; }
-    .modal-actions .danger:hover { background: #c0392b; color: #fff; }
 
     footer { text-align: center; padding: 2rem; color: #5c7c9e; font-size: 0.9rem; border-top: 1px solid rgba(30,59,90,0.08); }
     footer a { color: #5c7c9e; text-decoration: none; margin: 0 10px; }
 
-    /* ---------- SCRATCH PAD ---------- */
     #scratch-toggle { display: none; position: fixed; right: 1.1rem; bottom: 1.1rem; z-index: 90; background: #1e3b5a; color: #fff; border: none; border-radius: 999px; padding: 0.85rem 1.3rem; font-weight: 700; font-family: inherit; font-size: 0.92rem; cursor: pointer; box-shadow: 0 8px 24px rgba(30,59,90,0.3); align-items: center; gap: 0.5rem; transition: transform 0.15s; }
     #scratch-toggle.show { display: inline-flex; }
     #scratch-toggle:hover { transform: translateY(-2px); }
@@ -205,7 +186,6 @@
     #scratch-canvas { flex: 1; width: 100%; background: #fefefe; touch-action: none; cursor: crosshair; display: block; }
     @media (min-width: 1100px) { body.scratch-open main { margin-right: 380px; } }
 
-    /* ---------- DARK MODE ---------- */
     html[data-theme="dark"] body { background: #0f1a26; color: #e8eef5; }
     html[data-theme="dark"] header { background: rgba(15,26,38,0.92); border-bottom-color: rgba(255,255,255,0.08); }
     html[data-theme="dark"] .logo { color: #8ab4d9; }
@@ -335,7 +315,6 @@
   <main>
     <div class="container">
 
-      <!-- ============ SUBJECT SELECTION ============ -->
       <section id="view-select">
         <div class="mtap-hero">
           <div class="eyebrow">MTAP 100 · Crash Review</div>
@@ -346,7 +325,6 @@
         <div class="subject-grid" id="subject-grid"></div>
       </section>
 
-      <!-- ============ QUIZ ============ -->
       <section id="view-quiz">
         <div class="quiz-top">
           <button class="quiz-back-btn" id="quiz-back">← Subjects</button>
@@ -408,7 +386,6 @@
     <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
   </footer>
 
-  <!-- ============ MODALS ============ -->
   <div class="modal-overlay" id="leave-modal" style="display:none;">
     <div class="modal-card">
       <div class="modal-icon">💾</div>
@@ -433,7 +410,6 @@
     </div>
   </div>
 
-  <!-- Scratch pad (tablet only) -->
   <button id="scratch-toggle" aria-label="Toggle scratch pad">✏️ Scratch Pad</button>
   <aside id="scratch-panel" aria-hidden="true">
     <div class="scratch-head">
@@ -449,10 +425,6 @@
   </aside>
 
   <script>
-  /* ============================================================
-     MTAP 100 — page-specific logic
-     auth.js provides: window.supabaseClient, window.escapeHtml
-     ============================================================ */
   const sb = window.supabaseClient;
   const esc = window.escapeHtml || function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
@@ -466,49 +438,29 @@
     isbb: { icon: '🩸', name: 'ISBB', full: 'Immunoserology & Blood Banking', target: 150 }
   };
 
-  const state = {
-    subject: null,
-    questions: [],
-    answers: {},        // index -> choice index
-    current: 0
-  };
-
-  // Timer (elapsed across sessions for this subject)
-  let timerBaseMs = 0;   // accumulated from prior sessions
-  let timerStartMs = null; // Date.now() when running
+  const state = { subject: null, questions: [], answers: {}, current: 0 };
+  let timerBaseMs = 0;
+  let timerStartMs = null;
   let timerId = null;
 
-  // ---------- localStorage ----------
   function storageKey(subject) { return 'mtap100:' + subject; }
   function getSavedState(subject) {
-    try {
-      const raw = localStorage.getItem(storageKey(subject));
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+    try { const raw = localStorage.getItem(storageKey(subject)); return raw ? JSON.parse(raw) : null; }
+    catch { return null; }
   }
   function saveState() {
     if (!state.subject) return;
     const live = timerStartMs ? (Date.now() - timerStartMs) : 0;
-    const snap = {
-      subject: state.subject,
-      answers: state.answers,
-      current: state.current,
-      timerBaseMs: timerBaseMs + live,
-      savedAt: Date.now()
-    };
+    const snap = { subject: state.subject, answers: state.answers, current: state.current, timerBaseMs: timerBaseMs + live, total: state.questions.length, savedAt: Date.now() };
     try { localStorage.setItem(storageKey(state.subject), JSON.stringify(snap)); } catch {}
   }
-  function clearSavedState(subject) {
-    try { localStorage.removeItem(storageKey(subject)); } catch {}
-  }
+  function clearSavedState(subject) { try { localStorage.removeItem(storageKey(subject)); } catch {} }
 
-  // ---------- view ----------
   function showView(id) {
     document.getElementById('view-select').style.display = id === 'view-select' ? 'block' : 'none';
     document.getElementById('view-quiz').style.display = id === 'view-quiz' ? 'block' : 'none';
   }
 
-  // ---------- subject cards ----------
   function renderSubjects() {
     const grid = document.getElementById('subject-grid');
     grid.innerHTML = '';
@@ -516,8 +468,7 @@
       const saved = getSavedState(key);
       const answered = saved ? Object.keys(saved.answers || {}).length : 0;
       const total = (saved && saved.total) || s.target;
-      const complete = answered > 0 && answered >= total;
-
+      const complete = answered > 0 && total && answered >= total;
       let badgeClass = 'subject-badge';
       let badgeText = `${s.target} items`;
       if (complete) { badgeClass += ' complete'; badgeText = `✅ Completed · ${answered}/${total}`; }
@@ -537,43 +488,34 @@
     });
   }
 
-  // ---------- load questions ----------
   async function loadQuestions(subject) {
-    if (!sb) {
-      console.error('[mtap] no supabase client');
-      return [];
-    }
+    if (!sb) return [];
     const { data, error } = await sb
       .from('mtap_questions')
       .select('id, question, choices, correct_index, explanation')
       .eq('subject', subject)
       .order('id', { ascending: true });
+    if (error) { console.error('[mtap] loadQuestions error:', error); return []; }
 
-    if (error) {
-      console.error('[mtap] loadQuestions error:', error);
-      return [];
-    }
-    return (data || []).map(q => ({
-      id: q.id,
-      question: q.question,
-      choices: Array.isArray(q.choices) ? q.choices.slice(0, 4) : [],
-      correct_index: q.correct_index,
-      explanation: q.explanation || ''
-    }));
+    // Strict: exactly 4 choices → A/B/C/D
+    return (data || [])
+      .filter(q => Array.isArray(q.choices) && q.choices.length === 4)
+      .map(q => ({
+        id: q.id,
+        question: q.question,
+        choices: q.choices,
+        correct_index: q.correct_index,
+        explanation: q.explanation || ''
+      }));
   }
 
-  // ---------- subject click ----------
-  async function onSubjectClick(key) {
+  function onSubjectClick(key) {
     const saved = getSavedState(key);
     const answered = saved ? Object.keys(saved.answers || {}).length : 0;
-    if (saved && answered > 0) {
-      openResumeModal(key, saved);
-    } else {
-      await beginSubject(key, null);
-    }
+    if (saved && answered > 0) openResumeModal(key, saved);
+    else beginSubject(key, null);
   }
 
-  // ---------- resume modal ----------
   let pendingResumeKey = null;
   let pendingResumeSaved = null;
   function openResumeModal(key, saved) {
@@ -589,19 +531,15 @@
   }
   function closeResumeModal() {
     document.getElementById('resume-modal').style.display = 'none';
-    pendingResumeKey = null;
-    pendingResumeSaved = null;
+    pendingResumeKey = null; pendingResumeSaved = null;
   }
 
-  // ---------- begin subject ----------
   async function beginSubject(key, savedState) {
     state.subject = key;
-    document.getElementById('quiz-title').textContent =
-      `${SUBJECTS[key].name} — ${SUBJECTS[key].full}`;
+    document.getElementById('quiz-title').textContent = `${SUBJECTS[key].name} — ${SUBJECTS[key].full}`;
     showView('view-quiz');
     document.getElementById('complete-banner').classList.remove('show');
 
-    // loading state
     document.getElementById('q-num').textContent = 'Loading…';
     document.getElementById('q-text').textContent = '';
     document.getElementById('q-choices').innerHTML = '';
@@ -627,14 +565,10 @@
       state.current = Math.min(savedState.current || 0, qs.length - 1);
       timerBaseMs = savedState.timerBaseMs || 0;
     } else {
-      state.answers = {};
-      state.current = 0;
-      timerBaseMs = 0;
+      state.answers = {}; state.current = 0; timerBaseMs = 0;
     }
 
-    // persist total for badge display
     saveState();
-
     buildNav();
     renderQuestion();
     startTimer();
@@ -643,7 +577,6 @@
     document.getElementById('nav-toggle').textContent = 'View Question Navigator';
   }
 
-  // ---------- rendering ----------
   function renderQuestion() {
     const q = state.questions[state.current];
     if (!q) return;
@@ -659,7 +592,7 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'quiz-choice';
-      const letter = String.fromCharCode(65 + i);
+      const letter = String.fromCharCode(65 + i); // A, B, C, D
       btn.innerHTML = `<span class="choice-letter">${letter}</span><span class="choice-text"></span>`;
       btn.querySelector('.choice-text').textContent = text;
 
@@ -687,13 +620,11 @@
     document.getElementById('prev-btn').disabled = state.current === 0;
     document.getElementById('next-btn').disabled = state.current === total - 1;
 
-    updateProgress();
-    updateNav();
-    updateScore();
+    updateProgress(); updateNav(); updateScore();
   }
 
   function selectAnswer(i) {
-    if (state.answers[state.current] !== undefined) return; // locked
+    if (state.answers[state.current] !== undefined) return;
     state.answers[state.current] = i;
     saveState();
     renderQuestion();
@@ -703,19 +634,15 @@
   function updateProgress() {
     const total = state.questions.length || 1;
     const answered = Object.keys(state.answers).length;
-    document.getElementById('quiz-progress').style.width =
-      Math.round((answered / total) * 100) + '%';
+    document.getElementById('quiz-progress').style.width = Math.round((answered / total) * 100) + '%';
   }
 
   function updateScore() {
     const answered = Object.keys(state.answers).length;
     const total = state.questions.length;
     let correct = 0;
-    state.questions.forEach((q, i) => {
-      if (state.answers[i] === q.correct_index) correct++;
-    });
-    document.getElementById('quiz-score').textContent =
-      `${answered}/${total} · ${correct} ✓`;
+    state.questions.forEach((q, i) => { if (state.answers[i] === q.correct_index) correct++; });
+    document.getElementById('quiz-score').textContent = `${answered}/${total} · ${correct} ✓`;
   }
 
   function buildNav() {
@@ -741,7 +668,6 @@
     });
   }
 
-  // ---------- timer ----------
   function elapsedSeconds() {
     const live = timerStartMs ? (Date.now() - timerStartMs) : 0;
     return Math.floor((timerBaseMs + live) / 1000);
@@ -761,15 +687,11 @@
     renderTimer();
   }
   function stopTimer() {
-    if (timerStartMs) {
-      timerBaseMs += Date.now() - timerStartMs;
-      timerStartMs = null;
-    }
+    if (timerStartMs) { timerBaseMs += Date.now() - timerStartMs; timerStartMs = null; }
     if (timerId) { clearInterval(timerId); timerId = null; }
     renderTimer();
   }
 
-  // ---------- completion ----------
   function checkCompletion() {
     const total = state.questions.length;
     if (!total) return;
@@ -779,22 +701,16 @@
       return;
     }
     let correct = 0;
-    state.questions.forEach((q, i) => {
-      if (state.answers[i] === q.correct_index) correct++;
-    });
+    state.questions.forEach((q, i) => { if (state.answers[i] === q.correct_index) correct++; });
     const pct = Math.round((correct / total) * 100);
     document.getElementById('complete-title').textContent = `All ${total} items answered!`;
     document.getElementById('complete-score').textContent = `Score: ${correct} / ${total} (${pct}%)`;
     document.getElementById('complete-banner').classList.add('show');
   }
 
-  // ---------- leave flow ----------
   function attemptLeave() {
     const answered = Object.keys(state.answers).length;
-    if (!state.subject || answered === 0) {
-      backToSubjects();
-      return;
-    }
+    if (!state.subject || answered === 0) { backToSubjects(); return; }
     stopTimer();
     saveState();
     document.getElementById('leave-modal').style.display = 'flex';
@@ -803,17 +719,13 @@
     stopTimer();
     document.getElementById('leave-modal').style.display = 'none';
     document.getElementById('resume-modal').style.display = 'none';
-    state.subject = null;
-    state.questions = [];
-    state.answers = {};
-    state.current = 0;
-    timerBaseMs = 0;
-    timerStartMs = null;
-    renderSubjects();   // refresh badges
+    state.subject = null; state.questions = []; state.answers = {}; state.current = 0;
+    timerBaseMs = 0; timerStartMs = null;
+    renderSubjects();
     showView('view-select');
   }
 
-  // ---------- SCRATCH PAD ----------
+  /* ---------- SCRATCH PAD ---------- */
   const canvas = document.getElementById('scratch-canvas');
   const ctx = canvas.getContext('2d');
   let dpr = window.devicePixelRatio || 1;
@@ -850,8 +762,7 @@
     canvas.width = Math.round(rect.width * dpr);
     canvas.height = Math.round(rect.height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (snapshot) {
       const img = new Image();
       img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
@@ -861,19 +772,14 @@
   function applyTool(tool) {
     if (tool === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
-      ctx.strokeStyle = 'rgba(0,0,0,1)';
-      ctx.fillStyle = 'rgba(0,0,0,1)';
-      ctx.lineWidth = 26;
+      ctx.strokeStyle = 'rgba(0,0,0,1)'; ctx.fillStyle = 'rgba(0,0,0,1)'; ctx.lineWidth = 26;
     } else {
       ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = '#1f2937';
-      ctx.fillStyle = '#1f2937';
-      ctx.lineWidth = 2.6;
+      ctx.strokeStyle = '#1f2937'; ctx.fillStyle = '#1f2937'; ctx.lineWidth = 2.6;
     }
   }
   function clearScratch() {
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
   }
@@ -889,33 +795,25 @@
   canvas.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault();
-    drawing = true;
-    canvas.setPointerCapture(e.pointerId);
+    drawing = true; canvas.setPointerCapture(e.pointerId);
     strokeTool = (e.button === 5 || (e.buttons & 32)) ? 'eraser' : currentTool;
     applyTool(strokeTool);
     const p = canvasPos(e);
     lastX = p.x; lastY = p.y;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill();
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!drawing) return;
     e.preventDefault();
     const p = canvasPos(e);
-    ctx.beginPath();
-    ctx.moveTo(lastX, lastY);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
     lastX = p.x; lastY = p.y;
   });
   ['pointerup','pointercancel','pointerleave'].forEach(ev =>
     canvas.addEventListener(ev, () => { drawing = false; })
   );
 
-  // ---------- wiring ----------
   function wireOnce() {
-    // navigation
     document.getElementById('prev-btn').addEventListener('click', () => {
       if (state.current > 0) { state.current--; renderQuestion(); }
     });
@@ -924,7 +822,6 @@
     });
     document.getElementById('quiz-back').addEventListener('click', attemptLeave);
 
-    // navigator
     document.getElementById('nav-toggle').addEventListener('click', () => {
       const panel = document.getElementById('nav-panel');
       panel.classList.toggle('open');
@@ -932,7 +829,6 @@
         panel.classList.contains('open') ? 'Hide Question Navigator' : 'View Question Navigator';
     });
 
-    // completion banner
     document.getElementById('complete-retake').addEventListener('click', async () => {
       if (!state.subject) return;
       const key = state.subject;
@@ -940,48 +836,32 @@
       await beginSubject(key, null);
     });
     document.getElementById('complete-subjects').addEventListener('click', () => {
-      // finished — no popup needed
-      stopTimer();
-      saveState();
-      backToSubjects();
+      stopTimer(); saveState(); backToSubjects();
     });
 
-    // leave modal
     document.getElementById('modal-resume').addEventListener('click', () => {
       document.getElementById('leave-modal').style.display = 'none';
       startTimer();
     });
-    document.getElementById('modal-leave').addEventListener('click', () => {
-      backToSubjects();
-    });
+    document.getElementById('modal-leave').addEventListener('click', () => { backToSubjects(); });
 
-    // resume modal
     document.getElementById('resume-yes').addEventListener('click', async () => {
-      const key = pendingResumeKey;
-      const saved = pendingResumeSaved;
+      const key = pendingResumeKey; const saved = pendingResumeSaved;
       closeResumeModal();
       if (key) await beginSubject(key, saved);
     });
     document.getElementById('resume-no').addEventListener('click', async () => {
       const key = pendingResumeKey;
       closeResumeModal();
-      if (key) {
-        clearSavedState(key);
-        await beginSubject(key, null);
-      }
+      if (key) { clearSavedState(key); await beginSubject(key, null); }
     });
 
-    // save before leaving via nav links
     document.querySelectorAll('.nav-links a').forEach(a => {
       a.addEventListener('click', () => {
-        if (state.subject) {
-          stopTimer();
-          saveState();
-        }
+        if (state.subject) { stopTimer(); saveState(); }
       });
     });
 
-    // scratch pad
     document.getElementById('scratch-toggle').addEventListener('click', () => toggleScratch());
     document.getElementById('sp-pen').addEventListener('click', () => setTool('pen'));
     document.getElementById('sp-eraser').addEventListener('click', () => setTool('eraser'));
@@ -992,7 +872,6 @@
     window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 300));
     setTimeout(resizeCanvas, 0);
 
-    // keyboard: ←/→ to navigate
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('view-quiz').style.display !== 'block') return;
       if (document.getElementById('leave-modal').style.display === 'flex') return;
@@ -1001,7 +880,6 @@
       if (e.key === 'ArrowRight') document.getElementById('next-btn').click();
     });
 
-    // best-effort: save when tab is hidden or closed
     window.addEventListener('pagehide', () => {
       if (state.subject) { stopTimer(); saveState(); }
     });
@@ -1011,7 +889,6 @@
     });
   }
 
-  // ---------- init ----------
   renderSubjects();
   initScratchVisibility();
   wireOnce();
