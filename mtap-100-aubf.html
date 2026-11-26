@@ -496,7 +496,43 @@
       .personal-highlight-tools { right: .7rem; bottom: .7rem; }
       .personal-highlight-panel { width: min(320px, calc(100vw - 1.4rem)); }
     }
-  </style>
+  
+/* Shared reviewer search */
+.review-search-wrap { max-width:760px; margin:0 auto 1.1rem; position:relative; }
+.review-search-wrap label { display:block; color:#1e3b5a; font-size:.78rem; font-weight:750; margin:0 0 .35rem .2rem; }
+.review-search-wrap input { width:100%; border:1px solid rgba(30,59,90,.16); border-radius:12px; padding:.85rem 1rem; font: .92rem Inter,sans-serif; background:#fff; color:#1e1e1e; outline:none; }
+.review-search-wrap input:focus { border-color:#1e3b5a; box-shadow:0 0 0 3px rgba(30,59,90,.08); }
+.review-search-results { display:none; position:absolute; z-index:190; top:100%; left:0; right:0; max-height:300px; overflow:auto; background:#fff; border:1px solid rgba(30,59,90,.14); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.12); padding:.35rem; }
+.review-search-results.open { display:block; }
+.review-search-results a { display:block; padding:.55rem .7rem; border-radius:8px; color:#1e3b5a; text-decoration:none; font-size:.82rem; }
+.review-search-results a:hover { background:#f0f4f8; }
+.review-search-controls { display:flex; align-items:center; gap:.5rem; }
+.review-search-controls > input { flex:1 1 auto; min-width:0; }
+.review-search-nav { display:flex; align-items:center; gap:.22rem; flex:0 0 auto; }
+.review-search-nav button { width:38px; height:42px; border:1px solid rgba(30,59,90,.16); border-radius:10px; background:#fff; color:#1e3b5a; font:700 1.05rem Inter,sans-serif; cursor:pointer; transition:background .15s,border-color .15s,opacity .15s; }
+.review-search-nav button:hover:not(:disabled) { background:#f0f4f8; border-color:#1e3b5a; }
+.review-search-nav button:disabled { opacity:.35; cursor:not-allowed; }
+.review-search-count { min-width:48px; color:#71859a; font-size:.72rem; font-variant-numeric:tabular-nums; text-align:center; white-space:nowrap; }
+.review-search-results a.active { background:#e8f0f8; font-weight:700; }
+.review-article .search-current-match { background:#fff0a6 !important; color:#1e293b !important; outline:3px solid rgba(226,174,0,.34); outline-offset:3px; border-radius:5px; box-shadow:0 2px 12px rgba(180,135,0,.16); }
+html[data-theme="dark"] .review-search-nav button { background:#1a2b3d; color:#b9d8fa; border-color:rgba(255,255,255,.14); }
+html[data-theme="dark"] .review-search-nav button:hover:not(:disabled), html[data-theme="dark"] .review-search-results a.active { background:#23374b; }
+html[data-theme="dark"] .review-search-count { color:#aebdcd; }
+html[data-theme="dark"] .review-article .search-current-match { background:#77621d !important; color:#fff4c2 !important; outline-color:rgba(255,210,75,.42); }
+@media (max-width:480px) {
+  .review-search-controls { gap:.35rem; }
+  .review-search-nav { gap:.12rem; }
+  .review-search-nav button { width:34px; height:40px; }
+  .review-search-count { min-width:42px; font-size:.68rem; }
+}
+
+.review-search-results small { display:block; color:#71859a; font-size:.7rem; }
+html[data-theme="dark"] .review-search-wrap label { color:#b9d8fa; }
+html[data-theme="dark"] .review-search-wrap input, html[data-theme="dark"] .review-search-results { background:#1a2b3d; color:#e8eef5; border-color:rgba(255,255,255,.12); }
+html[data-theme="dark"] .review-search-results a { color:#b9d8fa; }
+html[data-theme="dark"] .review-search-results a:hover { background:#23374b; }
+
+</style>
   <style>
    /* Clear mathematical layout for formulas, worked examples, and enzyme reactions. */
 .equation-card,.worked-example,.reaction-card{margin:16px 0 20px;padding:18px 20px;border:1px solid #dce6f0;border-radius:12px;background:#f8fbff;overflow-x:auto}
@@ -514,7 +550,286 @@
 .reaction-arrow{font-weight:700;color:#55789c;padding:0 5px}
 @media(max-width:640px){.equation-card,.worked-example,.reaction-card{padding:13px}.equation-main{font-size:1rem;justify-content:flex-start}}
   </style>
- </head>
+ <style>
+
+/* Search/find refinement: exact text highlights + scroll-aware floating controls */
+.review-search-wrap { position:relative; }
+.review-search-wrap .review-search-controls { display:flex; align-items:stretch; gap:0; }
+.review-search-wrap .review-search-controls > input { flex:1 1 auto; min-width:0; width:100%; }
+.review-search-wrap .review-search-controls > .review-search-nav { display:none !important; }
+.review-search-results { z-index:1000 !important; }
+.review-search-results a { line-height:1.45; text-align:left; }
+.review-article mark.review-search-hit {
+  background:#fff1ad !important;
+  color:#26384b !important;
+  border-radius:2px;
+  padding:0 .02em;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+  scroll-margin-top:24vh;
+  scroll-margin-bottom:24vh;
+}
+.review-article mark.review-search-hit.search-current-match {
+  background:#ffd95c !important;
+  color:#172b40 !important;
+  outline:2px solid rgba(195,137,0,.55);
+  outline-offset:2px;
+  border-radius:3px;
+  box-shadow:0 0 0 4px rgba(255,217,92,.2), 0 2px 12px rgba(180,135,0,.22);
+}
+html[data-theme="dark"] .review-article mark.review-search-hit {
+  background:#5b4c22 !important;
+  color:#fff0bf !important;
+}
+html[data-theme="dark"] .review-article mark.review-search-hit.search-current-match {
+  background:#8b6c1e !important;
+  color:#fff8dc !important;
+  outline-color:rgba(255,211,91,.65);
+}
+#review-search-floating-dock {
+  position:fixed;
+  z-index:10050;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  display:none;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:10px;
+  pointer-events:none;
+  font-family:Inter, sans-serif;
+}
+#review-search-floating-dock.is-visible { display:flex; }
+#review-search-floating-dock > * { pointer-events:auto; }
+#review-search-floating-toggle {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:50px;
+  height:50px;
+  border:1px solid rgba(30,59,90,.18);
+  border-radius:50%;
+  background:#fff;
+  color:#1e3b5a;
+  box-shadow:0 7px 24px rgba(20,42,65,.2);
+  cursor:pointer;
+  transition:transform .16s ease, background .16s ease, box-shadow .16s ease;
+}
+#review-search-floating-toggle:hover { transform:scale(1.05); background:#f1f6fb; box-shadow:0 9px 28px rgba(20,42,65,.25); }
+#review-search-floating-toggle svg { width:22px; height:22px; display:block; }
+#review-search-floating-toggle[hidden] { display:none !important; }
+#review-search-floating-panel {
+  position:absolute;
+  top:0;
+  right:62px;
+  width:min(390px, calc(100vw - 100px));
+  display:none;
+  padding:13px;
+  border:1px solid rgba(30,59,90,.15);
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 14px 38px rgba(0,0,0,.19);
+}
+#review-search-floating-dock.panel-open #review-search-floating-panel { display:block; }
+#review-search-floating-panel label { display:block; margin:0 0 6px 2px; color:#1e3b5a; font-size:.75rem; font-weight:750; }
+#review-search-floating-input {
+  display:block;
+  width:100%;
+  min-width:0;
+  padding:11px 13px;
+  border:1px solid rgba(30,59,90,.2);
+  border-radius:10px;
+  outline:none;
+  background:#fff;
+  color:#1e1e1e;
+  font: .9rem Inter,sans-serif;
+}
+#review-search-floating-input:focus { border-color:#1e3b5a; box-shadow:0 0 0 3px rgba(30,59,90,.09); }
+#review-search-floating-results {
+  display:none;
+  position:relative;
+  max-height:min(48vh,360px);
+  overflow:auto;
+  margin-top:7px;
+  padding:4px;
+  border:1px solid rgba(30,59,90,.12);
+  border-radius:10px;
+  background:#fff;
+}
+#review-search-floating-results.open { display:block; }
+#review-search-floating-results a { display:block; padding:8px 9px; border-radius:7px; color:#1e3b5a; text-decoration:none; font-size:.78rem; line-height:1.4; }
+#review-search-floating-results a:hover { background:#f0f4f8; }
+#review-search-floating-results a.active { background:#e8f0f8; font-weight:750; }
+#review-search-floating-results .review-search-empty { padding:9px; color:#71859a; font-size:.78rem; }
+#review-search-floating-nav-wrap { display:flex; justify-content:flex-end; }
+#review-search-floating-nav-wrap .review-search-nav {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:7px;
+  border:1px solid rgba(30,59,90,.13);
+  border-radius:28px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 6px 22px rgba(20,42,65,.18);
+  backdrop-filter:blur(8px);
+}
+#review-search-floating-nav-wrap .review-search-nav.is-visible { display:flex; }
+#review-search-floating-nav-wrap .review-search-nav button {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:39px;
+  height:39px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#e8f0f8;
+  color:#1e3b5a;
+  font:700 1.12rem Inter,sans-serif;
+  cursor:pointer;
+}
+#review-search-floating-nav-wrap .review-search-nav button:hover:not(:disabled) { background:#d4e4f2; }
+#review-search-floating-nav-wrap .review-search-nav button:disabled { opacity:.35; cursor:not-allowed; }
+#review-search-floating-nav-wrap .review-search-count {
+  min-width:40px;
+  color:#60758a;
+  font-size:.67rem;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+  white-space:nowrap;
+}
+html[data-theme="dark"] #review-search-floating-toggle,
+html[data-theme="dark"] #review-search-floating-panel,
+html[data-theme="dark"] #review-search-floating-results,
+html[data-theme="dark"] #review-search-floating-nav-wrap .review-search-nav {
+  background:#1a2b3d;
+  border-color:rgba(255,255,255,.15);
+  color:#e8eef5;
+}
+html[data-theme="dark"] #review-search-floating-panel label { color:#b9d8fa; }
+html[data-theme="dark"] #review-search-floating-input { background:#142335; color:#e8eef5; border-color:rgba(255,255,255,.18); }
+html[data-theme="dark"] #review-search-floating-results a { color:#b9d8fa; }
+html[data-theme="dark"] #review-search-floating-results a:hover,
+html[data-theme="dark"] #review-search-floating-results a.active { background:#23374b; }
+html[data-theme="dark"] #review-search-floating-nav-wrap .review-search-nav button { background:#23374b; color:#c9e1fb; }
+html[data-theme="dark"] #review-search-floating-nav-wrap .review-search-count { color:#aebdcd; }
+@media (max-width:600px) {
+  #review-search-floating-dock { right:10px; }
+  #review-search-floating-toggle { width:46px; height:46px; }
+  #review-search-floating-panel { right:56px; width:min(340px, calc(100vw - 82px)); }
+  #review-search-floating-nav-wrap .review-search-nav { padding:5px; gap:4px; }
+  #review-search-floating-nav-wrap .review-search-nav button { width:36px; height:36px; }
+}
+
+</style>
+
+<style id="review-navigation-enhancements">
+  .review-topbar { flex-wrap: wrap; }
+  .review-actions { display:flex; align-items:center; gap:.5rem; margin-left:auto; }
+  .review-action-btn {
+    border:1px solid rgba(30,59,90,.16); background:#fff; color:#1e3b5a;
+    border-radius:999px; padding:.5rem .9rem; font:600 .78rem Inter,sans-serif;
+    cursor:pointer; white-space:nowrap; transition:background .18s ease, transform .18s ease;
+  }
+  .review-action-btn:hover { background:#e8f0f8; transform:translateY(-1px); }
+  .floating-mtap-back {
+    position:fixed; left:1rem; bottom:1rem; z-index:240;
+    display:inline-flex; align-items:center; gap:.42rem;
+    padding:.62rem .9rem; border:1px solid rgba(255,255,255,.16);
+    border-radius:999px; background:rgba(30,59,90,.94); color:#fff;
+    box-shadow:0 7px 22px rgba(20,42,65,.18); backdrop-filter:blur(8px);
+    font:650 .76rem Inter,sans-serif; letter-spacing:.01em;
+    text-decoration:none; opacity:.88;
+    transition:opacity .18s ease, transform .18s ease, background .18s ease;
+  }
+  .floating-mtap-back:hover, .floating-mtap-back:focus-visible {
+    opacity:1; background:#162d45; transform:translateY(-2px); color:#fff;
+  }
+  .floating-mtap-back:focus-visible { outline:3px solid rgba(92,124,158,.5); outline-offset:3px; }
+  @media (max-width:760px) {
+    .review-topbar { gap:.65rem; }
+    .review-topbar-label { flex:1 1 160px; }
+    .review-actions { width:100%; margin-left:0; justify-content:flex-end; }
+    .floating-mtap-back { left:.7rem; bottom:.75rem; padding:.55rem .78rem; font-size:.72rem; }
+  }
+  @media print { .floating-mtap-back { display:none !important; } }
+</style>
+
+
+<style id="reviewer-print-scope-style">
+  @media print {
+    header, footer, #leave-modal, #resume-modal, #scratch-toggle, #scratch-panel,
+    .review-topbar, .review-toc, .review-search-wrap, .personal-highlight-tools,
+    .reading-progress-track, .floating-mtap-back, #review-search-floating-dock {
+      display: none !important;
+    }
+    body {
+      background: #fff !important;
+      color: #1e1e1e !important;
+    }
+    main > .container {
+      display: none !important;
+    }
+    main > #view-review {
+      display: block !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    #view-review .review-hero {
+      width: 100% !important;
+      max-width: 900px !important;
+      margin: 0 auto 1rem !important;
+    }
+    #view-review .review-layout {
+      display: block !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+    }
+    #view-review .review-article {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+    #view-review .review-figure-row {
+      overflow: visible !important;
+      flex-wrap: wrap !important;
+    }
+    #view-review .review-figure-row .review-figure {
+      min-width: 25%;
+    }
+  }
+</style>
+
+<style id="floating-mtap-scroll-visibility-style">
+  .floating-mtap-back {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(7px);
+    transition: opacity .18s ease, visibility .18s ease, transform .18s ease;
+  }
+  .floating-mtap-back.is-visible {
+    opacity: .88 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translateY(0);
+  }
+  .floating-mtap-back.is-visible:hover,
+  .floating-mtap-back.is-visible:focus-visible {
+    opacity: 1 !important;
+    transform: translateY(-2px);
+  }
+</style>
+
+</head>
  <body class="aubf-review-page">
   <header>
    <div class="logo-wrapper">
@@ -724,6 +1039,7 @@
      <span class="review-topbar-label">
       AUBF &middot; Comprehensive Discussion
      </span>
+<div class="review-actions"><button class="review-action-btn" id="print-review" type="button">Print / Save PDF</button></div>
     </div>
     <div class="review-hero">
      <div class="eyebrow">
@@ -789,7 +1105,27 @@
       The coverage runs from renal physiology and urinalysis to CSF, semen, synovial fluid, serous fluids, amniotic fluid, sputum, sweat, gastric fluid, and fecal analysis.
      </p>
     </div>
-    <div class="review-layout">
+    
+<div class="review-search-wrap">
+  <label for="review-search">Search this reviewer</label>
+  <div class="review-search-controls">
+
+   <input id="review-search" type="search" autocomplete="off" placeholder="Search topics, tests, diseases, and key terms…">
+
+   <div class="review-search-nav" aria-label="Find matches">
+
+    <button id="review-search-prev" type="button" aria-label="Previous match" title="Previous match" disabled>↑</button>
+
+    <span class="review-search-count" id="review-search-count" aria-live="polite">0 / 0</span>
+
+    <button id="review-search-next" type="button" aria-label="Next match" title="Next match" disabled>↓</button>
+
+   </div>
+
+  </div>
+  <div class="review-search-results" id="review-search-results" aria-live="polite"></div>
+</div>
+<div class="review-layout">
      <aside aria-label="Reviewer table of contents" class="review-toc">
       <div class="review-toc-title">
        Contents
@@ -19266,7 +19602,7 @@
       </p>
       <p class="review-p">
        <em>
-        This completes the coverage of the 25-page uploaded MTAP handout, reorganized into a more
+        This completes the coverage of the 25-page MTAP handout, reorganized into a more
        </em>
        <em>
         comprehensive review format.
@@ -19277,7 +19613,7 @@
         End of AUBF comprehensive review.
        </strong>
        <span>
-        All sections, comparison tables, special-test summaries, and exam alerts from the uploaded reviewer are included above.
+        All sections, comparison tables, special-test summaries, and exam alerts are for easier review.
        </span>
       </div>
       <button class="review-back-bottom" id="review-back-bottom" type="button">
@@ -19285,7 +19621,8 @@
       </button>
      </article>
     </div>
-    <div class="personal-highlight-tools" id="personal-highlight-tools">
+    <a class="floating-mtap-back" id="floating-mtap-back" href="mtap-100.html" aria-hidden="true" tabindex="-1" aria-label="Back to MTAP 100 subjects" title="Back to MTAP 100 subjects"><span aria-hidden="true">←</span><span>MTAP 100</span></a>
+<div class="personal-highlight-tools" id="personal-highlight-tools">
      <div class="personal-highlight-panel" hidden="" id="personal-highlight-panel">
       <h3>
        Personal Highlights
@@ -19720,18 +20057,23 @@
   let lastX = 0, lastY = 0;
 
   function isTabletLike() {
-    const ua = navigator.userAgent;
-    if (/iPad/.test(ua)) return true;
-    if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
-    if (/Tablet|PlayBook|Silk/i.test(ua)) return true;
+    const ua = navigator.userAgent || '';
+    const minSide = Math.min(window.screen && window.screen.width || window.innerWidth, window.screen && window.screen.height || window.innerHeight);
+    if (minSide < 600) return false;
+    if (/iPad|Tablet|PlayBook|Silk/i.test(ua)) return true;
+    if ((navigator.platform === 'MacIntel' || /Macintosh/i.test(ua)) && navigator.maxTouchPoints > 1) return true;
     if (/Android/i.test(ua) && !/Mobile/i.test(ua)) return true;
-    if (navigator.maxTouchPoints > 0 && window.matchMedia('(pointer: coarse)').matches) return true;
-    return false;
+    return navigator.maxTouchPoints > 1 && window.matchMedia('(pointer: coarse)').matches && minSide >= 700 && !/Windows|Macintosh|X11/i.test(ua);
   }
   function initScratchVisibility() {
     const btn = document.getElementById('scratch-toggle');
-    const force = new URLSearchParams(location.search).get('scratch') === '1';
-    btn.classList.toggle('show', isTabletLike() || force);
+    if (!btn) return;
+    btn.classList.toggle('show', isTabletLike());
+    if (!isTabletLike()) {
+      document.body.classList.remove('scratch-open');
+      const panel = document.getElementById('scratch-panel');
+      if (panel) panel.setAttribute('aria-hidden', 'true');
+    }
   }
   function toggleScratch(force) {
     const open = (typeof force === 'boolean') ? force : !document.body.classList.contains('scratch-open');
@@ -19893,6 +20235,7 @@
       if (!button) return;
       button.addEventListener('click', function () { window.location.href = 'mtap-100.html'; });
     });
+    document.getElementById('print-review')?.addEventListener('click', function () { window.print(); });
 
     // Place consecutive figures from the same illustrated group in a single row.
     const article = document.querySelector('#view-review .review-article');
@@ -58255,5 +58598,371 @@ for (const image of document.querySelectorAll("img[data-embedded-figure]")) {
   if (chunks) image.src = "data:image/jpeg;base64," + chunks.join("");
 }
   </script>
- </body>
+ 
+
+
+
+
+
+
+<script>
+(function () {
+  'use strict';
+  const searchWrap = document.querySelector('.review-search-wrap');
+  const originalInput = document.getElementById('review-search');
+  const originalResults = document.getElementById('review-search-results');
+  const article = document.getElementById('review-article') || document.querySelector('#view-review .review-article, .review-article');
+  if (!searchWrap || !originalInput || !originalResults || !article) return;
+
+  // Move the existing previous/next controls into a floating vertical control stack.
+  const existingNav = searchWrap.querySelector('.review-search-nav');
+  const dock = document.createElement('div');
+  dock.id = 'review-search-floating-dock';
+  dock.innerHTML = `
+    <div id="review-search-floating-panel" aria-label="Floating reviewer search">
+      <label for="review-search-floating-input">Search this reviewer</label>
+      <input id="review-search-floating-input" type="search" autocomplete="off" placeholder="Search topics, tests, diseases, and key terms…">
+      <div id="review-search-floating-results" class="review-search-results" aria-live="polite"></div>
+    </div>
+    <button id="review-search-floating-toggle" type="button" aria-label="Open reviewer search" title="Search this reviewer" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+    </button>
+    <div id="review-search-floating-nav-wrap" aria-label="Find navigation"></div>
+  `;
+  document.body.appendChild(dock);
+
+  const floatingInput = dock.querySelector('#review-search-floating-input');
+  const floatingResults = dock.querySelector('#review-search-floating-results');
+  const toggleButton = dock.querySelector('#review-search-floating-toggle');
+  const navWrap = dock.querySelector('#review-search-floating-nav-wrap');
+  if (existingNav) navWrap.appendChild(existingNav);
+  const previousButton = existingNav && existingNav.querySelector('#review-search-prev');
+  const nextButton = existingNav && existingNav.querySelector('#review-search-next');
+  const counter = existingNav && existingNav.querySelector('#review-search-count');
+  if (!previousButton || !nextButton || !counter) return;
+
+  let matches = [];
+  let currentIndex = -1;
+  let activeResults = originalResults;
+  let panelOpen = false;
+  const candidateSelector = 'h1,h2,h3,h4,h5,p,li,td,th,figcaption,dt,dd';
+
+  function unwrapSearchMarks() {
+    const marks = Array.from(article.querySelectorAll('mark.review-search-hit'));
+    const parents = new Set();
+    marks.forEach(mark => {
+      const parent = mark.parentNode;
+      if (!parent) return;
+      parents.add(parent);
+      while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+      mark.remove();
+    });
+    parents.forEach(parent => { if (parent && parent.normalize) parent.normalize(); });
+  }
+
+  function collectLeafTextUnits() {
+    // Each block-like element owns only the text nodes whose nearest block
+    // ancestor is itself. This covers direct cell/list text without counting
+    // text inside nested paragraphs or list items twice.
+    return Array.from(article.querySelectorAll(candidateSelector));
+  }
+
+  function buildSegments(unit) {
+    const segments = [];
+    let text = '';
+    const walker = document.createTreeWalker(unit, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.nodeValue) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (!parent || parent.closest('script,style,noscript,template,svg,button')) return NodeFilter.FILTER_REJECT;
+        if (parent.closest(candidateSelector) !== unit) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let node;
+    while ((node = walker.nextNode())) {
+      const value = node.nodeValue || '';
+      const start = text.length;
+      text += value;
+      segments.push({ node, start, end: text.length });
+    }
+    return { text, segments };
+  }
+
+  function locateStart(segments, position) {
+    for (const segment of segments) {
+      if (position >= segment.start && position < segment.end) {
+        return { node: segment.node, offset: position - segment.start };
+      }
+    }
+    return null;
+  }
+
+  function locateEnd(segments, position) {
+    for (const segment of segments) {
+      if (position > segment.start && position <= segment.end) {
+        return { node: segment.node, offset: position - segment.start };
+      }
+    }
+    return null;
+  }
+
+  function markOccurrences(query) {
+    unwrapSearchMarks();
+    const lowerNeedle = query.toLocaleLowerCase();
+    const units = collectLeafTextUnits();
+
+    units.forEach(unit => {
+      const { text, segments } = buildSegments(unit);
+      if (!text || !segments.length) return;
+      const haystack = text.toLocaleLowerCase();
+      const occurrences = [];
+      let from = 0;
+      while (from <= haystack.length - lowerNeedle.length) {
+        const index = haystack.indexOf(lowerNeedle, from);
+        if (index < 0) break;
+        occurrences.push({ start: index, end: index + lowerNeedle.length });
+        from = index + Math.max(lowerNeedle.length, 1);
+      }
+
+      // Work from right to left so extracting later ranges cannot disturb
+      // the offsets and text nodes needed for earlier occurrences.
+      occurrences.reverse().forEach(hit => {
+        const start = locateStart(segments, hit.start);
+        const end = locateEnd(segments, hit.end);
+        if (!start || !end) return;
+        try {
+          const range = document.createRange();
+          range.setStart(start.node, start.offset);
+          range.setEnd(end.node, end.offset);
+          const mark = document.createElement('mark');
+          mark.className = 'review-search-hit';
+          mark.appendChild(range.extractContents());
+          range.insertNode(mark);
+        } catch (error) {
+          // Ignore an isolated malformed range rather than interrupt search.
+        }
+      });
+    });
+    return Array.from(article.querySelectorAll('mark.review-search-hit'));
+  }
+
+  function getSnippet(match) {
+    const block = match.closest(candidateSelector) || match.parentElement;
+    let text = (block ? block.textContent : match.textContent).replace(/\s+/g, ' ').trim();
+    if (text.length > 165) {
+      const found = text.toLocaleLowerCase().indexOf(match.textContent.toLocaleLowerCase());
+      const start = Math.max(0, (found < 0 ? 0 : found) - 55);
+      const end = Math.min(text.length, start + 165);
+      text = (start ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    }
+    return text;
+  }
+
+  function buildResultList(container) {
+    container.innerHTML = '';
+    if (!matches.length) {
+      const empty = document.createElement('div');
+      empty.className = 'review-search-empty';
+      empty.textContent = 'No matching text found.';
+      container.appendChild(empty);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    matches.forEach((match, index) => {
+      const link = document.createElement('a');
+      link.href = '#';
+      link.dataset.matchIndex = String(index);
+      link.textContent = getSnippet(match);
+      link.title = `Go to occurrence ${index + 1} of ${matches.length}`;
+      link.setAttribute('aria-label', `Find occurrence ${index + 1}: ${link.textContent}`);
+      fragment.appendChild(link);
+    });
+    container.appendChild(fragment);
+  }
+
+  function updateResultLists() {
+    [originalResults, floatingResults].forEach(container => {
+      container.querySelectorAll('a[data-match-index]').forEach(link => {
+        const selected = Number(link.dataset.matchIndex) === currentIndex;
+        link.classList.toggle('active', selected);
+        if (selected) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      });
+    });
+  }
+
+  function updateDockVisibility() {
+    const hasArticle = article.getClientRects().length > 0;
+    const rect = searchWrap.getBoundingClientRect();
+    const searchBarVisible = hasArticle && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight;
+    const searchBarOffscreen = hasArticle && !searchBarVisible;
+    const hasSelection = currentIndex >= 0 && matches.length > 0;
+
+    dock.classList.toggle('is-visible', searchBarOffscreen || hasSelection);
+    toggleButton.hidden = !searchBarOffscreen;
+    if (!searchBarOffscreen && panelOpen) {
+      panelOpen = false;
+      dock.classList.remove('panel-open');
+      toggleButton.setAttribute('aria-expanded', 'false');
+    }
+    existingNav.classList.toggle('is-visible', hasSelection);
+  }
+
+  function updateCounterAndNav() {
+    counter.textContent = matches.length && currentIndex >= 0
+      ? `${currentIndex + 1} / ${matches.length}`
+      : `0 / ${matches.length}`;
+    previousButton.disabled = !matches.length;
+    nextButton.disabled = !matches.length;
+    existingNav.classList.toggle('is-visible', currentIndex >= 0 && matches.length > 0);
+    updateResultLists();
+    updateDockVisibility();
+  }
+
+  function closeResultLists() {
+    originalResults.classList.remove('open');
+    floatingResults.classList.remove('open');
+  }
+
+  function activateMatch(index) {
+    if (!matches.length) return;
+    currentIndex = (index + matches.length) % matches.length;
+    matches.forEach((match, i) => match.classList.toggle('search-current-match', i === currentIndex));
+    const target = matches[currentIndex];
+    updateCounterAndNav();
+    // Scroll to the exact marked occurrence, not its containing paragraph/cell.
+    target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+  }
+
+  function openResultsFor(container) {
+    closeResultLists();
+    if (matches.length || (container === originalResults && originalInput.value.trim().length >= 2) || (container === floatingResults && floatingInput.value.trim().length >= 2)) {
+      container.classList.add('open');
+    }
+  }
+
+  function runSearch(value, source) {
+    const query = value.trim();
+    originalInput.value = query;
+    floatingInput.value = query;
+    activeResults = source === floatingInput ? floatingResults : originalResults;
+    currentIndex = -1;
+    matches = [];
+    closeResultLists();
+
+    if (query.length >= 2) {
+      matches = markOccurrences(query);
+      buildResultList(originalResults);
+      buildResultList(floatingResults);
+      activeResults.classList.add('open');
+    } else {
+      unwrapSearchMarks();
+      originalResults.innerHTML = '';
+      floatingResults.innerHTML = '';
+    }
+    updateCounterAndNav();
+  }
+
+  function onResultClick(event) {
+    const link = event.target.closest('a[data-match-index]');
+    if (!link) return;
+    event.preventDefault();
+    closeResultLists();
+    activateMatch(Number(link.dataset.matchIndex));
+  }
+
+  originalInput.addEventListener('input', () => runSearch(originalInput.value, originalInput));
+  floatingInput.addEventListener('input', () => runSearch(floatingInput.value, floatingInput));
+
+  [originalInput, floatingInput].forEach(input => {
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && matches.length) {
+        event.preventDefault();
+        activateMatch(currentIndex < 0 ? 0 : currentIndex + (event.shiftKey ? -1 : 1));
+        closeResultLists();
+      } else if (event.key === 'Escape') {
+        closeResultLists();
+        if (input === floatingInput && panelOpen) {
+          panelOpen = false;
+          dock.classList.remove('panel-open');
+          toggleButton.setAttribute('aria-expanded', 'false');
+          updateDockVisibility();
+        }
+      }
+    });
+    input.addEventListener('focus', () => {
+      if (matches.length) openResultsFor(input === floatingInput ? floatingResults : originalResults);
+    });
+  });
+
+  originalResults.addEventListener('click', onResultClick);
+  floatingResults.addEventListener('click', onResultClick);
+  previousButton.addEventListener('click', () => activateMatch(currentIndex < 0 ? matches.length - 1 : currentIndex - 1));
+  nextButton.addEventListener('click', () => activateMatch(currentIndex < 0 ? 0 : currentIndex + 1));
+
+  toggleButton.addEventListener('click', () => {
+    panelOpen = !panelOpen;
+    dock.classList.toggle('panel-open', panelOpen);
+    toggleButton.setAttribute('aria-expanded', String(panelOpen));
+    if (panelOpen) {
+      floatingInput.value = originalInput.value;
+      if (matches.length) {
+        buildResultList(floatingResults);
+        floatingResults.classList.add('open');
+      }
+      window.setTimeout(() => floatingInput.focus(), 0);
+    } else {
+      floatingResults.classList.remove('open');
+    }
+  });
+
+  document.addEventListener('click', event => {
+    if (!searchWrap.contains(event.target)) originalResults.classList.remove('open');
+    if (!dock.contains(event.target)) floatingResults.classList.remove('open');
+  });
+
+  // Capture scroll events from the page and any nested scrollable reviewer pane.
+  window.addEventListener('scroll', updateDockVisibility, { passive: true, capture: true });
+  window.addEventListener('resize', updateDockVisibility, { passive: true });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', updateDockVisibility, { passive: true });
+
+  updateCounterAndNav();
+})();
+</script>
+
+<script id="floating-mtap-scroll-visibility">
+(function () {
+  'use strict';
+  const floatingLink = document.getElementById('floating-mtap-back');
+  const topBackButton = document.getElementById('review-back');
+  if (!floatingLink || !topBackButton) return;
+
+  function setFloatingVisible(visible) {
+    floatingLink.classList.toggle('is-visible', visible);
+    floatingLink.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    floatingLink.tabIndex = visible ? 0 : -1;
+  }
+
+  // Keep the floating shortcut out of the way while the top navigation is visible.
+  setFloatingVisible(false);
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(function (entries) {
+      const entry = entries[0];
+      setFloatingVisible(!entry.isIntersecting);
+    }, { threshold: 0 });
+    observer.observe(topBackButton);
+  } else {
+    function updateFloatingLink() {
+      const rect = topBackButton.getBoundingClientRect();
+      setFloatingVisible(rect.bottom <= 0 || rect.top >= window.innerHeight);
+    }
+    window.addEventListener('scroll', updateFloatingLink, { passive: true });
+    window.addEventListener('resize', updateFloatingLink);
+    updateFloatingLink();
+  }
+})();
+</script>
+
+</body>
 </html>
