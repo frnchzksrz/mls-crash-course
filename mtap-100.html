@@ -1,21 +1,25 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
+
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>MTAP 100 Crash Review · MLS Crash Course</title>
-  <meta name="description" content="MTAP 100 comprehensive review — AUBF, Clinical Chemistry, ISBB.">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
-  <link rel="shortcut icon" href="assets/icons/icon-192.png">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="auth.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>MTAP 100 Crash Review · MLS Crash Course</title>
+<meta content="MTAP 100 comprehensive review — AUBF, Clinical Chemistry, ISBB." name="description"/>
+<link href="manifest.json" rel="manifest"/>
+<link href="assets/icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="assets/icons/icon-192.png" rel="shortcut icon"/>
+<link href="assets/icons/icon-192.png" rel="apple-touch-icon"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&amp;family=Playfair+Display:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', sans-serif; background: #f5f7fa; color: #1e1e1e; line-height: 1.6; overflow-x: hidden; min-height: 100vh; transition: background 0.25s, color 0.25s; }
     .diamond { position: fixed; width: 18px; height: 18px; background: #1e3b5a; transform: rotate(45deg); opacity: 0; pointer-events: none; z-index: 0; animation: sparkle 4s infinite; }
@@ -344,181 +348,165 @@
   </style>
 </head>
 <body>
-  <header>
-    <div class="logo-wrapper">
-      <a href="index.html" class="logo">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
-      <button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
-    </div>
-    <nav class="nav-links">
-      <div class="search-container" id="search-container">
-        <input type="text" class="search-input" id="search-input" placeholder="Search courses..." autocomplete="off">
-        <button class="icon-btn" id="search-btn" title="Search">🔍</button>
-        <div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
-      </div>
-      <a href="courses.html">Courses</a>
-      <a href="anatomy.html">Anatomy</a>
-      <a href="focus.html">Focus</a>
-      <a href="daily.html">Daily</a>
-      <a href="community.html">Community</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="signup.html" class="auth-btn" id="auth-button">Get Access</a>
-      <span class="auth-only" id="notif-bell-container" style="position:relative;">
-        <button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
-        <div class="notif-dropdown" id="notif-dropdown">
-          <div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
-          <div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
-          <div class="notif-footer"><a href="notifications.html">View all</a></div>
-        </div>
-      </span>
-      <span class="auth-only" id="msg-envelope-container">
-        <a href="messages.html" class="icon-btn" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
-      </span>
-    </nav>
-  </header>
-
-  <main>
-    <div class="container">
-
-      <section id="view-select">
-        <div class="mtap-hero">
-          <div class="eyebrow">MTAP 100 · Crash Review</div>
-          <h1>Choose a Subject</h1>
-          <p class="subtitle">Built for this Sunday's long assessment</p>
-          <p class="desc">Choose a study guide to review the concepts, or jump straight into the 150-item assessments. On iPad or tablet, tap the <strong>✏️ Scratch Pad</strong> button to work out notes with your pen. This crash review was made from the contents of the SPC MTAP 100 2026 lecturer's handouts.</p>
-        </div>
-        <div class="selection-groups">
-          <section class="selection-section" aria-labelledby="reviewers-heading">
-            <h2 class="selection-section-title" id="reviewers-heading"><span aria-hidden="true">📖</span> Reviewers</h2>
-            <div class="reviewer-grid">
-              <a class="reviewer-card reviewer-card-featured" href="mtap-100-aubf.html" aria-label="Open AUBF Comprehensive Reviewer">
-                <span class="reviewer-card-icon" aria-hidden="true">📘</span>
-                <span class="reviewer-card-title">AUBF Comprehensive Reviewer</span>
-                <span class="reviewer-card-description">Analysis of Urine &amp; Body Fluids</span>
-                <span class="reviewer-card-badge">Full Discussion &amp; Cram Notes</span>
-              </a>
-              <div class="reviewer-card reviewer-card-locked" aria-disabled="true">
-                <span class="reviewer-card-icon" aria-hidden="true">📗</span>
-                <span class="reviewer-card-title">Clinical Chemistry</span>
-                <span class="reviewer-card-description">Reviewer coming soon</span>
-                <span class="reviewer-card-badge locked">Locked</span>
-              </div>
-              <div class="reviewer-card reviewer-card-locked" aria-disabled="true">
-                <span class="reviewer-card-icon" aria-hidden="true">📕</span>
-                <span class="reviewer-card-title">ISBB</span>
-                <span class="reviewer-card-description">Reviewer coming soon</span>
-                <span class="reviewer-card-badge locked">Locked</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="selection-section practice-section" aria-labelledby="practice-heading">
-            <h2 class="selection-section-title" id="practice-heading"><span aria-hidden="true">📝</span> Practice Quizzes (150 Items Each)</h2>
-            <div class="subject-grid practice-grid" id="subject-grid"></div>
-          </section>
-        </div>
-      </section>
-
-      <section id="view-quiz">
-        <div class="quiz-top">
-          <button class="quiz-back-btn" id="quiz-back">← Subjects</button>
-          <div class="quiz-title" id="quiz-title"></div>
-          <div class="quiz-score" id="quiz-score"></div>
-          <div class="quiz-timer" id="quiz-timer">00:00</div>
-        </div>
-
-        <div class="complete-banner" id="complete-banner">
-          <div class="complete-banner-inner">
-            <span class="complete-icon">🎉</span>
-            <div class="complete-text">
-              <strong id="complete-title">All items answered!</strong>
-              <span id="complete-score"></span>
-            </div>
-            <div class="complete-actions">
-              <button class="primary" id="complete-retake">Retake</button>
-              <button class="secondary" id="complete-subjects">Subjects</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="quiz-progress-wrap"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
-
-        <div class="quiz-card" id="quiz-card">
-          <span class="quiz-q-num" id="q-num">Question 1 of 150</span>
-          <div class="quiz-question" id="q-text"></div>
-          <div id="q-choices"></div>
-          <div class="quiz-explanation" id="q-explanation">
-            <strong>Why this is correct</strong>
-            <span id="q-explanation-text"></span>
-          </div>
-
-          <div class="quiz-controls">
-            <button class="secondary" id="prev-btn">← Previous</button>
-            <button class="primary" id="next-btn">Next →</button>
-          </div>
-        </div>
-
-        <div class="nav-toggle-wrap">
-          <button class="nav-toggle-btn" id="nav-toggle">View Question Navigator</button>
-        </div>
-
-        <div class="nav-panel" id="nav-panel">
-          <div class="nav-legend">
-            <span><i class="dot unanswered"></i> Unanswered</span>
-            <span><i class="dot correct"></i> Correct</span>
-            <span><i class="dot wrong"></i> Wrong</span>
-          </div>
-          <div class="nav-grid" id="nav-grid"></div>
-        </div>
-      </section>
-
-    </div>
-  </main>
-
-  <footer>
-    <p>&copy; 2026 MLS Crash Course by RF. All rights reserved.</p>
-    <p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
-  </footer>
-
-  <div class="modal-overlay" id="leave-modal" style="display:none;">
-    <div class="modal-card">
-      <div class="modal-icon">💾</div>
-      <h3>Progress Saved</h3>
-      <p>Your progress has been saved and the timer is stopped. You can resume this quiz anytime from the subject selection.</p>
-      <div class="modal-actions">
-        <button class="primary" id="modal-resume">Resume Quiz</button>
-        <button class="secondary" id="modal-leave">Back to Subjects</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="resume-modal" style="display:none;">
-    <div class="modal-card">
-      <div class="modal-icon">🔄</div>
-      <h3>Resume Previous Attempt?</h3>
-      <p id="resume-modal-text">You have a saved attempt for this subject.</p>
-      <div class="modal-actions">
-        <button class="primary" id="resume-yes">Resume</button>
-        <button class="secondary" id="resume-no">Start Fresh</button>
-      </div>
-    </div>
-  </div>
-
-  <button id="scratch-toggle" aria-label="Toggle scratch pad">✏️ Scratch Pad</button>
-  <aside id="scratch-panel" aria-hidden="true">
-    <div class="scratch-head">
-      <span class="scratch-title">Scratch Pad</span>
-      <div class="scratch-tools">
-        <button class="sp-tool active" id="sp-pen" title="Pen">✏️</button>
-        <button class="sp-tool" id="sp-eraser" title="Eraser">🧽</button>
-        <button class="sp-tool" id="sp-clear" title="Clear">🗑️</button>
-        <button class="sp-tool" id="sp-close" title="Close">✕</button>
-      </div>
-    </div>
-    <canvas id="scratch-canvas"></canvas>
-  </aside>
-
-  <script>
+<header>
+<div class="logo-wrapper">
+<a class="logo" href="index.html">MLS Crash Course <i>by RF</i><span class="sub">Medical Laboratory Science</span></a>
+<button class="icon-btn theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+</div>
+<nav class="nav-links">
+<div class="search-container" id="search-container">
+<input autocomplete="off" class="search-input" id="search-input" placeholder="Search courses..." type="text"/>
+<button class="icon-btn" id="search-btn" title="Search">🔍</button>
+<div class="search-dropdown" id="search-dropdown"><p style="color:#8b8b8b; text-align:center; padding:1rem;">Type to search…</p></div>
+</div>
+<a href="courses.html">Courses</a>
+<a href="anatomy.html">Anatomy</a>
+<a href="focus.html">Focus</a>
+<a href="daily.html">Daily</a>
+<a href="community.html">Community</a>
+<a href="about.html">About</a>
+<a href="contact.html">Contact</a>
+<a class="auth-btn" href="signup.html" id="auth-button">Get Access</a>
+<span class="auth-only" id="notif-bell-container" style="position:relative;">
+<button class="icon-btn" id="notif-bell" title="Notifications">🔔<span class="badge" id="notif-badge"></span></button>
+<div class="notif-dropdown" id="notif-dropdown">
+<div class="notif-header">Notifications<button id="mark-all-read-btn">Mark all read</button></div>
+<div class="notif-list" id="notif-list"><div class="notif-item" style="color:#8b8b8b;text-align:center;">Loading…</div></div>
+<div class="notif-footer"><a href="notifications.html">View all</a></div>
+</div>
+</span>
+<span class="auth-only" id="msg-envelope-container">
+<a class="icon-btn" href="messages.html" title="Messages">✉️<span class="badge" id="msg-badge"></span></a>
+</span>
+</nav>
+</header>
+<main>
+<div class="container">
+<section id="view-select">
+<div class="mtap-hero">
+<div class="eyebrow">MTAP 100 · Crash Review</div>
+<h1>Choose a Subject</h1>
+<p class="subtitle">Built for this Sunday's long assessment</p>
+<p class="desc">Choose a study guide to review the concepts, or jump straight into the 150-item assessments. On iPad or tablet, tap the <strong>✏️ Scratch Pad</strong> button to work out notes with your pen. This crash review was made from the contents of the SPC MTAP 100 2026 lecturer's handouts.</p>
+</div>
+<div class="selection-groups">
+<section aria-labelledby="reviewers-heading" class="selection-section">
+<h2 class="selection-section-title" id="reviewers-heading"><span aria-hidden="true">📖</span> Reviewers</h2>
+<div class="reviewer-grid">
+<a aria-label="Open AUBF Comprehensive Reviewer" class="reviewer-card reviewer-card-featured" href="mtap-100-aubf.html">
+<span aria-hidden="true" class="reviewer-card-icon">📘</span>
+<span class="reviewer-card-title">AUBF</span>
+<span class="reviewer-card-description">Analysis of Urine &amp; Body Fluids</span>
+<span class="reviewer-card-badge">Full Discussion &amp; Cram Notes</span>
+</a>
+<a aria-label="Open Clinical Chemistry Comprehensive Reviewer" class="reviewer-card reviewer-card-featured" href="mtap-100-cc.html">
+<span aria-hidden="true" class="reviewer-card-icon">📗</span>
+<span class="reviewer-card-title">Clinical Chemistry</span>
+<span class="reviewer-card-description">Clinical Chemistry Comprehensive Reviewer</span>
+<span class="reviewer-card-badge">Full Discussion &amp; Cram Notes</span>
+</a>
+<div aria-disabled="true" class="reviewer-card reviewer-card-locked">
+<span aria-hidden="true" class="reviewer-card-icon">📕</span>
+<span class="reviewer-card-title">ISBB</span>
+<span class="reviewer-card-description">Reviewer coming soon</span>
+<span class="reviewer-card-badge locked">Locked</span>
+</div>
+</div>
+</section>
+<section aria-labelledby="practice-heading" class="selection-section practice-section">
+<h2 class="selection-section-title" id="practice-heading"><span aria-hidden="true">📝</span> Practice Quizzes (150 Items Each)</h2>
+<div class="subject-grid practice-grid" id="subject-grid"></div>
+</section>
+</div>
+</section>
+<section id="view-quiz">
+<div class="quiz-top">
+<button class="quiz-back-btn" id="quiz-back">← Subjects</button>
+<div class="quiz-title" id="quiz-title"></div>
+<div class="quiz-score" id="quiz-score"></div>
+<div class="quiz-timer" id="quiz-timer">00:00</div>
+</div>
+<div class="complete-banner" id="complete-banner">
+<div class="complete-banner-inner">
+<span class="complete-icon">🎉</span>
+<div class="complete-text">
+<strong id="complete-title">All items answered!</strong>
+<span id="complete-score"></span>
+</div>
+<div class="complete-actions">
+<button class="primary" id="complete-retake">Retake</button>
+<button class="secondary" id="complete-subjects">Subjects</button>
+</div>
+</div>
+</div>
+<div class="quiz-progress-wrap"><div class="quiz-progress-fill" id="quiz-progress"></div></div>
+<div class="quiz-card" id="quiz-card">
+<span class="quiz-q-num" id="q-num">Question 1 of 150</span>
+<div class="quiz-question" id="q-text"></div>
+<div id="q-choices"></div>
+<div class="quiz-explanation" id="q-explanation">
+<strong>Why this is correct</strong>
+<span id="q-explanation-text"></span>
+</div>
+<div class="quiz-controls">
+<button class="secondary" id="prev-btn">← Previous</button>
+<button class="primary" id="next-btn">Next →</button>
+</div>
+</div>
+<div class="nav-toggle-wrap">
+<button class="nav-toggle-btn" id="nav-toggle">View Question Navigator</button>
+</div>
+<div class="nav-panel" id="nav-panel">
+<div class="nav-legend">
+<span><i class="dot unanswered"></i> Unanswered</span>
+<span><i class="dot correct"></i> Correct</span>
+<span><i class="dot wrong"></i> Wrong</span>
+</div>
+<div class="nav-grid" id="nav-grid"></div>
+</div>
+</section>
+</div>
+</main>
+<footer>
+<p>© 2026 MLS Crash Course by RF. All rights reserved.</p>
+<p><a href="index.html">Home</a> · <a href="courses.html">Courses</a> · <a href="community.html">Community</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a></p>
+</footer>
+<div class="modal-overlay" id="leave-modal" style="display:none;">
+<div class="modal-card">
+<div class="modal-icon">💾</div>
+<h3>Progress Saved</h3>
+<p>Your progress has been saved and the timer is stopped. You can resume this quiz anytime from the subject selection.</p>
+<div class="modal-actions">
+<button class="primary" id="modal-resume">Resume Quiz</button>
+<button class="secondary" id="modal-leave">Back to Subjects</button>
+</div>
+</div>
+</div>
+<div class="modal-overlay" id="resume-modal" style="display:none;">
+<div class="modal-card">
+<div class="modal-icon">🔄</div>
+<h3>Resume Previous Attempt?</h3>
+<p id="resume-modal-text">You have a saved attempt for this subject.</p>
+<div class="modal-actions">
+<button class="primary" id="resume-yes">Resume</button>
+<button class="secondary" id="resume-no">Start Fresh</button>
+</div>
+</div>
+</div>
+<button aria-label="Toggle scratch pad" id="scratch-toggle">✏️ Scratch Pad</button>
+<aside aria-hidden="true" id="scratch-panel">
+<div class="scratch-head">
+<span class="scratch-title">Scratch Pad</span>
+<div class="scratch-tools">
+<button class="sp-tool active" id="sp-pen" title="Pen">✏️</button>
+<button class="sp-tool" id="sp-eraser" title="Eraser">🧽</button>
+<button class="sp-tool" id="sp-clear" title="Clear">🗑️</button>
+<button class="sp-tool" id="sp-close" title="Close">✕</button>
+</div>
+</div>
+<canvas id="scratch-canvas"></canvas>
+</aside>
+<script>
   const sb = window.supabaseClient;
   const esc = window.escapeHtml || function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
